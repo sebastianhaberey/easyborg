@@ -3,7 +3,7 @@ from pathlib import Path
 import pytest
 
 from easyborg.borg import Borg
-from easyborg.utilities import compare_directories, to_archive_path
+from easyborg.util import compare_directories, to_archive_path
 
 
 def test_create_repository(tmp_path):
@@ -45,12 +45,7 @@ def test_archive_and_restore(tmp_path, borg, repository, testdata_dir):
     archive = borg.archive(repository, [testdata_dir])
 
     # Source directories will be made relative for safety (to ensure restoring into target dir)
-    borg.restore(
-        repository,
-        archive,
-        [testdata_dir],
-        target_dir
-    )
+    borg.restore(repository, archive, [testdata_dir], target_dir)
 
     compare_directories(testdata_dir, target_dir / testdata_dir.relative_to("/"))
 
@@ -75,7 +70,9 @@ def test_restore_fails_if_archive_missing(borg, repository):
         )
 
 
-def test_restore_fails_if_source_directory_not_in_archive(tmp_path, borg, repository, testdata_dir):
+def test_restore_fails_if_source_directory_not_in_archive(
+    tmp_path, borg, repository, testdata_dir
+):
     target_dir = tmp_path / "restore_here"
     target_dir.mkdir()
     archive = borg.archive(repository=repository, source_dirs=[testdata_dir])
@@ -101,7 +98,9 @@ def test_restore_fails_if_target_directory_missing(borg, repository, testdata_di
         )
 
 
-def test_list_contents_of_archive_with_testdata(tmp_path, project_root, borg, repository, testdata_dir):
+def test_list_contents_of_archive_with_testdata(
+    tmp_path, project_root, borg, repository, testdata_dir
+):
     archive = borg.archive(repository=repository, source_dirs=[testdata_dir])
 
     paths = borg.list_contents(repository=repository, archive=archive)
@@ -113,7 +112,7 @@ def test_list_contents_of_archive_with_testdata(tmp_path, project_root, borg, re
 
 def test_list_contents_fails_if_repository_missing(borg):
     with pytest.raises(RuntimeError, match=r"does not exist"):
-        borg.list_contents(str("no_such_repository"), "ignored")
+        borg.list_contents("no_such_repository", "ignored")
 
 
 def test_list_contents_fails_if_archive_missing(borg, repository):

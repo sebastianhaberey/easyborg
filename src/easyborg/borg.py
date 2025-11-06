@@ -3,7 +3,7 @@ import os
 import subprocess
 from pathlib import Path
 
-from easyborg.utilities import create_archive_name, to_archive_path, to_archive_ref
+from easyborg.util import create_archive_name, to_archive_path, to_archive_ref
 
 logger = logging.getLogger(__name__)
 
@@ -48,11 +48,7 @@ class Borg:
         output = self._run(["list", archive_ref, "--format", "{path}\n"])
 
         # Path() normalizes separators (works on Linux, macOS, Windows)
-        return [
-            Path(line.lstrip("/"))
-            for line in output.splitlines()
-            if line.strip()
-        ]
+        return [Path(line.lstrip("/")) for line in output.splitlines() if line.strip()]
 
     def create_repository(self, parent: Path, name: str, encryption="none") -> str:
         """
@@ -99,7 +95,9 @@ class Borg:
         self._run(cmd)
         return archive_name
 
-    def restore(self, repository: str, archive: str, source_dirs: list[Path], target_dir: Path) -> None:
+    def restore(
+        self, repository: str, archive: str, source_dirs: list[Path], target_dir: Path
+    ) -> None:
         """
         Restore the given directories from an archive into the target directory.
 
@@ -108,7 +106,13 @@ class Borg:
           and target_directory=/tmp/restore,
           then the file is restored to /tmp/restore/Users/user/Documents/file.txt.
         """
-        logger.debug("Restoring %s -> %s -> %s into %s", repository, archive, source_dirs, target_dir)
+        logger.debug(
+            "Restoring %s -> %s -> %s into %s",
+            repository,
+            archive,
+            source_dirs,
+            target_dir,
+        )
 
         existing_archives = self.list_archives(repository)
         if archive not in existing_archives:
@@ -133,11 +137,7 @@ class Borg:
             logger.debug("Running: %s", cmd)
 
             result = subprocess.run(
-                cmd,
-                cwd=cwd,
-                check=True,
-                text=True,
-                capture_output=True
+                cmd, cwd=cwd, check=True, text=True, capture_output=True
             )
 
             return result.stdout

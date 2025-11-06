@@ -21,7 +21,6 @@ easyborg = "easyborg.cli:app"
 dev = [
     "pytest",
     "ruff",
-    "black"
 ]
 
 [tool.setuptools]
@@ -31,6 +30,18 @@ package-dir = { "" = "src" }
 where = ["src"]
 
 [tool.ruff]
-line-length = 88
-extend-select = ["I"]  # enable import sorting
+line-length = 120
+target-version = "py311"
 src = ["src"]
+
+[tool.ruff.lint]
+select = [
+    "E", # Pycodestyle (basic errors)
+    "F", # Pyflakes (unused imports, etc.)
+    "W", # Warnings
+    "I", # Import sorting (isort behavior)
+    "UP", # pyupgrade: e.g., prefer dict[str, int] over Dict[str, int]
+]
+
+[tool.ruff.format]
+quote-style = "double"

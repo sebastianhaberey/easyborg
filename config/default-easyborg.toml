@@ -1,0 +1,34 @@
+# Default easyborg configuration template
+# Copy to: ~/.easyborg/easyborg.toml
+
+# Reusable directory groups
+[directories.home]
+paths = [
+    "~/Documents",
+    "~/Pictures",
+    "~/Projects",
+]
+
+[directories.work]
+paths = [
+    "~/Work",
+    "~/Shared",
+]
+
+# Global settings for automatic backups
+[automatic]
+frequency = "hourly"         # hourly | daily | weekly
+retain_daily = 7
+retain_weekly = 13
+retain_monthly = 12
+
+# Repositories
+[repositories.main]
+path = "/path/to/local/backup"
+type = "automatic"
+directory_groups = ["home"]
+
+[repositories.office]
+path = "ssh://user@example.com:/backup/location"
+type = "manual"
+directory_groups = ["work"]

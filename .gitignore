@@ -26,3 +26,6 @@ __pycache__/
 # --- OS & misc ---
 .DS_Store
 Thumbs.db
+
+# --- Local configuration ---
+/config/
