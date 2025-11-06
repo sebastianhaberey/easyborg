@@ -1,4 +1,5 @@
 import filecmp
+from datetime import datetime
 from pathlib import Path
 
 
@@ -19,3 +20,11 @@ def compare_directories(dir1: Path, dir2: Path):
 def to_archive_path(p: Path) -> Path:
     """Convert an absolute filesystem Path to Borg list() relative form."""
     return Path(p.as_posix().lstrip("/"))
+
+
+def to_archive_ref(repository: str, archive_name: str) -> str:
+    return f"{repository}::{archive_name}"
+
+
+def create_archive_name() -> str:
+    return datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f")

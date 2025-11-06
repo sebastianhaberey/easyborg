@@ -3,7 +3,7 @@ from pathlib import Path
 import pytest
 
 from src.borg_backup import Borg
-from tests.utilities.utilities import compare_directories, to_archive_path
+from src.utilities import compare_directories, to_archive_path
 
 
 def test_create_repository(tmp_path):
@@ -80,7 +80,7 @@ def test_restore_fails_if_source_directory_not_in_archive(tmp_path, borg, reposi
     target_dir.mkdir()
     archive = borg.archive(repository=repository, source_dirs=[testdata_dir])
 
-    with pytest.raises(RuntimeError, match="never matched"):
+    with pytest.raises(RuntimeError, match="Include pattern .* never matched"):
         borg.restore(
             repository=repository,
             archive=archive,
@@ -109,3 +109,13 @@ def test_list_contents_of_archive_with_testdata(tmp_path, project_root, borg, re
     assert to_archive_path(testdata_dir) in paths
     assert to_archive_path(testdata_dir / "some directory") in paths
     assert to_archive_path(testdata_dir / "some file.txt") in paths
+
+
+def test_list_contents_fails_if_repository_missing(borg):
+    with pytest.raises(RuntimeError, match=r"does not exist"):
+        borg.list_contents(str("no_such_repository"), "ignored")
+
+
+def test_list_contents_fails_if_archive_missing(borg, repository):
+    with pytest.raises(RuntimeError, match=r"does not exist"):
+        borg.list_contents(repository, "no_such_archive")
