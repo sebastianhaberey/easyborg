@@ -2,8 +2,8 @@ from pathlib import Path
 
 import pytest
 
-from src.borg_backup import Borg
-from src.utilities import compare_directories, to_archive_path
+from easyborg.borg import Borg
+from easyborg.utilities import compare_directories, to_archive_path
 
 
 def test_create_repository(tmp_path):

@@ -1,3 +1,3 @@
-# borgtools
+# easyborg
 
-Tools for BorgBackup
+Borg for Dummies

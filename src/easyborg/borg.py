@@ -1,9 +1,9 @@
-import subprocess
-import os
 import logging
+import os
+import subprocess
 from pathlib import Path
 
-from src.utilities import to_archive_path, to_archive_ref, create_archive_name
+from easyborg.utilities import create_archive_name, to_archive_path, to_archive_ref
 
 logger = logging.getLogger(__name__)
 

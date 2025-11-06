@@ -1,7 +1,8 @@
 from pathlib import Path
+
 import pytest
 
-from src.borg_backup import Borg
+from easyborg.borg import Borg
 
 
 @pytest.fixture

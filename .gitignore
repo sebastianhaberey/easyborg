@@ -1,2 +1,28 @@
-/.idea/
+# --- Local virtual environment ---
 /.venv/
+
+# --- IDE settings ---
+/.idea/
+/.vscode/
+
+# --- Python bytecode ---
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# --- Build artifacts ---
+/build/
+/dist/
+*.egg-info/
+/.eggs/
+
+# --- Test caches ---
+/.pytest_cache/
+/htmlcov/
+/.coverage
+/.mypy_cache/
+
+# --- OS & misc ---
+.DS_Store
+Thumbs.db

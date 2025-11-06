@@ -1,0 +1,36 @@
+[build-system]
+requires = ["setuptools>=64", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "easyborg"
+version = "0.1.0"
+description = "Borg for Dummies"
+readme = "README.md"
+requires-python = ">=3.9"
+
+dependencies = [
+    "typer[all]",
+]
+
+[project.scripts]
+easyborg = "easyborg.cli:app"
+
+# Development-only dependencies
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "ruff",
+    "black"
+]
+
+[tool.setuptools]
+package-dir = { "" = "src" }
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.ruff]
+line-length = 88
+extend-select = ["I"]  # enable import sorting
+src = ["src"]
