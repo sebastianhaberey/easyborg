@@ -1,54 +1,67 @@
 from __future__ import annotations
 
-import os
 import tomllib
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-from easyborg.util import deep_merge
+
+@dataclass(slots=True)
+class DirectoryGroup:
+    name: str
+    paths: list[str]
 
 
-def _in_development_mode() -> bool:
-    """Return True if running inside a git checkout."""
-    project_root = Path(__file__).resolve().parents[2]
-    return (project_root / ".git").exists()
+@dataclass(slots=True)
+class Repository:
+    name: str
+    path: str
+    type: str   # "automatic" or "manual"
+    directory_groups: list[str]
 
 
-def load_config() -> dict[str, Any]:
-    """
-    Load easyborg configuration:
+@dataclass
+class Config:
+    directories: dict[str, DirectoryGroup]
+    repositories: dict[str, Repository]
+    source: Path  # Which file was actually loaded
 
-      1) EASYBORG_CONFIG (explicit override)
-      2) If in development mode:
-           config/default-easyborg.toml (base)
-           config/dev-local.toml (git-ignored overrides)
-      3) ~/.easyborg/easyborg.toml (user config)
-    """
+    @staticmethod
+    def load(path: Path | None = None) -> Config:
+        """
+        Load configuration.
 
-    # 1) Explicit override
-    env_path = os.environ.get("EASYBORG_CONFIG")
-    if env_path:
-        p = Path(env_path).expanduser()
-        if not p.exists():
-            raise FileNotFoundError(f"$EASYBORG_CONFIG was set but file does not exist: {p}")
-        return tomllib.loads(p.read_text())
+        If `path` is provided (test usage), load only that file.
+        Otherwise load from config/easyborg.toml inside the project.
+        """
+        if path is None:
+            path = Path(__file__).resolve().parents[2] / "config" / "easyborg.toml"
 
-    config: dict[str, Any] = {}
+        raw = _load_toml(path)
+        return _parse_config(raw, source=path)
 
-    if _in_development_mode():
-        # Development template
-        default_path = Path("./config/default-easyborg.toml")
-        if default_path.exists():
-            config = tomllib.loads(default_path.read_text())
+def _parse_config(raw: dict[str, Any], source: Path) -> Config:
+    directories = {
+        name: DirectoryGroup(name=name, paths=cfg["paths"])
+        for name, cfg in raw.get("directories", {}).items()
+    }
 
-        # Developer machine overrides (not committed)
-        dev_local_path = Path("./config/dev-local.toml")
-        if dev_local_path.exists():
-            config = deep_merge(config, tomllib.loads(dev_local_path.read_text()))
+    repositories = {
+        name: Repository(
+            name=name,
+            path=cfg["path"],
+            type=cfg.get("type", "manual"),
+            directory_groups=cfg.get("directory_groups", []),
+        )
+        for name, cfg in raw.get("repositories", {}).items()
+    }
 
-    # User config (preferred for installed behavior)
-    user_cfg_path = Path("~/.easyborg/easyborg.toml").expanduser()
-    if user_cfg_path.exists():
-        config = deep_merge(config, tomllib.loads(user_cfg_path.read_text()))
+    return Config(
+        directories=directories,
+        repositories=repositories,
+        source=source,
+    )
 
-    return config
+def _load_toml(path: Path) -> dict[str, Any]:
+    with path.open("rb") as f:
+        return tomllib.load(f)
