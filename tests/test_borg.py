@@ -103,7 +103,7 @@ def test_list_contents_of_archive_with_testdata(
 ):
     archive = borg.archive(repository=repository, source_dirs=[testdata_dir])
 
-    paths = borg.list_contents(repository=repository, archive=archive)
+    paths = list(borg.list_contents(repository=repository, archive=archive))
 
     assert to_archive_path(testdata_dir) in paths
     assert to_archive_path(testdata_dir / "some directory") in paths
@@ -112,9 +112,9 @@ def test_list_contents_of_archive_with_testdata(
 
 def test_list_contents_fails_if_repository_missing(borg):
     with pytest.raises(RuntimeError, match=r"does not exist"):
-        borg.list_contents("no_such_repository", "ignored")
+        list(borg.list_contents("no_such_repository", "ignored"))
 
 
 def test_list_contents_fails_if_archive_missing(borg, repository):
     with pytest.raises(RuntimeError, match=r"does not exist"):
-        borg.list_contents(repository, "no_such_archive")
+       list(borg.list_contents(repository, "no_such_archive"))

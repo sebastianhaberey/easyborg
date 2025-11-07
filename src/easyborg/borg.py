@@ -1,6 +1,7 @@
 import logging
 import os
 import subprocess
+from collections.abc import Iterator
 from pathlib import Path
 
 from easyborg.util import create_archive_name, to_archive_path, to_archive_ref
@@ -29,14 +30,13 @@ class Borg:
         """
         logger.debug("Listing archives in repository %s", repository)
 
-        output = self._run(["list", "--short", repository])
-        return [line.strip() for line in output.splitlines() if line.strip()]
+        return self._run(["list", "--short", repository])
 
-    def list_contents(self, repository: str, archive: str) -> list[Path]:
+    def list_contents(self, repository: str, archive: str) -> Iterator[Path]:
         """
-        List all file and directory paths stored inside the given archive.
+        Yield all file and directory paths stored inside the given archive.
 
-        Returns paths relative to the archive root (no leading slash).
+        Paths are relative to the archive root (no leading slash).
         """
         logger.debug("Listing contents in archive %s::%s", repository, archive)
 
@@ -45,10 +45,10 @@ class Borg:
             raise RuntimeError(f"Archive does not exist in repository: {archive}")
 
         archive_ref = to_archive_ref(repository, archive)
-        output = self._run(["list", archive_ref, "--format", "{path}\n"])
 
-        # Path() normalizes separators (works on Linux, macOS, Windows)
-        return [Path(line.lstrip("/")) for line in output.splitlines() if line.strip()]
+        for line in self._run_async(["list", archive_ref, "--format", "{path}\n"]):
+            if line:
+                yield Path(line)
 
     def create_repository(self, parent: Path, name: str, encryption="none") -> str:
         """
@@ -130,19 +130,27 @@ class Borg:
         cmd = ["extract", archive_ref] + [str(p) for p in archive_paths]
         self._run(cmd, cwd=str(target_dir))
 
-    def _run(self, args: list[str], cwd: str | None = None) -> str:
-        try:
-            cmd = [self.borg] + args
+    def _run(self, args: list[str], cwd: str | None = None) -> list[str]:
+        return [line for line in self._run_async(args, cwd=cwd)]
 
-            logger.debug("Running: %s", cmd)
+    def _run_async(self, args: list[str], cwd: str | None = None):
+        cmd = [self.borg] + args
+        logger.debug("Running: %s", cmd)
 
-            result = subprocess.run(
-                cmd, cwd=cwd, check=True, text=True, capture_output=True
-            )
+        process = subprocess.Popen(
+            cmd,
+            cwd=cwd,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+        )
 
-            return result.stdout
+        assert process.stdout is not None
+        for line in process.stdout:
+            yield line.rstrip("\n")
 
-        except (FileNotFoundError, subprocess.CalledProcessError) as e:
-            stderr = getattr(e, "stderr", "") or ""
-            stderr = stderr.strip()
-            raise RuntimeError(f"Borg failed with error: {stderr}") from e
+        # only after stdout is consumed do we wait for exit status
+        returncode = process.wait()
+        if returncode != 0:
+            stderr = process.stderr.read().strip() if process.stderr else ""
+            raise RuntimeError(f"Borg failed with error: {stderr}")
