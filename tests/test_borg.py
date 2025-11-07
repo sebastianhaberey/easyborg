@@ -66,14 +66,14 @@ def test_create_snapshot_and_restore_all(tmp_path, borg, repository, testdata_di
 
 
 def test_restore_fails_if_repository_missing(borg):
-    with pytest.raises(RuntimeError, match=r"does not exist"):
+    with pytest.raises(RuntimeError):
         borg.restore(
             repository="no_such_repo", snapshot="ignored", target_dir=Path("ignored"), folders=[Path("ignored")]
         )
 
 
 def test_restore_fails_if_snapshot_missing(borg, repository):
-    with pytest.raises(RuntimeError, match=r"Snapshot does not exist"):
+    with pytest.raises(RuntimeError):
         borg.restore(
             repository=repository, snapshot="no_such_snapshot", target_dir=Path("ignored"), folders=[Path("ignored")]
         )
@@ -85,7 +85,7 @@ def test_restore_fails_if_folder_not_in_snapshot(tmp_path, borg, repository, tes
 
     borg.create_snapshot(repository=repository, snapshot="snapshot", folders=[testdata_dir])
 
-    with pytest.raises(RuntimeError, match="Include pattern .* never matched"):
+    with pytest.raises(RuntimeError, match="(?i)never matched"):
         borg.restore(
             repository=repository, snapshot="snapshot", target_dir=target_dir, folders=[Path("no_such_folder")]
         )
@@ -111,10 +111,10 @@ def test_list_contents_of_snapshot_with_testdata(tmp_path, project_root, borg, r
 
 
 def test_list_contents_fails_if_repository_missing(borg):
-    with pytest.raises(RuntimeError, match=r"does not exist"):
+    with pytest.raises(RuntimeError):
         list(borg.list_contents(repository="no_such_repository", snapshot="ignored"))
 
 
 def test_list_contents_fails_if_snapshot_missing(borg, repository):
-    with pytest.raises(RuntimeError, match=r"does not exist"):
+    with pytest.raises(RuntimeError):
         list(borg.list_contents(repository=repository, snapshot="no_such_snapshot"))

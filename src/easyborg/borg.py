@@ -21,6 +21,19 @@ class Borg:
         # Verify borg exists and is executable
         self._run_sync(["--version"])
 
+    def repository_accessible(self, repository: str) -> bool:
+        """
+        Return True if the repository exists and is accessible.
+        """
+        try:
+            self._run_sync(["info", repository])
+            return True
+        except RuntimeError:
+            return False
+
+    def snapshot_exists(self, repository: str, snapshot: str) -> bool:
+        return snapshot in self.list_snapshots(repository)
+
     def list_snapshots(self, repository: str) -> list[str]:
         """
         List all snapshots in a Borg repository.
@@ -36,10 +49,6 @@ class Borg:
         All returned paths are relative to the snapshot root (no leading slash).
         """
         logger.debug("Listing contents of %s::%s", repository, snapshot)
-
-        existing_snapshots = self.list_snapshots(repository)
-        if snapshot not in existing_snapshots:
-            raise RuntimeError(f"Snapshot does not exist: {snapshot}")
 
         snapshot_ref = to_snapshot_ref(repository, snapshot)
 
@@ -81,6 +90,8 @@ class Borg:
     def restore(self, repository: str, snapshot: str, target_dir: Path, folders: list[Path] | None = None) -> None:
         """
         Restore folders from a snapshot into a local directory.
+
+        If `folders` is empty or None, the entire snapshot is restored.
         """
         if folders is None:
             folders = []
@@ -92,10 +103,6 @@ class Borg:
             folders,
             target_dir,
         )
-
-        existing_snapshots = self.list_snapshots(repository)
-        if snapshot not in existing_snapshots:
-            raise RuntimeError(f"Snapshot does not exist: {snapshot}")
 
         if not target_dir.is_dir():
             raise RuntimeError(f"Target directory does not exist: {target_dir}")
@@ -110,7 +117,7 @@ class Borg:
         """
         Runs the borg executable synchronously.
         """
-        return [line for line in self._run_async(args, cwd=cwd)]
+        return list(self._run_async(args, cwd=cwd))
 
     def _run_async(self, args: list[str], cwd: str | None = None):
         """

@@ -4,7 +4,7 @@ from pathlib import Path
 
 from easyborg import ui
 from easyborg.borg import Borg
-from easyborg.config import Config, RepoType
+from easyborg.config import Config, Repo, RepoType
 from easyborg.fzf import Fzf
 from easyborg.util import create_snapshot_name
 
@@ -37,8 +37,16 @@ class Core:
         )
         ui.table(
             title="Repos",
-            headers=["Name", "Type", "Path"],
-            rows=[(repo.name, repo.type.value, str(repo.path)) for repo in self.repos.values()],
+            headers=["Name", "Type", "Path", "Status"],
+            rows=[
+                (
+                    repo.name,
+                    repo.type.value,
+                    repo.path,
+                    self._get_repo_status(repo),
+                )
+                for repo in self.repos.values()
+            ],
         )
         ui.newline()
 
@@ -48,12 +56,14 @@ class Core:
         containing all configured folders.
         """
         for repo in self.repos.values():
+            if not self.borg.repository_accessible(repo.path):
+                raise RuntimeError(f"Repository does not exist or is not accessible: {repo.name} ({repo.path})")
             if repo.type is RepoType.BACKUP:
                 snapshot_name = create_snapshot_name()
                 ui.info(f"Creating snapshot {snapshot_name} in repository {repo.name} ({repo.path})")
                 self.borg.create_snapshot(repo.path, snapshot_name, self.folders)
 
-        ui.success("Backup complete.")
+        ui.success("Backup complete")
 
     def archive(self, folder: Path) -> None:
         """
@@ -63,12 +73,14 @@ class Core:
             raise RuntimeError(f"Folder does not exist: {folder}")
 
         for repo in self.repos.values():
+            if not self.borg.repository_accessible(repo.path):
+                raise RuntimeError(f"Repository does not exist or is not accessible: {repo.name} ({repo.path})")
             if repo.type is RepoType.ARCHIVE:
                 snapshot_name = create_snapshot_name()
                 ui.info(f"Creating snapshot {snapshot_name} in repository {repo.name} ({repo.path})")
                 self.borg.create_snapshot(str(repo.path), snapshot_name, [folder])
 
-        ui.success("Archive complete.")
+        ui.success("Archive complete")
 
     def restore(
         self,
@@ -87,7 +99,7 @@ class Core:
                 prompt="Select repository: ",
             )
             if repo_name is None:
-                ui.warn("Cancelled.")
+                ui.warn("Aborted")
                 return
 
         repo = self.repos[repo_name]
@@ -99,14 +111,23 @@ class Core:
                 prompt="Select snapshot: ",
             )
             if snapshot is None:
-                ui.warn("Cancelled.")
+                ui.warn("Aborted")
                 return
 
         # Default target directory is current working directory
         if target_dir is None:
             target_dir = Path.cwd()
 
+        if not self.borg.repository_accessible(repo.path):
+            raise RuntimeError(f"Repository does not exist or is not accessible: {repo.name} ({repo.path})")
+
+        if not self.borg.snapshot_exists(repo.path, snapshot):
+            raise RuntimeError(f"Snapshot does not exist in repo {repo.name} ({repo.path}): {snapshot}")
+
         # Restore
         ui.info(f"Restoring snapshot {snapshot} from repository {repo.name} ({repo.path}) ")
         self.borg.restore(repository=repo.path, snapshot=snapshot, target_dir=target_dir)
-        ui.success("Restore complete.")
+        ui.success("Restore complete")
+
+    def _get_repo_status(self, repo: Repo) -> str:
+        return "OK" if self.borg.repository_accessible(repo.path) else "MISSING"
