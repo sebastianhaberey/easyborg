@@ -3,7 +3,7 @@ from pathlib import Path
 import pytest
 
 from easyborg.borg import Borg
-from easyborg.util import compare_directories, to_archive_path
+from easyborg.util import compare_directories, to_relative_path
 
 
 def test_create_repository(tmp_path):
@@ -17,9 +17,9 @@ def test_create_repository(tmp_path):
     # Borg repositories contain a "config" file after initialization
     assert (repository_path / "config").exists()
 
-    # Newly created repo should have no archives yet
-    archives = borg.list_archives(repository)
-    assert archives == []
+    # Newly created repo should have no snapshots yet
+    snapshots = borg.list_snapshots(repository)
+    assert snapshots == []
 
 
 def test_create_repository_fails_if_parent_missing(borg):
@@ -27,94 +27,94 @@ def test_create_repository_fails_if_parent_missing(borg):
         borg.create_repository(Path("no_such_parent"), "repo")
 
 
-def test_archive_fails_if_repository_missing(borg, testdata_dir):
+def test_create_snapshot_fails_if_repository_missing(borg, testdata_dir):
     with pytest.raises(RuntimeError, match=r"does not exist"):
-        borg.archive("no_such_repo", [testdata_dir])
+        borg.create_snapshot(repository="no_such_repo", snapshot="ignored", folders=[testdata_dir])
 
 
-def test_archive_fails_if_source_directory_missing(borg):
-    with pytest.raises(RuntimeError, match=r"Source directory does not exist"):
-        borg.archive("ignored", [Path("no_such_directory")])
+def test_create_snapshot_fails_if_source_directory_missing(borg):
+    with pytest.raises(RuntimeError, match=r"Folder does not exist"):
+        borg.create_snapshot(repository="ignored", snapshot="ignored", folders=[Path("no_such_folder")])
 
 
-def test_archive_and_restore(tmp_path, borg, repository, testdata_dir):
-    # Target directory must exist for this test
+def test_create_snapshot_and_restore_single(tmp_path, borg, repository, testdata_dir):
+    borg.create_snapshot(repository=repository, snapshot="snapshot", folders=[testdata_dir])
+
     target_dir = tmp_path / "restore_here"
     target_dir.mkdir()
 
-    archive = borg.archive(repository, [testdata_dir])
+    borg.restore(
+        repository=repository, snapshot="snapshot", target_dir=target_dir, folders=[testdata_dir / "file 1.txt"]
+    )
 
-    # Source directories will be made relative for safety (to ensure restoring into target dir)
-    borg.restore(repository, archive, [testdata_dir], target_dir)
+    file_1 = target_dir / to_relative_path(testdata_dir) / "file 1.txt"
+    assert file_1.exists()
 
-    compare_directories(testdata_dir, target_dir / testdata_dir.relative_to("/"))
+    file_2 = target_dir / to_relative_path(testdata_dir) / "file 2.txt"
+    assert not file_2.exists()
+
+
+def test_create_snapshot_and_restore_all(tmp_path, borg, repository, testdata_dir):
+    borg.create_snapshot(repository=repository, snapshot="snapshot", folders=[testdata_dir])
+
+    target_dir = tmp_path / "restore_here"
+    target_dir.mkdir()
+
+    borg.restore(repository=repository, snapshot="snapshot", target_dir=target_dir)
+
+    compare_directories(testdata_dir, target_dir / to_relative_path(testdata_dir))
 
 
 def test_restore_fails_if_repository_missing(borg):
     with pytest.raises(RuntimeError, match=r"does not exist"):
         borg.restore(
-            repository="no_such_repo",
-            archive="ignored",
-            source_dirs=[Path("ignored")],
-            target_dir=Path("ignored"),
+            repository="no_such_repo", snapshot="ignored", target_dir=Path("ignored"), folders=[Path("ignored")]
         )
 
 
-def test_restore_fails_if_archive_missing(borg, repository):
-    with pytest.raises(RuntimeError, match=r"Archive does not exist"):
+def test_restore_fails_if_snapshot_missing(borg, repository):
+    with pytest.raises(RuntimeError, match=r"Snapshot does not exist"):
         borg.restore(
-            repository=repository,
-            archive="no_such_archive",
-            source_dirs=[Path("ignored")],
-            target_dir=Path("ignored"),
+            repository=repository, snapshot="no_such_snapshot", target_dir=Path("ignored"), folders=[Path("ignored")]
         )
 
 
-def test_restore_fails_if_source_directory_not_in_archive(
-    tmp_path, borg, repository, testdata_dir
-):
+def test_restore_fails_if_folder_not_in_snapshot(tmp_path, borg, repository, testdata_dir):
     target_dir = tmp_path / "restore_here"
     target_dir.mkdir()
-    archive = borg.archive(repository=repository, source_dirs=[testdata_dir])
+
+    borg.create_snapshot(repository=repository, snapshot="snapshot", folders=[testdata_dir])
 
     with pytest.raises(RuntimeError, match="Include pattern .* never matched"):
         borg.restore(
-            repository=repository,
-            archive=archive,
-            source_dirs=[Path("no_such_directory")],
-            target_dir=target_dir,
+            repository=repository, snapshot="snapshot", target_dir=target_dir, folders=[Path("no_such_folder")]
         )
 
 
 def test_restore_fails_if_target_directory_missing(borg, repository, testdata_dir):
-    archive = borg.archive(repository, [testdata_dir])
+    borg.create_snapshot(repository, snapshot="snapshot", folders=[testdata_dir])
 
     with pytest.raises(RuntimeError, match=r"Target directory does not exist"):
         borg.restore(
-            repository=repository,
-            archive=archive,
-            source_dirs=[testdata_dir],
-            target_dir=Path("no_such_directory"),
+            repository=repository, snapshot="snapshot", target_dir=Path("no_such_directory"), folders=[testdata_dir]
         )
 
 
-def test_list_contents_of_archive_with_testdata(
-    tmp_path, project_root, borg, repository, testdata_dir
-):
-    archive = borg.archive(repository=repository, source_dirs=[testdata_dir])
+def test_list_contents_of_snapshot_with_testdata(tmp_path, project_root, borg, repository, testdata_dir):
+    borg.create_snapshot(repository=repository, snapshot="snapshot", folders=[testdata_dir])
 
-    paths = list(borg.list_contents(repository=repository, archive=archive))
+    paths = list(borg.list_contents(repository=repository, snapshot="snapshot"))
 
-    assert to_archive_path(testdata_dir) in paths
-    assert to_archive_path(testdata_dir / "some directory") in paths
-    assert to_archive_path(testdata_dir / "some file.txt") in paths
+    assert to_relative_path(testdata_dir) in paths
+    assert to_relative_path(testdata_dir / "some folder") in paths
+    assert to_relative_path(testdata_dir / "file 1.txt") in paths
 
 
 def test_list_contents_fails_if_repository_missing(borg):
     with pytest.raises(RuntimeError, match=r"does not exist"):
-        list(borg.list_contents("no_such_repository", "ignored"))
+        list(borg.list_contents(repository="no_such_repository", snapshot="ignored"))
 
 
-def test_list_contents_fails_if_archive_missing(borg, repository):
+def test_list_contents_fails_if_snapshot_missing(borg, repository):
     with pytest.raises(RuntimeError, match=r"does not exist"):
-       list(borg.list_contents(repository, "no_such_archive"))
+        list(borg.list_contents(repository=repository, snapshot="no_such_snapshot"))

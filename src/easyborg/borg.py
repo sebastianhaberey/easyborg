@@ -4,7 +4,7 @@ import subprocess
 from collections.abc import Iterator
 from pathlib import Path
 
-from easyborg.util import create_archive_name, to_archive_path, to_archive_ref
+from easyborg.util import to_relative_path, to_snapshot_ref
 
 logger = logging.getLogger(__name__)
 
@@ -13,52 +13,43 @@ class Borg:
     def __init__(self, borg_executable="borg"):
         """
         Initialize a Borg instance.
-
-        :param borg_executable: Path to the borg binary (default assumes it is in PATH)
-        :raises RuntimeError: If borg is not found or not executable
         """
         logger.debug("Initializing Borg (executable: %s)", borg_executable)
 
         self.borg = borg_executable
 
         # Verify borg exists and is executable
-        self._run(["--version"])
+        self._run_sync(["--version"])
 
-    def list_archives(self, repository: str) -> list[str]:
+    def list_snapshots(self, repository: str) -> list[str]:
         """
-        List all archives in a Borg repository.
+        List all snapshots in a Borg repository.
         """
-        logger.debug("Listing archives in repository %s", repository)
+        logger.debug("Listing snapshots in repository %s", repository)
 
-        return self._run(["list", "--short", repository])
+        return self._run_sync(["list", "--short", repository])
 
-    def list_contents(self, repository: str, archive: str) -> Iterator[Path]:
+    def list_contents(self, repository: str, snapshot: str) -> Iterator[Path]:
         """
-        Yield all file and directory paths stored inside the given archive.
+        Yield all file and folder paths stored inside the given snapshot.
 
-        Paths are relative to the archive root (no leading slash).
+        All returned paths are relative to the snapshot root (no leading slash).
         """
-        logger.debug("Listing contents in archive %s::%s", repository, archive)
+        logger.debug("Listing contents of %s::%s", repository, snapshot)
 
-        existing_archives = self.list_archives(repository)
-        if archive not in existing_archives:
-            raise RuntimeError(f"Archive does not exist in repository: {archive}")
+        existing_snapshots = self.list_snapshots(repository)
+        if snapshot not in existing_snapshots:
+            raise RuntimeError(f"Snapshot does not exist: {snapshot}")
 
-        archive_ref = to_archive_ref(repository, archive)
+        snapshot_ref = to_snapshot_ref(repository, snapshot)
 
-        for line in self._run_async(["list", archive_ref, "--format", "{path}\n"]):
+        for line in self._run_async(["list", snapshot_ref, "--format", "{path}\n"]):
             if line:
                 yield Path(line)
 
     def create_repository(self, parent: Path, name: str, encryption="none") -> str:
         """
         Create a Borg repository in a new directory.
-
-        :param parent: The parent directory to create the repository in (must exist)
-        :param name: The name of the repository (will be the repository directory name)
-        :param encryption: Encryption mode (default: none)
-        :return: Path to the repository
-        :raises RuntimeError: If repository could not be created
         """
         logger.debug("Creating repository %s in %s", name, parent)
 
@@ -66,74 +57,65 @@ class Borg:
             raise RuntimeError(f"Parent directory does not exist: {parent}")
 
         directory = parent.joinpath(name)
-
         directory.mkdir(parents=False, exist_ok=False)
 
-        # Convert to string only where subprocess requires it
-        self._run(["init", f"--encryption={encryption}", str(directory)])
+        self._run_sync(["init", f"--encryption={encryption}", str(directory)])
 
         return str(directory)
 
-    def archive(self, repository: str, source_dirs: list[Path]) -> str:
+    def create_snapshot(self, repository: str, snapshot: str, folders: list[Path]):
         """
-        Create a new archive in the given repository using the provided directories.
-        The archive name is timestamp-based for uniqueness.
+        Create a new snapshot.
         """
-        logger.debug("Creating archive in repository %s", repository)
+        snapshot_ref = to_snapshot_ref(repository, snapshot)
+        logger.debug("Creating snapshot %s", snapshot_ref)
 
-        for d in source_dirs:
-            if not os.path.isdir(d):
-                raise RuntimeError(f"Source directory does not exist: {d}")
+        for f in folders:
+            if not os.path.isdir(f):
+                raise RuntimeError(f"Folder does not exist: {f}")
 
-        archive_name = create_archive_name()
-        logger.debug("Archive name is %s", archive_name)
+        cmd = ["create", snapshot_ref, *map(str, folders)]
 
-        archive_ref = to_archive_ref(repository, archive_name)
+        self._run_sync(cmd)
 
-        cmd = ["create", archive_ref, *map(str, source_dirs)]
-
-        self._run(cmd)
-        return archive_name
-
-    def restore(
-        self, repository: str, archive: str, source_dirs: list[Path], target_dir: Path
-    ) -> None:
+    def restore(self, repository: str, snapshot: str, target_dir: Path, folders: list[Path] | None = None) -> None:
         """
-        Restore the given directories from an archive into the target directory.
-
-        Example:
-          If the archive contains /Users/user/Documents/file.txt,
-          and target_directory=/tmp/restore,
-          then the file is restored to /tmp/restore/Users/user/Documents/file.txt.
+        Restore folders from a snapshot into a local directory.
         """
+        if folders is None:
+            folders = []
+
         logger.debug(
             "Restoring %s -> %s -> %s into %s",
             repository,
-            archive,
-            source_dirs,
+            snapshot,
+            folders,
             target_dir,
         )
 
-        existing_archives = self.list_archives(repository)
-        if archive not in existing_archives:
-            raise RuntimeError(f"Archive does not exist in repository: {archive}")
+        existing_snapshots = self.list_snapshots(repository)
+        if snapshot not in existing_snapshots:
+            raise RuntimeError(f"Snapshot does not exist: {snapshot}")
 
         if not target_dir.is_dir():
             raise RuntimeError(f"Target directory does not exist: {target_dir}")
 
-        # Borg expects extraction paths to be *relative* to archive root,
-        # so we remove any leading slash if present.
-        archive_paths = [to_archive_path(p) for p in source_dirs]
+        relative_paths = [to_relative_path(p) for p in folders]
+        snapshot_ref = to_snapshot_ref(repository, snapshot)
+        cmd = ["extract", snapshot_ref, *map(str, relative_paths)]
 
-        archive_ref = to_archive_ref(repository, archive)
+        self._run_sync(cmd, cwd=str(target_dir))
 
-        cmd = ["extract", archive_ref] + [str(p) for p in archive_paths]
-        self._run(cmd, cwd=str(target_dir))
-
-    def _run(self, args: list[str], cwd: str | None = None) -> list[str]:
+    def _run_sync(self, args: list[str], cwd: str | None = None) -> list[str]:
+        """
+        Runs the borg executable synchronously.
+        """
         return [line for line in self._run_async(args, cwd=cwd)]
 
     def _run_async(self, args: list[str], cwd: str | None = None):
+        """
+        Runs the borg executable asynchronously.
+        """
         cmd = [self.borg] + args
         logger.debug("Running: %s", cmd)
 

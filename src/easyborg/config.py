@@ -2,54 +2,56 @@ from __future__ import annotations
 
 import tomllib
 from dataclasses import dataclass
+from enum import Enum
 from pathlib import Path
 from typing import Any
 
 
+class RepoType(str, Enum):
+    BACKUP = "backup"
+    ARCHIVE = "archive"
+
+
 @dataclass(slots=True)
-class Repository:
+class Repo:
     name: str
-    path: Path
-    type: str   # "backup" or "archive"
+    path: str
+    type: RepoType
 
 
-@dataclass
+@dataclass(slots=True)
 class Config:
-    folders: list[Path]                           # <--- renamed
-    repositories: dict[str, Repository]
+    folders: list[Path]
+    repos: dict[str, Repo]
     source: Path
 
     @staticmethod
     def load(path: Path | None = None) -> Config:
-        """
-        Load configuration.
-
-        If `path` is provided (test usage), load only that file.
-        Otherwise load from config/easyborg.toml inside the project.
-        """
         if path is None:
-            path = Path(__file__).resolve().parents[2] / "config" / "easyborg.toml"
+            path = Path.cwd() / "easyborg.toml"
 
         raw = _load_toml(path)
         return _parse_config(raw, source=path)
 
+
 def _parse_config(raw: dict[str, Any], source: Path) -> Config:
-    folders = [Path(p) for p in raw.get("folders", [])]
+    folders = [Path(p).expanduser() for p in raw.get("folders", [])]
 
     repositories = {
-        name: Repository(
+        name: Repo(
             name=name,
-            path=Path(cfg["path"]),
-            type=cfg["type"],
+            path=cfg["path"],
+            type=RepoType(cfg["type"]),
         )
         for name, cfg in raw.get("repositories", {}).items()
     }
 
     return Config(
         folders=folders,
-        repositories=repositories,
+        repos=repositories,
         source=source,
     )
+
 
 def _load_toml(path: Path) -> dict[str, Any]:
     with path.open("rb") as f:

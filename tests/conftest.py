@@ -22,4 +22,4 @@ def repository(borg, tmp_path):
 
 @pytest.fixture
 def testdata_dir(project_root):
-    return project_root / "tests" / "resources" / "data"
+    return project_root / "tests" / "resources" / "testdata"
