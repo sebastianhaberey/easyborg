@@ -9,7 +9,7 @@ app = typer.Typer(
     help="easyborg - Borg for Dummies",
     add_completion=False,
     no_args_is_help=True,
-    pretty_exceptions_short=True,  # TODO SH show stack trace in debug mode only
+    pretty_exceptions_short=True,
     pretty_exceptions_show_locals=False,
 )
 

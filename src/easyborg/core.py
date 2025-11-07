@@ -30,13 +30,14 @@ class Core:
         Display configuration details in a human-friendly format.
         """
         ui.newline()
-        ui.table(title="Configuration File", rows=[(str(self.config.source),)])
+        ui.table(title="Configuration", headers=["Path"], rows=[(str(self.config.source),)])
         ui.table(
             title="Backup Folders",
+            headers=["Folder"],
             rows=[(str(folder),) for folder in self.folders],
         )
         ui.table(
-            title="Repos",
+            title="Repositories",
             headers=["Name", "Type", "Path", "Status"],
             rows=[
                 (
@@ -59,9 +60,10 @@ class Core:
             if not self.borg.repository_accessible(repo.path):
                 raise RuntimeError(f"Repository does not exist or is not accessible: {repo.name} ({repo.path})")
             if repo.type is RepoType.BACKUP:
-                snapshot_name = create_snapshot_name()
-                ui.info(f"Creating snapshot {snapshot_name} in repository {repo.name} ({repo.path})")
-                self.borg.create_snapshot(repo.path, snapshot_name, self.folders)
+                continue
+            snapshot_name = create_snapshot_name()
+            ui.info(f"Creating snapshot {snapshot_name} in repository {repo.name} ({repo.path})")
+            self.borg.create_snapshot(repo.path, snapshot_name, self.folders)
 
         ui.success("Backup complete")
 
@@ -75,10 +77,11 @@ class Core:
         for repo in self.repos.values():
             if not self.borg.repository_accessible(repo.path):
                 raise RuntimeError(f"Repository does not exist or is not accessible: {repo.name} ({repo.path})")
-            if repo.type is RepoType.ARCHIVE:
-                snapshot_name = create_snapshot_name()
-                ui.info(f"Creating snapshot {snapshot_name} in repository {repo.name} ({repo.path})")
-                self.borg.create_snapshot(str(repo.path), snapshot_name, [folder])
+            if repo.type is not RepoType.ARCHIVE:
+                continue
+            snapshot_name = create_snapshot_name()
+            ui.info(f"Creating snapshot {snapshot_name} in repository {repo.name} ({repo.path})")
+            self.borg.create_snapshot(repo.path, snapshot_name, [folder])
 
         ui.success("Archive complete")
 

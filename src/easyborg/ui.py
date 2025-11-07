@@ -13,7 +13,7 @@ def newline(count: int = 1) -> None:
 
 
 def info(msg: str) -> None:
-    _console.print(f"[black]{msg}[/]", highlight=False)
+    _console.print(f"{msg}", highlight=False)
 
 
 def success(msg: str) -> None:
