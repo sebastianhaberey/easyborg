@@ -7,9 +7,9 @@ class Core:
     def __init__(self, config: Config):
         self.config = config
         self.repositories = config.repositories
-        self.directories = config.directories
+        self.paths = config.paths
 
     def print_all(self):
         print(f"Repositories: {list(self.repositories.keys())}")
-        print(f"Directories: {list(self.directories.keys())}")
+        print(f"Paths: {self.paths}")
         pass

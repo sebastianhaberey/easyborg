@@ -7,22 +7,15 @@ from typing import Any
 
 
 @dataclass(slots=True)
-class DirectoryGroup:
-    name: str
-    paths: list[str]
-
-
-@dataclass(slots=True)
 class Repository:
     name: str
     path: str
-    type: str   # "automatic" or "manual"
-    directory_groups: list[str]
+    type: str   # "backup" or "archive"
 
 
 @dataclass
 class Config:
-    directories: dict[str, DirectoryGroup]
+    paths: list[Path]
     repositories: dict[str, Repository]
     source: Path  # Which file was actually loaded
 
@@ -41,23 +34,19 @@ class Config:
         return _parse_config(raw, source=path)
 
 def _parse_config(raw: dict[str, Any], source: Path) -> Config:
-    directories = {
-        name: DirectoryGroup(name=name, paths=cfg["paths"])
-        for name, cfg in raw.get("directories", {}).items()
-    }
+    paths = [Path(p) for p in raw.get("paths", [])]
 
     repositories = {
         name: Repository(
             name=name,
             path=cfg["path"],
-            type=cfg.get("type", "manual"),
-            directory_groups=cfg.get("directory_groups", []),
+            type=cfg["type"],  # "backup" or "archive"
         )
         for name, cfg in raw.get("repositories", {}).items()
     }
 
     return Config(
-        directories=directories,
+        paths=paths,
         repositories=repositories,
         source=source,
     )
