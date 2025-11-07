@@ -1,5 +1,8 @@
+from pathlib import Path
+
 import typer
 
+from easyborg import ui
 from easyborg.config import Config
 from easyborg.core import Core
 
@@ -9,48 +12,36 @@ config = Config.load()
 core = Core(config)
 
 @app.command()
-def backup(
-    repo: str | None = typer.Argument(
-        None,
-        help="Repository to back up (omit to back up all automatic repositories)",
-    )
+def backup():
+    """
+    Create a snapshot of configured folders in each backup repository
+    """
+
+    ui.info("Backup")
+    core.backup()
+    return
+
+
+@app.command()
+def archive(
+    folder: Path,
 ):
     """
-    Create backup archive in one or more repositories.
+    Create snapshot of given folder in each archive repository
     """
 
-    if repo is None:
-        print("Backing up all repositories")
-        core.print_all()
-        return
-    else:
-        print(f"Backing up into repository {repo}")
-        core.print_all()
-        return
-
+    ui.info(f"Archive: folder {folder}")
+    core.archive(folder)
+    return
 
 @app.command()
 def restore(
     repo: str | None = typer.Argument(None),
-    archive: str | None = typer.Argument(None),
-    target: str | None = typer.Option(None, "--target", "-t", help="Target directory (defaults to CWD)"),
+    snapshot: str | None = typer.Argument(None),
 ):
     """
-    Restore backup archive.
+    Restore snapshot to the current working directory
     """
 
-    # Case 1 — No repo or archive → full interactive mode
-    if repo is None and archive is None:
-        print("Restoring")
-        core.print_all()
-        return
-
-    # Case 2 — Repo given but no archive → ask user for archive
-    if repo is not None and archive is None:
-        print(f"Restoring from repository {repo}")
-        core.print_all()
-        return
-
-    # Case 3 — Repo given and archive given -> go ahead
-    print(f"Restoring from repository {repo} and archive {archive}")
-    core.print_all()
+    ui.info(f"Restore: repository {repo}, snapshot {snapshot}")
+    core.restore(repo, snapshot)
