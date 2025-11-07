@@ -9,15 +9,15 @@ from typing import Any
 @dataclass(slots=True)
 class Repository:
     name: str
-    path: str
+    path: Path
     type: str   # "backup" or "archive"
 
 
 @dataclass
 class Config:
-    paths: list[Path]
+    folders: list[Path]                           # <--- renamed
     repositories: dict[str, Repository]
-    source: Path  # Which file was actually loaded
+    source: Path
 
     @staticmethod
     def load(path: Path | None = None) -> Config:
@@ -34,19 +34,19 @@ class Config:
         return _parse_config(raw, source=path)
 
 def _parse_config(raw: dict[str, Any], source: Path) -> Config:
-    paths = [Path(p) for p in raw.get("paths", [])]
+    folders = [Path(p) for p in raw.get("folders", [])]
 
     repositories = {
         name: Repository(
             name=name,
-            path=cfg["path"],
-            type=cfg["type"],  # "backup" or "archive"
+            path=Path(cfg["path"]),
+            type=cfg["type"],
         )
         for name, cfg in raw.get("repositories", {}).items()
     }
 
     return Config(
-        paths=paths,
+        folders=folders,
         repositories=repositories,
         source=source,
     )

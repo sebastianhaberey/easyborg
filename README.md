@@ -6,7 +6,7 @@ Borg for Dummies
 
 easyborg distinguishes between _backup_ and _archive_:
 
-| Aspect     | Backup                    | Archvive           |
+| Aspect     | Backup                    | Archive            |
 |------------|---------------------------|--------------------|
 | Purpose    | Protect against emergency | Keep for reference |
 | Data State | Current, changing         | Older, stable      |
@@ -14,7 +14,7 @@ easyborg distinguishes between _backup_ and _archive_:
 
 ## Backup
 
-easyborg backs up your configured folders hourly and retains snapshots like this:
+easyborg backs up your configured backup folders hourly and retains snapshots like this:
 
 | Frequency     | Retainment        |
 |---------------|-------------------|
@@ -24,4 +24,4 @@ easyborg backs up your configured folders hourly and retains snapshots like this
 
 ## Archive
 
-Archiving is triggered manually. Each folder will be saved in its own snapshot.
+Archiving is triggered manually. Each folder will be saved in its own snapshot to facilitate later deletion.
