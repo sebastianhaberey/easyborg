@@ -42,8 +42,11 @@ class Borg:
         """
         logger.debug("Listing snapshots in %s (%s)", repo.name, repo.url)
 
-        names = self._run_sync(["list", "--short", repo.url])
-        return [Snapshot(repo, name) for name in names]
+        lines = self._run_sync(["list", "--short", repo.url])
+        snapshots = [Snapshot(repo, name) for name in lines]
+        snapshots.sort(key=lambda s: s.name, reverse=True)
+
+        return snapshots
 
     def list_contents(self, snap: Snapshot) -> Iterator[Path]:
         """
@@ -56,7 +59,7 @@ class Borg:
             if line:
                 yield Path(line)
 
-    def create_repository(self, parent: Path, name: str, encryption="none") -> Repository:
+    def create_repository(self, parent: Path, name: str, encryption="none", dry_run: bool = False) -> Repository:
         """
         Create a Borg repository.
         """
@@ -68,11 +71,16 @@ class Borg:
         directory = parent / name
         directory.mkdir(parents=False, exist_ok=False)
 
-        self._run_sync(["init", f"--encryption={encryption}", str(directory)])
+        cmd = ["init"]
+        if dry_run:
+            cmd.append("--dry-run")
+        cmd.extend([f"--encryption={encryption}", str(directory)])
+
+        self._run_sync(cmd)
 
         return Repository(name=name, url=str(directory), type=RepositoryType.BACKUP)
 
-    def create_snapshot(self, snap: Snapshot, folders: list[Path]):
+    def create_snapshot(self, snap: Snapshot, folders: list[Path], dry_run: bool = False):
         """
         Create a new snapshot.
         """
@@ -82,10 +90,14 @@ class Borg:
             if not os.path.isdir(folder):
                 raise RuntimeError(f"Folder does not exist: {folder}")
 
-        cmd = ["create", snap.location(), *map(str, folders)]
+        cmd = ["create"]
+        if dry_run:
+            cmd.append("--dry-run")
+        cmd.extend([snap.location(), *map(str, folders)])
+
         self._run_sync(cmd)
 
-    def restore(self, snap: Snapshot, target_dir: Path, folders: list[Path] | None = None):
+    def restore(self, snap: Snapshot, target_dir: Path, folders: list[Path] | None = None, dry_run: bool = False):
         """
         Restore folders (or the entire snapshot if folders=None) into target_dir.
         """
@@ -97,8 +109,14 @@ class Borg:
         if not target_dir.is_dir():
             raise RuntimeError(f"Target directory does not exist: {target_dir}")
 
-        relative_paths = [to_relative_path(p) for p in folders]
-        cmd = ["extract", snap.location(), *map(str, relative_paths)]
+        # make absolute folders relative for safety
+        relative_folders = [to_relative_path(folder) for folder in folders]
+
+        cmd = ["extract"]
+        if dry_run:
+            cmd.append("--dry-run")
+        cmd.extend([snap.location(), *map(str, relative_folders)])
+
         self._run_sync(cmd, cwd=str(target_dir))
 
     def _run_sync(self, args: list[str], cwd: str | None = None) -> list[str]:

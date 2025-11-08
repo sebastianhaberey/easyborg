@@ -11,7 +11,8 @@
 - show progress
 - improve UI consistency (e.g. easyborg info vs help)
 - brew tap
-- glossary
-- dry run
 
 # DONE
+
+- glossary
+- dry run

@@ -28,24 +28,25 @@ def info():
 
 
 @app.command()
-def backup():
+def backup(dry_run: bool = typer.Option(False, "--dry-run", help="Do not modify data.")):
     """
-    Create a snapshot of configured folders in each backup repository
+    Create a snapshot of configured folders in each backup repository.
     """
 
-    core.backup()
+    core.backup(dry_run=dry_run)
     return
 
 
 @app.command()
 def archive(
     folder: Path,
+    dry_run: bool = typer.Option(False, "--dry-run", help="Do not modify data."),
 ):
     """
-    Create snapshot of given folder in each archive repository
+    Create snapshot of given folder in each archive repository.
     """
 
-    core.archive(folder)
+    core.archive(folder, dry_run=dry_run)
     return
 
 
@@ -53,9 +54,10 @@ def archive(
 def restore(
     repo: str | None = typer.Argument(None),
     snapshot: str | None = typer.Argument(None),
+    dry_run: bool = typer.Option(False, "--dry-run", help="Do not modify data."),
 ):
     """
-    Restore snapshot to the current working directory
+    Restore snapshot to the current working directory.
     """
 
-    core.restore(repo, snapshot)
+    core.restore(repo, snapshot, dry_run=dry_run)

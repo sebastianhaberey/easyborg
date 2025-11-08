@@ -16,7 +16,7 @@ def borg():
 
 
 @pytest.fixture
-def repository(borg, tmp_path):
+def repo(borg, tmp_path):
     return borg.create_repository(tmp_path, "repo")
 
 

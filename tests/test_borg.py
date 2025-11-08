@@ -30,15 +30,15 @@ def test_create_snapshot_fails_if_repository_not_found(borg, testdata_dir):
         borg.create_snapshot(snap, [testdata_dir])
 
 
-def test_create_snapshot_fails_if_folder_not_found(borg, repository):
-    snap = Snapshot(repository, "ignored")
+def test_create_snapshot_fails_if_folder_not_found(borg, repo):
+    snap = Snapshot(repo, "ignored")
 
     with pytest.raises(RuntimeError, match=r"Folder does not exist"):
         borg.create_snapshot(snap, [Path("foo")])
 
 
-def test_create_snapshot_and_restore_single(tmp_path, borg, repository, testdata_dir):
-    snap = Snapshot(repository, "snapshot")
+def test_create_snapshot_and_restore_single(tmp_path, borg, repo, testdata_dir):
+    snap = Snapshot(repo, "snapshot")
     borg.create_snapshot(snap, [testdata_dir])
 
     target_dir = tmp_path / "target"
@@ -53,8 +53,8 @@ def test_create_snapshot_and_restore_single(tmp_path, borg, repository, testdata
     assert not file_2.exists()
 
 
-def test_create_snapshot_and_restore_all(tmp_path, borg, repository, testdata_dir):
-    snap = Snapshot(repository, "snapshot")
+def test_create_snapshot_and_restore_all(tmp_path, borg, repo, testdata_dir):
+    snap = Snapshot(repo, "snapshot")
     borg.create_snapshot(snap, [testdata_dir])
 
     target_dir = tmp_path / "target"
@@ -65,16 +65,16 @@ def test_create_snapshot_and_restore_all(tmp_path, borg, repository, testdata_di
     compare_directories(testdata_dir, target_dir / to_relative_path(testdata_dir))
 
 
-def test_restore_fails_if_target_directory_not_found(borg, repository, testdata_dir):
-    snap = Snapshot(repository, "snapshot")
+def test_restore_fails_if_target_directory_not_found(borg, repo, testdata_dir):
+    snap = Snapshot(repo, "snapshot")
     borg.create_snapshot(snap, [testdata_dir])
 
     with pytest.raises(RuntimeError, match=r"Target directory does not exist"):
-        borg.restore(snap, Path("foo"), folders=[testdata_dir])
+        borg.restore(snap, Path("foo"))
 
 
-def test_restore_fails_if_folder_not_found(tmp_path, borg, repository, testdata_dir):
-    snap = Snapshot(repository, "snapshot")
+def test_restore_fails_if_folder_not_found(tmp_path, borg, repo, testdata_dir):
+    snap = Snapshot(repo, "snapshot")
     borg.create_snapshot(snap, [testdata_dir])
 
     target_dir = tmp_path / "restore_here"
@@ -84,8 +84,8 @@ def test_restore_fails_if_folder_not_found(tmp_path, borg, repository, testdata_
         borg.restore(snap, target_dir, folders=[Path("foo")])
 
 
-def test_list_contents_of_snapshot_with_testdata(borg, repository, testdata_dir):
-    snap = Snapshot(repository, "snapshot")
+def test_list_contents_of_snapshot_with_testdata(borg, repo, testdata_dir):
+    snap = Snapshot(repo, "snapshot")
     borg.create_snapshot(snap, [testdata_dir])
 
     paths = list(borg.list_contents(snap))
@@ -103,8 +103,8 @@ def test_list_contents_fails_if_repository_not_found(borg):
         list(borg.list_contents(snap))
 
 
-def test_list_contents_fails_if_snapshot_not_found(borg, repository):
-    snap = Snapshot(repository, "foo")
+def test_list_contents_fails_if_snapshot_not_found(borg, repo):
+    snap = Snapshot(repo, "foo")
 
     with pytest.raises(RuntimeError):
         list(borg.list_contents(snap))

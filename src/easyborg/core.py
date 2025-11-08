@@ -50,9 +50,10 @@ class Core:
         )
         ui.newline()
 
-    def backup(self) -> None:
+    def backup(self, dry_run: bool = False) -> None:
         """
         Create a snapshot of all configured folders in each repository configured as type 'backup'.
+        :param dry_run:
         """
         for repo in self.repos.values():
             if repo.type is not RepositoryType.BACKUP:
@@ -63,13 +64,14 @@ class Core:
 
             snapshot = Snapshot(repo, create_snapshot_name())
             ui.info(f"Creating snapshot {snapshot.name} in {repo.name} ({repo.url})")
-            self.borg.create_snapshot(snapshot, self.folders)
+            self.borg.create_snapshot(snapshot, self.folders, dry_run=dry_run)
 
         ui.success("Backup complete")
 
-    def archive(self, folder: Path) -> None:
+    def archive(self, folder: Path, dry_run: bool = False) -> None:
         """
         Create a snapshot of the specified folder in each repository configured as type 'archive'.
+        :param dry_run:
         """
         if not folder.is_dir():
             raise RuntimeError(f"Folder does not exist: {folder}")
@@ -83,7 +85,7 @@ class Core:
 
             snapshot = Snapshot(repo, create_snapshot_name())
             ui.info(f"Creating snapshot {snapshot.name} in {repo.name} ({repo.url})")
-            self.borg.create_snapshot(snapshot, [folder])
+            self.borg.create_snapshot(snapshot, [folder], dry_run=dry_run)
 
         ui.success("Archive complete")
 
@@ -92,9 +94,11 @@ class Core:
         repo_name: str | None = None,
         snapshot_name: str | None = None,
         target_dir: Path | None = None,
+        dry_run: bool = False,
     ) -> None:
         """
-        Interactively restore a snapshot. If parameters are omitted, prompt via fzf.
+        Restore a snapshot. If parameters are omitted, prompt interactively via fzf.
+        :param dry_run:
         """
         # Select repository
         if repo_name is None:
@@ -130,5 +134,5 @@ class Core:
             target_dir = Path.cwd()
 
         ui.info(f"Restoring {snapshot.name} from {repo.name} ({repo.url})")
-        self.borg.restore(snapshot, target_dir)
+        self.borg.restore(snapshot, target_dir, dry_run=dry_run)
         ui.success("Restore complete")
