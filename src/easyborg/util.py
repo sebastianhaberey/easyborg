@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import filecmp
+import secrets
 from datetime import datetime
 from pathlib import Path
 
@@ -33,8 +34,21 @@ def to_snapshot_ref(repository: str, snapshot: str) -> str:
     return f"{repository}::{snapshot}"
 
 
-def create_snapshot_name() -> str:
-    return datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f")
+def create_snapshot_name(when: datetime | None = None) -> str:
+    """
+    Return a snapshot name of the form:
+
+        YYYY-MM-DDTHH:MM:SS-XXXXXXXX
+
+    where XXXXXXXX is an 8-character hex suffix (32 bits), providing extremely low collision probability.
+    """
+    if when is None:
+        when = datetime.now().astimezone()
+
+    timestamp = when.strftime("%Y-%m-%dT%H:%M:%S")
+    suffix = secrets.token_hex(4).upper()  # 4 bytes → 8 hex chars
+
+    return f"{timestamp}-{suffix}"
 
 
 def find_snapshot_by_name(name: str, snapshots: list[Snapshot]) -> Snapshot | None:
