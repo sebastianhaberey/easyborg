@@ -14,6 +14,7 @@ class RepositoryType(str, Enum):
 class Snapshot:
     repo: Repository
     name: str
+    comment: str | None = None
 
     def location(self) -> str:
         return f"{self.repo.url}::{self.name}"

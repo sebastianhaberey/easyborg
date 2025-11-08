@@ -52,7 +52,7 @@ def create_snapshot_name(when: datetime | None = None) -> str:
 
 
 def find_snapshot_by_name(name: str, snapshots: list[Snapshot]) -> Snapshot | None:
-    matching = next((s for s in snapshots if s.name == name), None)
+    matching = next(s for s in snapshots if name.startswith(s.name))
     if matching is None:
         raise RuntimeError(f"Snapshot does not exist: {name}")
     return matching

@@ -80,7 +80,7 @@ class Core:
 
         ui.success("Backup complete")
 
-    def archive(self, folder: Path, dry_run: bool = False) -> None:
+    def archive(self, folder: Path, dry_run: bool = False, comment: str | None = None) -> None:
         """
         Create snapshot of specified folder in each repository configured as 'archive'.
         """
@@ -95,7 +95,7 @@ class Core:
             if not self.borg.repository_accessible(repo):
                 raise RuntimeError(f"Repository not accessible: {repo.name} ({repo.url})")
 
-            snapshot = Snapshot(repo, create_snapshot_name())
+            snapshot = Snapshot(repo, create_snapshot_name(), comment=comment)
             ui.info(f"Creating snapshot {snapshot.name} in {repo.name} ({repo.url})")
             self.borg.create_snapshot(snapshot, [folder], dry_run=dry_run)
 
@@ -131,9 +131,10 @@ class Core:
 
         # 2) Select snapshot
         snapshots = self.borg.list_snapshots(repo)
+        snapshots.sort(key=lambda s: s.name, reverse=True)  # descending order (most recent first)
 
         snapshot_name = self.fzf.select_one(
-            (s.name for s in snapshots),
+            (f"{s.name} — {s.comment}" if s.comment else s.name for s in snapshots),
             prompt="Select snapshot: ",
         )
         if snapshot_name is None:
@@ -167,9 +168,10 @@ class Core:
 
         # 2) Select snapshot
         snapshots = self.borg.list_snapshots(repo)
+        snapshots.sort(key=lambda s: s.name, reverse=True)  # descending order (most recent first)
 
         snapshot_name = self.fzf.select_one(
-            (s.name for s in snapshots),
+            (f"{s.name} — {s.comment}" if s.comment else s.name for s in snapshots),
             prompt="Select snapshot: ",
         )
         if snapshot_name is None:

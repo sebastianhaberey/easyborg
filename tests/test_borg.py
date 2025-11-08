@@ -65,6 +65,18 @@ def test_create_snapshot_and_restore_all(tmp_path, borg, repo, testdata_dir):
     compare_directories(testdata_dir, target_dir / to_relative_path(testdata_dir))
 
 
+def test_create_snapshot_with_comment(borg, repo, testdata_dir):
+    comment = "This is a test comment"
+    snap = Snapshot(repo, "snapshot", comment=comment)
+    borg.create_snapshot(snap, [testdata_dir])
+
+    snapshots = borg.list_snapshots(repo)
+    matching = [s for s in snapshots if s.name == snap.name]
+
+    assert len(matching), "Snapshot not found after creation"
+    assert matching[0].comment == comment
+
+
 def test_restore_fails_if_target_directory_not_found(borg, repo, testdata_dir):
     snap = Snapshot(repo, "snapshot")
     borg.create_snapshot(snap, [testdata_dir])

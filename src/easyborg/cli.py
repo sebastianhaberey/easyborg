@@ -42,13 +42,14 @@ def backup(
 @app.command()
 def archive(
     folder: Path,
+    comment: str = typer.Option(None, "--comment", help="Add comment to the created snapshot."),
     dry_run: bool = typer.Option(False, "--dry-run", help="Do not modify data."),
 ):
     """
     Create snapshot of given folder in each archive repository.
     """
 
-    core.archive(folder, dry_run=dry_run)
+    core.archive(folder, dry_run=dry_run, comment=comment)
     return
 
 

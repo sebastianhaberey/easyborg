@@ -42,9 +42,12 @@ class Borg:
         """
         logger.debug("Listing snapshots in %s (%s)", repo.name, repo.url)
 
-        lines = self._run_sync(["list", "--short", repo.url])
-        snapshots = [Snapshot(repo, name) for name in lines]
-        snapshots.sort(key=lambda s: s.name, reverse=True)
+        lines = self._run_sync(["list", repo.url, "--format", "{archive}{TAB}{comment}\n"])
+
+        snapshots = []
+        for line in lines:
+            name, _, comment = line.partition("\t")
+            snapshots.append(Snapshot(repo, name, comment if comment else None))
 
         return snapshots
 
@@ -93,6 +96,8 @@ class Borg:
         cmd = ["create"]
         if dry_run:
             cmd.append("--dry-run")
+        if snap.comment:
+            cmd.extend(["--comment", snap.comment])
         cmd.extend([snap.location(), *map(str, folders)])
 
         self._run_sync(cmd)
