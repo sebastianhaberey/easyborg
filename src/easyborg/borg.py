@@ -119,6 +119,38 @@ class Borg:
 
         self._run_sync(cmd, cwd=str(target_dir))
 
+    def prune(self, repo: Repository, dry_run: bool = False) -> None:
+        """
+        Prune old snapshots in the repository according to retention policy.
+        """
+        logger.debug("Pruning snapshots in %s (%s)", repo.name, repo.url)
+
+        cmd = [
+            "prune",
+            repo.url,
+            "--keep-daily=7",
+            "--keep-weekly=12",
+            "--keep-monthly=12",
+        ]
+
+        if dry_run:
+            cmd.append("--dry-run")
+
+        self._run_sync(cmd)
+
+    def compact(self, repo: Repository, dry_run: bool = False) -> None:
+        """
+        Run `borg compact` to reclaim space.
+        """
+        logger.debug("Compacting repository %s (%s)", repo.name, repo.url)
+
+        cmd = ["compact", repo.url]
+
+        if dry_run:
+            cmd.append("--dry-run")
+
+        self._run_sync(cmd)
+
     def _run_sync(self, args: list[str], cwd: str | None = None) -> list[str]:
         """
         Runs the borg executable synchronously.

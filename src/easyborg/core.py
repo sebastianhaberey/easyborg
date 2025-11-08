@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import random
 from pathlib import Path
 
 from easyborg import ui
@@ -68,6 +69,15 @@ class Core:
             ui.info(f"Creating snapshot {snapshot.name} in {repo.name} ({repo.url})")
             self.borg.create_snapshot(snapshot, self.folders, dry_run=dry_run)
 
+            # Always prune, to enforce retention rules
+            ui.info(f"Pruning old snapshots in {repo.name} ({repo.url})")
+            self.borg.prune(repo, dry_run=dry_run)
+
+            # Compact only 10% of the time
+            if random.random() < 0.10:
+                ui.info(f"(Random check) Compacting repository {repo.name} ({repo.url})")
+                self.borg.compact(repo, dry_run=dry_run)
+
         ui.success("Backup complete")
 
     def archive(self, folder: Path, dry_run: bool = False) -> None:
@@ -88,6 +98,15 @@ class Core:
             snapshot = Snapshot(repo, create_snapshot_name())
             ui.info(f"Creating snapshot {snapshot.name} in {repo.name} ({repo.url})")
             self.borg.create_snapshot(snapshot, [folder], dry_run=dry_run)
+
+            # Always prune, to enforce retention rules
+            ui.info(f"Pruning old snapshots in {repo.name} ({repo.url})")
+            self.borg.prune(repo, dry_run=dry_run)
+
+            # Compact only 10% of the time
+            if random.random() < 0.10:
+                ui.info(f"(Random check) Compacting repository {repo.name} ({repo.url})")
+                self.borg.compact(repo, dry_run=dry_run)
 
         ui.success("Archive complete")
 
