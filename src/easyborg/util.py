@@ -4,6 +4,8 @@ import filecmp
 from datetime import datetime
 from pathlib import Path
 
+from easyborg.model import Snapshot
+
 
 def compare_directories(dir1: Path, dir2: Path):
     """
@@ -33,3 +35,10 @@ def to_snapshot_ref(repository: str, snapshot: str) -> str:
 
 def create_snapshot_name() -> str:
     return datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f")
+
+
+def find_snapshot_by_name(name: str, snapshots: list[Snapshot]) -> Snapshot | None:
+    matching = next((s for s in snapshots if s.name == name), None)
+    if matching is None:
+        raise RuntimeError(f"Snapshot does not exist: {name}")
+    return matching

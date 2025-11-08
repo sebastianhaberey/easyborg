@@ -4,7 +4,8 @@ import subprocess
 from collections.abc import Iterator
 from pathlib import Path
 
-from easyborg.util import to_relative_path, to_snapshot_ref
+from easyborg.model import Repository, RepositoryType, Snapshot
+from easyborg.util import to_relative_path
 
 logger = logging.getLogger(__name__)
 
@@ -17,100 +18,87 @@ class Borg:
         logger.debug("Initializing Borg (executable: %s)", borg_executable)
 
         self.borg = borg_executable
-
-        # Verify borg exists and is executable
         self._run_sync(["--version"])
 
-    def repository_accessible(self, repository: str) -> bool:
+    def repository_accessible(self, repo: Repository) -> bool:
         """
         Return True if the repository exists and is accessible.
         """
         try:
-            self._run_sync(["info", repository])
+            self._run_sync(["info", repo.url])
             return True
         except RuntimeError:
             return False
 
-    def snapshot_exists(self, repository: str, snapshot: str) -> bool:
-        return snapshot in self.list_snapshots(repository)
-
-    def list_snapshots(self, repository: str) -> list[str]:
+    def snapshot_exists(self, snap: Snapshot) -> bool:
         """
-        List all snapshots in a Borg repository.
+        Return True if the snapshot exists.
         """
-        logger.debug("Listing snapshots in repository %s", repository)
+        return snap.name in (s.name for s in self.list_snapshots(snap.repo))
 
-        return self._run_sync(["list", "--short", repository])
-
-    def list_contents(self, repository: str, snapshot: str) -> Iterator[Path]:
+    def list_snapshots(self, repo: Repository) -> list[Snapshot]:
         """
-        Yield all file and folder paths stored inside the given snapshot.
-
-        All returned paths are relative to the snapshot root (no leading slash).
+        List all snapshots in the given repository.
         """
-        logger.debug("Listing contents of %s::%s", repository, snapshot)
+        logger.debug("Listing snapshots in %s (%s)", repo.name, repo.url)
 
-        snapshot_ref = to_snapshot_ref(repository, snapshot)
+        names = self._run_sync(["list", "--short", repo.url])
+        return [Snapshot(repo, name) for name in names]
 
-        for line in self._run_async(["list", snapshot_ref, "--format", "{path}\n"]):
+    def list_contents(self, snap: Snapshot) -> Iterator[Path]:
+        """
+        Yield all files and folders contained in a snapshot.
+        Paths are always relative (no leading slash).
+        """
+        logger.debug("Listing contents of %s", snap.location())
+
+        for line in self._run_async(["list", snap.location(), "--format", "{path}\n"]):
             if line:
                 yield Path(line)
 
-    def create_repository(self, parent: Path, name: str, encryption="none") -> str:
+    def create_repository(self, parent: Path, name: str, encryption="none") -> Repository:
         """
-        Create a Borg repository in a new directory.
+        Create a Borg repository.
         """
         logger.debug("Creating repository %s in %s", name, parent)
 
         if not parent.is_dir():
             raise RuntimeError(f"Parent directory does not exist: {parent}")
 
-        directory = parent.joinpath(name)
+        directory = parent / name
         directory.mkdir(parents=False, exist_ok=False)
 
         self._run_sync(["init", f"--encryption={encryption}", str(directory)])
 
-        return str(directory)
+        return Repository(name=name, url=str(directory), type=RepositoryType.BACKUP)
 
-    def create_snapshot(self, repository: str, snapshot: str, folders: list[Path]):
+    def create_snapshot(self, snap: Snapshot, folders: list[Path]):
         """
         Create a new snapshot.
         """
-        snapshot_ref = to_snapshot_ref(repository, snapshot)
-        logger.debug("Creating snapshot %s", snapshot_ref)
+        logger.debug("Creating snapshot %s", snap.location())
 
-        for f in folders:
-            if not os.path.isdir(f):
-                raise RuntimeError(f"Folder does not exist: {f}")
+        for folder in folders:
+            if not os.path.isdir(folder):
+                raise RuntimeError(f"Folder does not exist: {folder}")
 
-        cmd = ["create", snapshot_ref, *map(str, folders)]
-
+        cmd = ["create", snap.location(), *map(str, folders)]
         self._run_sync(cmd)
 
-    def restore(self, repository: str, snapshot: str, target_dir: Path, folders: list[Path] | None = None) -> None:
+    def restore(self, snap: Snapshot, target_dir: Path, folders: list[Path] | None = None):
         """
-        Restore folders from a snapshot into a local directory.
-
-        If `folders` is empty or None, the entire snapshot is restored.
+        Restore folders (or the entire snapshot if folders=None) into target_dir.
         """
         if folders is None:
             folders = []
 
-        logger.debug(
-            "Restoring %s -> %s -> %s into %s",
-            repository,
-            snapshot,
-            folders,
-            target_dir,
-        )
+        logger.debug("Restoring %s -> %s", snap.location(), target_dir)
 
         if not target_dir.is_dir():
             raise RuntimeError(f"Target directory does not exist: {target_dir}")
 
         relative_paths = [to_relative_path(p) for p in folders]
-        snapshot_ref = to_snapshot_ref(repository, snapshot)
-        cmd = ["extract", snapshot_ref, *map(str, relative_paths)]
-
+        cmd = ["extract", snap.location(), *map(str, relative_paths)]
         self._run_sync(cmd, cwd=str(target_dir))
 
     def _run_sync(self, args: list[str], cwd: str | None = None) -> list[str]:
@@ -138,8 +126,7 @@ class Borg:
         for line in process.stdout:
             yield line.rstrip("\n")
 
-        # only after stdout is consumed do we wait for exit status
-        returncode = process.wait()
-        if returncode != 0:
+        return_code = process.wait()
+        if return_code != 0:
             stderr = process.stderr.read().strip() if process.stderr else ""
             raise RuntimeError(f"Borg failed with error: {stderr}")

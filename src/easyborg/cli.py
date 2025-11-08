@@ -2,7 +2,7 @@ from pathlib import Path
 
 import typer
 
-from easyborg.config import Config
+from easyborg.config import load_config
 from easyborg.core import Core
 
 app = typer.Typer(
@@ -13,7 +13,7 @@ app = typer.Typer(
     pretty_exceptions_show_locals=False,
 )
 
-config = Config.load()
+config = load_config()
 core = Core(config)
 
 

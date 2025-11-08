@@ -1,55 +1,41 @@
+# easyborg/config.py
 from __future__ import annotations
 
 import tomllib
-from dataclasses import dataclass
-from enum import Enum
 from pathlib import Path
 from typing import Any
 
-
-class RepoType(str, Enum):
-    BACKUP = "backup"
-    ARCHIVE = "archive"
+from easyborg.model import Config, Repository, RepositoryType
 
 
-@dataclass(slots=True)
-class Repo:
-    name: str
-    path: str
-    type: RepoType
+def load_config(path: Path | None = None) -> Config:
+    """
+    Load configuration from a TOML file.
+    If path is None, load easyborg.toml in the current working directory.
+    """
+    if path is None:
+        path = Path.cwd() / "easyborg.toml"
 
-
-@dataclass(slots=True)
-class Config:
-    folders: list[Path]
-    repos: dict[str, Repo]
-    source: Path
-
-    @staticmethod
-    def load(path: Path | None = None) -> Config:
-        if path is None:
-            path = Path.cwd() / "easyborg.toml"
-
-        raw = _load_toml(path)
-        return _parse_config(raw, source=path)
+    raw = _load_toml(path)
+    return _parse_config(raw, source=path)
 
 
 def _parse_config(raw: dict[str, Any], source: Path) -> Config:
-    folders = [Path(p).expanduser() for p in raw.get("folders", [])]
+    folders = [Path(p) for p in raw.get("folders", [])]
 
-    repositories = {
-        name: Repo(
+    repos = {
+        name: Repository(
             name=name,
-            path=cfg["path"],
-            type=RepoType(cfg["type"]),
+            url=cfg["url"],
+            type=RepositoryType(cfg["type"]),
         )
         for name, cfg in raw.get("repositories", {}).items()
     }
 
     return Config(
-        folders=folders,
-        repos=repositories,
         source=source,
+        folders=folders,
+        repos=repos,
     )
 
 
