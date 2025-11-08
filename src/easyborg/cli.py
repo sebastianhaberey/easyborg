@@ -28,7 +28,9 @@ def info():
 
 
 @app.command()
-def backup(dry_run: bool = typer.Option(False, "--dry-run", help="Do not modify data.")):
+def backup(
+    dry_run: bool = typer.Option(False, "--dry-run", help="Do not modify data."),
+):
     """
     Create a snapshot of configured folders in each backup repository.
     """
@@ -52,12 +54,21 @@ def archive(
 
 @app.command()
 def restore(
-    repo: str | None = typer.Argument(None),
-    snapshot: str | None = typer.Argument(None),
     dry_run: bool = typer.Option(False, "--dry-run", help="Do not modify data."),
 ):
     """
     Restore snapshot to the current working directory.
     """
 
-    core.restore(repo, snapshot, dry_run=dry_run)
+    core.restore(dry_run=dry_run)
+
+
+@app.command()
+def extract(
+    dry_run: bool = typer.Option(False, "--dry-run", help="Do not modify data."),
+):
+    """
+    Interactively extract one or more files/folders from a snapshot.
+    """
+
+    core.extract(dry_run=dry_run)

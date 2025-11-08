@@ -19,6 +19,7 @@ class Core:
         """
         Initialize the controller using the given configuration.
         """
+
         self.config = config
         self.repos = config.repos
         self.folders = config.folders
@@ -27,8 +28,9 @@ class Core:
 
     def info(self) -> None:
         """
-        Display configuration details in a human-friendly format.
+        Display configuration details.
         """
+
         ui.newline()
         ui.table(title="Configuration", headers=["Path"], rows=[(str(self.config.source),)])
         ui.table(
@@ -52,9 +54,9 @@ class Core:
 
     def backup(self, dry_run: bool = False) -> None:
         """
-        Create a snapshot of all configured folders in each repository configured as type 'backup'.
-        :param dry_run:
+        Create snapshot of all configured folders in each repository configured as 'backup'.
         """
+
         for repo in self.repos.values():
             if repo.type is not RepositoryType.BACKUP:
                 continue
@@ -70,9 +72,9 @@ class Core:
 
     def archive(self, folder: Path, dry_run: bool = False) -> None:
         """
-        Create a snapshot of the specified folder in each repository configured as type 'archive'.
-        :param dry_run:
+        Create snapshot of specified folder in each repository configured as 'archive'.
         """
+
         if not folder.is_dir():
             raise RuntimeError(f"Folder does not exist: {folder}")
 
@@ -89,50 +91,93 @@ class Core:
 
         ui.success("Archive complete")
 
-    def restore(
-        self,
-        repo_name: str | None = None,
-        snapshot_name: str | None = None,
-        target_dir: Path | None = None,
-        dry_run: bool = False,
-    ) -> None:
+    def restore(self, dry_run: bool = False) -> None:
         """
-        Restore a snapshot. If parameters are omitted, prompt interactively via fzf.
-        :param dry_run:
+        Interactively restore entire snapshot.
         """
-        # Select repository
+
+        # 1) Select repository
+        repo_name = self.fzf.select_one(
+            self.repos.keys(),
+            prompt="Select repository: ",
+        )
         if repo_name is None:
-            repo_name = self.fzf.select_one(
-                self.repos.keys(),
-                prompt="Select repository: ",
-            )
-            if repo_name is None:
-                ui.warn("Aborted")
-                return
+            ui.warn("Aborted")
+            return
 
         repo = self.repos[repo_name]
 
         if not self.borg.repository_accessible(repo):
             raise RuntimeError(f"Repository not accessible: {repo.name} ({repo.url})")
 
-        # Select snapshot
+        # 2) Select snapshot
         snapshots = self.borg.list_snapshots(repo)
 
+        snapshot_name = self.fzf.select_one(
+            (s.name for s in snapshots),
+            prompt="Select snapshot: ",
+        )
         if snapshot_name is None:
-            snapshot_name = self.fzf.select_one(
-                (s.name for s in snapshots),
-                prompt="Select snapshot: ",
-            )
-            if snapshot_name is None:
-                ui.warn("Aborted")
-                return
+            ui.warn("Aborted")
+            return
 
         snapshot = find_snapshot_by_name(snapshot_name, snapshots)
 
-        # Default target directory is current working directory
-        if target_dir is None:
-            target_dir = Path.cwd()
+        # 3) Target directory is current working directory
+        target_dir = Path.cwd()
 
         ui.info(f"Restoring {snapshot.name} from {repo.name} ({repo.url})")
         self.borg.restore(snapshot, target_dir, dry_run=dry_run)
         ui.success("Restore complete")
+
+    def extract(self, dry_run: bool = False) -> None:
+        """
+        Interactively extract selected files / folders from snapshot.
+        """
+
+        # 1) Select repository
+        repo_name = self.fzf.select_one(
+            (name for name in self.repos.keys()),
+            prompt="Select repository: ",
+        )
+        if repo_name is None:
+            ui.warn("Aborted")
+            return
+
+        repo = self.repos[repo_name]
+
+        # 2) Select snapshot
+        snapshots = self.borg.list_snapshots(repo)
+
+        snapshot_name = self.fzf.select_one(
+            (s.name for s in snapshots),
+            prompt="Select snapshot: ",
+        )
+        if snapshot_name is None:
+            ui.warn("Aborted")
+            return
+
+        snapshot = find_snapshot_by_name(snapshot_name, snapshots)
+
+        # 3) Select files/folders
+        selected_items = self.fzf.select_many(
+            (str(p) for p in self.borg.list_contents(snapshot)),
+            prompt="Select items to extract: ",
+        )
+
+        if not selected_items:
+            ui.warn("Aborted")
+            return
+
+        selected_paths = [Path(s) for s in selected_items]
+
+        # 4) Determine target dir
+        target_dir = Path.cwd()
+
+        if not self.borg.repository_accessible(repo):
+            raise RuntimeError(f"Repository does not exist or is not accessible: {repo.name} ({repo.url})")
+
+        # 5) Perform extraction
+        ui.info(f"Extracting {len(selected_paths)} item(s) from snapshot {snapshot.name} in {repo.name} ({repo.url})")
+        self.borg.restore(snapshot, target_dir=target_dir, folders=selected_paths, dry_run=dry_run)
+        ui.success("Extract complete")

@@ -1,6 +1,8 @@
 # easyborg
 
-easyborg provides a simple workflow on top of [BorgBackup](https://www.borgbackup.org/).
+easyborg - Borg for Dummies
+
+easyborg provides a simple workflow on top of [BorgBackup](https://www.borgbackup.org/) aka Borg.
 
 ## Concept
 
@@ -30,15 +32,16 @@ Archiving is manual and intentional.
 Do this when you want to *keep a specific state* for the long term.  
 Each folder is stored in its own snapshot to allow selective pruning later.
 
-# Glossary
+## Glossary
 
-| Term               | Meaning                                         | Borg term        |
-|--------------------|-------------------------------------------------|------------------|
-| Snapshot           | Immutable point-in-time view of data            | Archive          |
-| Backup Repository  | Repository intended for recovery                | Repository       |
-| Archive Repository | Repository intended for preservation            | Repository       |
-| Backup (action)    | Creating snapshot in backup repository          | `borg create`    |
-| Archive (action)   | Creating snapshot in archive repository         | `borg create`    |
-| Repository         | Storage location containing snapshots           |                  |
-| Repository URL     | Borg-style path to repository (local or remote) |                  |
-| Snapshot Location  | Identifier like `repository_url::snapshot_name` | Archive location |
+| Term               | Meaning                                                         | Borg term        |
+|--------------------|-----------------------------------------------------------------|------------------|
+| Snapshot           | Immutable point-in-time view of data                            | Archive          |
+| Backup Repository  | Storage of snapshots intended for recovery                      | Repository       |
+| Archive Repository | Storage of snapshots intended for preservation                  | Repository       |
+| Backup (action)    | Create snapshot in backup repository                            | `borg create`    |
+| Archive (action)   | Create snapshot in archive repository                           | `borg create`    |
+| Extract (action)   | Fetch selected items from snapshot                              | `borg extract`   | 
+| Restore (action)   | Fetch entire snapshot                                           | `borg extract`   |
+| Repository URL     | Borg-style repository reference (local or remote)               | (same)           |
+| Snapshot Location  | Borg-style snapshot reference (`repository_url::snapshot_name`) | Archive Location |
