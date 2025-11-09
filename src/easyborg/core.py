@@ -7,7 +7,7 @@ from easyborg import ui
 from easyborg.borg import Borg
 from easyborg.fzf import Fzf
 from easyborg.model import Config, RepositoryType, Snapshot
-from easyborg.util import create_snapshot_name, find_snapshot_by_name
+from easyborg.util import create_snapshot_name
 
 
 class Core:
@@ -18,7 +18,7 @@ class Core:
 
     def __init__(self, config: Config, borg: Borg | None = None, fzf: Fzf | None = None):
         """
-        Initialize the controller using the given configuration.
+        Initialize the controller.
         """
 
         self.config = config
@@ -42,14 +42,7 @@ class Core:
         ui.table(
             title="Repositories",
             headers=["Name", "Type", "Path"],
-            rows=[
-                (
-                    repo.name,
-                    repo.type.value,
-                    repo.url,
-                )
-                for repo in self.repos.values()
-            ],
+            rows=[(repo.name, repo.type.value, repo.url) for repo in self.repos.values()],
         )
         ui.newline()
 
@@ -69,11 +62,9 @@ class Core:
             ui.info(f"Creating snapshot {snapshot.name} in {repo.name} ({repo.url})")
             self.borg.create_snapshot(snapshot, self.folders, dry_run=dry_run)
 
-            # Always prune, to enforce retention rules
             ui.info(f"Pruning old snapshots in {repo.name} ({repo.url})")
             self.borg.prune(repo, dry_run=dry_run)
 
-            # Compact only 10% of the time
             if random.random() < 0.10:
                 ui.info(f"(Random check) Compacting repository {repo.name} ({repo.url})")
                 self.borg.compact(repo, dry_run=dry_run)
@@ -99,11 +90,9 @@ class Core:
             ui.info(f"Creating snapshot {snapshot.name} in {repo.name} ({repo.url})")
             self.borg.create_snapshot(snapshot, [folder], dry_run=dry_run)
 
-            # Always prune, to enforce retention rules
             ui.info(f"Pruning old snapshots in {repo.name} ({repo.url})")
             self.borg.prune(repo, dry_run=dry_run)
 
-            # Compact only 10% of the time
             if random.random() < 0.10:
                 ui.info(f"(Random check) Compacting repository {repo.name} ({repo.url})")
                 self.borg.compact(repo, dry_run=dry_run)
@@ -116,34 +105,35 @@ class Core:
         """
 
         # 1) Select repository
-        repo_name = self.fzf.select_one(
-            self.repos.keys(),
+        selected = self.fzf.select_item(
+            self.repos.values(),
+            key=lambda r: r.name,
             prompt="Select repository: ",
+            multi=False,
         )
-        if repo_name is None:
+        if not selected:
             ui.warn("Aborted")
             return
-
-        repo = self.repos[repo_name]
+        repo = selected[0]
 
         if not self.borg.repository_accessible(repo):
             raise RuntimeError(f"Repository not accessible: {repo.name} ({repo.url})")
 
         # 2) Select snapshot
         snapshots = self.borg.list_snapshots(repo)
-        snapshots.sort(key=lambda s: s.name, reverse=True)  # descending order (most recent first)
+        snapshots.sort(key=lambda s: s.name, reverse=True)
 
-        snapshot_name = self.fzf.select_one(
-            (f"{s.name} — {s.comment}" if s.comment else s.name for s in snapshots),
+        selected = self.fzf.select_item(
+            snapshots,
+            key=lambda s: f"{s.name} — {s.comment}" if s.comment else s.name,
             prompt="Select snapshot: ",
+            multi=False,
         )
-        if snapshot_name is None:
+        if not selected:
             ui.warn("Aborted")
             return
+        snapshot = selected[0]
 
-        snapshot = find_snapshot_by_name(snapshot_name, snapshots)
-
-        # 3) Target directory is current working directory
         target_dir = Path.cwd()
 
         ui.info(f"Restoring {snapshot.name} from {repo.name} ({repo.url})")
@@ -156,49 +146,49 @@ class Core:
         """
 
         # 1) Select repository
-        repo_name = self.fzf.select_one(
-            (name for name in self.repos.keys()),
+        selected = self.fzf.select_item(
+            self.repos.values(),
+            key=lambda r: r.name,
             prompt="Select repository: ",
+            multi=False,
         )
-        if repo_name is None:
+        if not selected:
             ui.warn("Aborted")
             return
-
-        repo = self.repos[repo_name]
+        repo = selected[0]
 
         # 2) Select snapshot
         snapshots = self.borg.list_snapshots(repo)
-        snapshots.sort(key=lambda s: s.name, reverse=True)  # descending order (most recent first)
+        snapshots.sort(key=lambda s: s.name, reverse=True)
 
-        snapshot_name = self.fzf.select_one(
-            (f"{s.name} — {s.comment}" if s.comment else s.name for s in snapshots),
+        selected = self.fzf.select_item(
+            snapshots,
+            key=lambda s: f"{s.name} — {s.comment}" if s.comment else s.name,
             prompt="Select snapshot: ",
+            multi=False,
         )
-        if snapshot_name is None:
+        if not selected:
             ui.warn("Aborted")
             return
+        snapshot = selected[0]
 
-        snapshot = find_snapshot_by_name(snapshot_name, snapshots)
-
-        # 3) Select files/folders
-        selected_items = self.fzf.select_many(
-            (str(p) for p in self.borg.list_contents(snapshot)),
+        # 3) Select paths
+        selected_paths_str = self.fzf.select(
+            map(str, self.borg.list_contents(snapshot)),
             prompt="Select items to extract: ",
+            multi=True,
         )
 
-        if not selected_items:
+        if not selected_paths_str:
             ui.warn("Aborted")
             return
 
-        selected_paths = [Path(s) for s in selected_items]
-
-        # 4) Determine target dir
+        selected_paths = [Path(p) for p in selected_paths_str]
         target_dir = Path.cwd()
 
         if not self.borg.repository_accessible(repo):
             raise RuntimeError(f"Repository does not exist or is not accessible: {repo.name} ({repo.url})")
 
-        # 5) Perform extraction
-        ui.info(f"Extracting {len(selected_paths)} item(s) from snapshot {snapshot.name} in {repo.name} ({repo.url})")
+        ui.info(f"Extracting {len(selected_paths)} item(s) from repository {repo.name}, snapshot {snapshot.name}")
         self.borg.restore(snapshot, target_dir=target_dir, folders=selected_paths, dry_run=dry_run)
         ui.success("Extract complete")

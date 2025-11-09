@@ -1,10 +1,10 @@
 import logging
 import os
-import subprocess
 from collections.abc import Iterator
 from pathlib import Path
 
 from easyborg.model import Repository, RepositoryType, Snapshot
+from easyborg.process import assert_executable, run_async, run_sync
 from easyborg.util import to_relative_path
 
 logger = logging.getLogger(__name__)
@@ -17,15 +17,15 @@ class Borg:
         """
         logger.debug("Initializing Borg (executable: %s)", borg_executable)
 
+        assert_executable(borg_executable)
         self.borg = borg_executable
-        self._run_sync(["--version"])
 
     def repository_accessible(self, repo: Repository) -> bool:
         """
         Return True if the repository exists and is accessible.
         """
         try:
-            self._run_sync(["info", repo.url])
+            run_sync([self.borg, "info", repo.url])
             return True
         except RuntimeError:
             return False
@@ -42,7 +42,7 @@ class Borg:
         """
         logger.debug("Listing snapshots in %s (%s)", repo.name, repo.url)
 
-        lines = self._run_sync(["list", repo.url, "--format", "{archive}{TAB}{comment}\n"])
+        lines = run_sync([self.borg, "list", repo.url, "--format", "{archive}{TAB}{comment}\n"])
 
         snapshots = []
         for line in lines:
@@ -58,11 +58,11 @@ class Borg:
         """
         logger.debug("Listing contents of %s", snap.location())
 
-        for line in self._run_async(["list", snap.location(), "--format", "{path}\n"]):
+        for line in run_async([self.borg, "list", snap.location(), "--format", "{path}\n"]):
             if line:
                 yield Path(line)
 
-    def create_repository(self, parent: Path, name: str, encryption="none", dry_run: bool = False) -> Repository:
+    def create_repository(self, parent: Path, name: str, *, encryption="none", dry_run: bool = False) -> Repository:
         """
         Create a Borg repository.
         """
@@ -74,16 +74,16 @@ class Borg:
         directory = parent / name
         directory.mkdir(parents=False, exist_ok=False)
 
-        cmd = ["init"]
+        cmd = [self.borg, "init"]
         if dry_run:
             cmd.append("--dry-run")
         cmd.extend([f"--encryption={encryption}", str(directory)])
 
-        self._run_sync(cmd)
+        run_sync(cmd)
 
         return Repository(name=name, url=str(directory), type=RepositoryType.BACKUP)
 
-    def create_snapshot(self, snap: Snapshot, folders: list[Path], dry_run: bool = False):
+    def create_snapshot(self, snap: Snapshot, folders: list[Path], *, dry_run: bool = False):
         """
         Create a new snapshot.
         """
@@ -93,16 +93,16 @@ class Borg:
             if not os.path.isdir(folder):
                 raise RuntimeError(f"Folder does not exist: {folder}")
 
-        cmd = ["create"]
+        cmd = [self.borg, "create"]
         if dry_run:
             cmd.append("--dry-run")
         if snap.comment:
             cmd.extend(["--comment", snap.comment])
         cmd.extend([snap.location(), *map(str, folders)])
 
-        self._run_sync(cmd)
+        run_sync(cmd)
 
-    def restore(self, snap: Snapshot, target_dir: Path, folders: list[Path] | None = None, dry_run: bool = False):
+    def restore(self, snap: Snapshot, target_dir: Path, folders: list[Path] | None = None, *, dry_run: bool = False):
         """
         Restore folders (or the entire snapshot if folders=None) into target_dir.
         """
@@ -117,20 +117,21 @@ class Borg:
         # make absolute folders relative for safety
         relative_folders = [to_relative_path(folder) for folder in folders]
 
-        cmd = ["extract"]
+        cmd = [self.borg, "extract"]
         if dry_run:
             cmd.append("--dry-run")
         cmd.extend([snap.location(), *map(str, relative_folders)])
 
-        self._run_sync(cmd, cwd=str(target_dir))
+        run_sync(cmd, cwd=str(target_dir))
 
-    def prune(self, repo: Repository, dry_run: bool = False) -> None:
+    def prune(self, repo: Repository, *, dry_run: bool = False) -> None:
         """
         Prune old snapshots in the repository according to retention policy.
         """
         logger.debug("Pruning snapshots in %s (%s)", repo.name, repo.url)
 
         cmd = [
+            self.borg,
             "prune",
             repo.url,
             "--keep-daily=7",
@@ -141,47 +142,17 @@ class Borg:
         if dry_run:
             cmd.append("--dry-run")
 
-        self._run_sync(cmd)
+        run_sync(cmd)
 
-    def compact(self, repo: Repository, dry_run: bool = False) -> None:
+    def compact(self, repo: Repository, *, dry_run: bool = False) -> None:
         """
         Run `borg compact` to reclaim space.
         """
         logger.debug("Compacting repository %s (%s)", repo.name, repo.url)
 
-        cmd = ["compact", repo.url]
+        cmd = [self.borg, "compact", repo.url]
 
         if dry_run:
             cmd.append("--dry-run")
 
-        self._run_sync(cmd)
-
-    def _run_sync(self, args: list[str], cwd: str | None = None) -> list[str]:
-        """
-        Runs the borg executable synchronously.
-        """
-        return list(self._run_async(args, cwd=cwd))
-
-    def _run_async(self, args: list[str], cwd: str | None = None):
-        """
-        Runs the borg executable asynchronously.
-        """
-        cmd = [self.borg] + args
-        logger.debug("Running: %s", cmd)
-
-        process = subprocess.Popen(
-            cmd,
-            cwd=cwd,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            text=True,
-        )
-
-        assert process.stdout is not None
-        for line in process.stdout:
-            yield line.rstrip("\n")
-
-        return_code = process.wait()
-        if return_code != 0:
-            stderr = process.stderr.read().strip() if process.stderr else ""
-            raise RuntimeError(f"Borg failed with error: {stderr}")
+        run_sync(cmd)
