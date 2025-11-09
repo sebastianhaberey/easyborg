@@ -3,7 +3,13 @@ from pathlib import Path
 import pytest
 
 from easyborg.borg import Borg
+from easyborg.logging_setup import setup_logging
 from easyborg.model import RepositoryType
+
+
+@pytest.fixture(autouse=True)
+def configure_logging():
+    setup_logging(test_mode=True)
 
 
 @pytest.fixture
@@ -22,12 +28,5 @@ def repo(borg, tmp_path):
 
 
 @pytest.fixture
-def testdata_dir(tmp_path):
-    base = tmp_path / "testdata"
-    base.mkdir()
-    (base / "file 1.txt").write_text("foo")
-    (base / "file 2.txt").write_text("bar")
-    sub = base / "some folder"
-    sub.mkdir()
-    (sub / "nested.txt").write_text("baz")
-    return base
+def testdata_dir(project_root):
+    return project_root / "tests" / "resources" / "testdata"

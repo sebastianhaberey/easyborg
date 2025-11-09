@@ -1,6 +1,5 @@
 # TODO
 
-- logging (file)
 - add / remove crontab entry
 - clarify and document relativization
 - install command
@@ -21,3 +20,4 @@
 - prune and compact
 - add comment to extract
 - E2E tests
+- logging (file)

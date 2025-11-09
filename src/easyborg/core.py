@@ -6,6 +6,7 @@ from pathlib import Path
 from easyborg import ui
 from easyborg.borg import Borg
 from easyborg.fzf import Fzf, SortOrder
+from easyborg.logging_setup import get_current_log_file, get_current_log_level
 from easyborg.model import Config, Repository, RepositoryType, Snapshot
 from easyborg.util import create_snapshot_name
 
@@ -34,7 +35,15 @@ class Core:
         """
 
         ui.newline()
-        ui.table(title="Configuration", headers=["Path"], rows=[(str(self.config.source),)])
+        ui.table(
+            title="Global Settings",
+            headers=["Item", "Value"],
+            rows=[
+                ("Configuration file", str(self.config.source)),
+                ("Log file", str(get_current_log_file()) or "not configured"),
+                ("Log level", str(get_current_log_level()) or "not configured"),
+            ],
+        )
         ui.table(
             title="Backup Folders",
             headers=["Folder"],
@@ -70,7 +79,7 @@ class Core:
                 ui.info(f"(Random check) Compacting repository {repo.name}")
                 self.borg.compact(repo, dry_run=dry_run)
 
-        ui.success("Backup complete")
+            ui.success("Backup complete")
 
     def archive(self, folder: Path, dry_run: bool = False, comment: str | None = None) -> None:
         """
@@ -98,7 +107,7 @@ class Core:
                 ui.info(f"(Random check) Compacting repository {repo.name}")
                 self.borg.compact(repo, dry_run=dry_run)
 
-        ui.success("Archive complete")
+            ui.success("Archive complete")
 
     def restore(self, dry_run: bool = False) -> None:
         """

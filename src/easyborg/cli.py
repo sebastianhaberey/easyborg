@@ -4,6 +4,7 @@ import typer
 
 from easyborg.config import load_config
 from easyborg.core import Core
+from easyborg.logging_setup import setup_logging
 
 app = typer.Typer(
     help="easyborg - Borg for Dummies",
@@ -13,6 +14,7 @@ app = typer.Typer(
     pretty_exceptions_show_locals=False,
 )
 
+setup_logging()
 config = load_config()
 core = Core(config, compact_probability=0.10)
 
