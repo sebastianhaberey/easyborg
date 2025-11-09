@@ -10,7 +10,7 @@ from easyborg.util import compare_directories, to_relative_path
 def test_create_repository(tmp_path):
     borg = Borg()
 
-    repo = borg.create_repository(tmp_path, "repo")
+    repo = borg.create_repository(tmp_path, "repo", RepositoryType.BACKUP)
     repo_path = Path(repo.url)
 
     assert (repo_path / "config").exists()
@@ -19,7 +19,7 @@ def test_create_repository(tmp_path):
 
 def test_create_repository_fails_if_parent_directory_not_found(borg):
     with pytest.raises(RuntimeError, match=r"Parent directory does not exist"):
-        borg.create_repository(Path("foo"), "repo")
+        borg.create_repository(Path("foo"), "repo", RepositoryType.BACKUP)
 
 
 def test_create_snapshot_fails_if_repository_not_found(borg, testdata_dir):

@@ -14,7 +14,7 @@ app = typer.Typer(
 )
 
 config = load_config()
-core = Core(config)
+core = Core(config, compact_probability=0.10)
 
 
 @app.command()

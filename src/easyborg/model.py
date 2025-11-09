@@ -12,12 +12,12 @@ class RepositoryType(str, Enum):
 
 @dataclass(frozen=True, slots=True)
 class Snapshot:
-    repo: Repository
+    repository: Repository
     name: str
     comment: str | None = None
 
     def location(self) -> str:
-        return f"{self.repo.url}::{self.name}"
+        return f"{self.repository.url}::{self.name}"
 
 
 @dataclass(slots=True)

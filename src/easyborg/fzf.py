@@ -23,68 +23,41 @@ class Fzf:
         assert_executable(fzf_executable)
         self.fzf = fzf_executable
 
-    def select_one_item(
-        self,
-        items: Iterable[T],
-        *,
-        key: Callable[[T], str],
-        prompt: str,
-        sortOrder: SortOrder = None,
-    ) -> T:
-        selected = self._select_items(items, key=key, multi=False, prompt=prompt, sortOrder=sortOrder)
-        return selected[0] if selected else None
-
-    def select_multiple_items(
-        self,
-        items: Iterable[T],
-        *,
-        key: Callable[[T], str],
-        prompt: str,
-        sortOrder: SortOrder = None,
-    ) -> T:
-        return self._select_items(items, key=key, multi=True, prompt=prompt, sortOrder=sortOrder)
-
-    def select_one_string(
-        self,
-        items: Iterable[str],
-        *,
-        prompt: str,
-        sortOrder: SortOrder = None,
-    ) -> str:
-        selected = self._select(items, multi=False, prompt=prompt)
-        return selected[0] if selected else None
-
-    def select_multiple_strings(
-        self,
-        items: Iterable[str],
-        *,
-        prompt: str,
-    ) -> list[str]:
-        return self._select(items, multi=True, prompt=prompt)
-
-    def _select_items(
+    def select_items(
         self,
         items: Iterable[T],
         *,
         key: Callable[[T], str],
         multi: bool = False,
         prompt: str,
-        sortOrder: SortOrder = None,
+        sort_order: SortOrder = None,
     ) -> list[T]:
         """
         Select objects using fzf based on a string key function.
         """
-        lookup = {key(item): item for item in items}
+        lookup = {}
+        for item in items:
+            k = key(item)
+            if k in lookup:
+                raise ValueError(f"Duplicate key detected: {k!r}")
+            lookup[k] = item
+
         keys = list(lookup.keys())
 
-        if sortOrder is not None:
-            keys.sort(reverse=True if sortOrder == SortOrder.DESCENDING else False)
+        if sort_order is not None:
+            keys.sort(reverse=True if sort_order == SortOrder.DESCENDING else False)
 
-        selected_keys = self._select(keys, multi=multi, prompt=prompt)
+        selected_keys = self.select_strings(keys, multi=multi, prompt=prompt)
+
+        for item in items:
+            k = key(item)
+            if k in lookup:
+                raise ValueError(f"Duplicate fzf key detected: {k!r}")
+            lookup[k] = item
 
         return [lookup[k] for k in selected_keys]
 
-    def _select(
+    def select_strings(
         self,
         items: Iterable[str],
         *,

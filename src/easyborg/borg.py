@@ -34,7 +34,7 @@ class Borg:
         """
         Return True if the snapshot exists.
         """
-        return snap.name in (s.name for s in self.list_snapshots(snap.repo))
+        return snap.name in (s.name for s in self.list_snapshots(snap.repository))
 
     def list_snapshots(self, repo: Repository) -> list[Snapshot]:
         """
@@ -62,7 +62,9 @@ class Borg:
             if line:
                 yield Path(line)
 
-    def create_repository(self, parent: Path, name: str, *, encryption="none", dry_run: bool = False) -> Repository:
+    def create_repository(
+        self, parent: Path, name: str, type: RepositoryType, *, encryption="none", dry_run: bool = False
+    ) -> Repository:
         """
         Create a Borg repository.
         """
@@ -81,7 +83,7 @@ class Borg:
 
         run_sync(cmd)
 
-        return Repository(name=name, url=str(directory), type=RepositoryType.BACKUP)
+        return Repository(name=name, url=str(directory), type=type)
 
     def create_snapshot(self, snap: Snapshot, folders: list[Path], *, dry_run: bool = False):
         """

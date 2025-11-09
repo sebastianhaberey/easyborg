@@ -16,7 +16,7 @@ class Core:
     Borg backup operations, and interactive selection via fzf.
     """
 
-    def __init__(self, config: Config, borg: Borg | None = None, fzf: Fzf | None = None):
+    def __init__(self, config: Config, borg: Borg | None = None, fzf: Fzf | None = None, compact_probability=1.0):
         """
         Initialize the controller.
         """
@@ -26,6 +26,7 @@ class Core:
         self.folders = config.folders
         self.borg = borg or Borg()
         self.fzf = fzf or Fzf()
+        self.compact_probability = compact_probability
 
     def info(self) -> None:
         """
@@ -59,14 +60,14 @@ class Core:
                 raise RuntimeError(f"Repository not accessible: {repo.name} ({repo.url})")
 
             snapshot = Snapshot(repo, create_snapshot_name())
-            ui.info(f"Creating snapshot {snapshot.name} in {repo.name} ({repo.url})")
+            ui.info(f"Creating snapshot {snapshot.name} in repository {repo.name}")
             self.borg.create_snapshot(snapshot, self.folders, dry_run=dry_run)
 
-            ui.info(f"Pruning old snapshots in {repo.name} ({repo.url})")
+            ui.info(f"Pruning old snapshots in repository {repo.name}")
             self.borg.prune(repo, dry_run=dry_run)
 
-            if random.random() < 0.10:
-                ui.info(f"(Random check) Compacting repository {repo.name} ({repo.url})")
+            if random.random() < self.compact_probability:
+                ui.info(f"(Random check) Compacting repository {repo.name}")
                 self.borg.compact(repo, dry_run=dry_run)
 
         ui.success("Backup complete")
@@ -87,14 +88,14 @@ class Core:
                 raise RuntimeError(f"Repository not accessible: {repo.name} ({repo.url})")
 
             snapshot = Snapshot(repo, create_snapshot_name(), comment=comment)
-            ui.info(f"Creating snapshot {snapshot.name} in {repo.name} ({repo.url})")
+            ui.info(f"Creating snapshot {snapshot.name} in repository {repo.name}")
             self.borg.create_snapshot(snapshot, [folder], dry_run=dry_run)
 
-            ui.info(f"Pruning old snapshots in {repo.name} ({repo.url})")
+            ui.info(f"Pruning old snapshots in repository {repo.name}")
             self.borg.prune(repo, dry_run=dry_run)
 
-            if random.random() < 0.10:
-                ui.info(f"(Random check) Compacting repository {repo.name} ({repo.url})")
+            if random.random() < self.compact_probability:
+                ui.info(f"(Random check) Compacting repository {repo.name}")
                 self.borg.compact(repo, dry_run=dry_run)
 
         ui.success("Archive complete")
@@ -109,6 +110,9 @@ class Core:
             ui.warn("Aborted")
             return
 
+        if not self.borg.repository_accessible(repo):
+            raise RuntimeError(f"Repository not accessible: {repo.name} ({repo.url})")
+
         snapshot = self._select_snapshot(repo)
         if not snapshot:
             ui.warn("Aborted")
@@ -116,7 +120,7 @@ class Core:
 
         target_dir = Path.cwd()
 
-        ui.info(f"Restoring snapshot {snapshot.name} from repository {repo.name} ({repo.url})")
+        ui.info(f"Restoring snapshot {snapshot.name} from repository {repo.name}")
         self.borg.restore(snapshot, target_dir, dry_run=dry_run)
         ui.success("Restore complete")
 
@@ -130,6 +134,9 @@ class Core:
             ui.warn("Aborted")
             return
 
+        if not self.borg.repository_accessible(repo):
+            raise RuntimeError(f"Repository not accessible: {repo.name} ({repo.url})")
+
         snapshot = self._select_snapshot(repo)
         if not snapshot:
             ui.warn("Aborted")
@@ -142,35 +149,32 @@ class Core:
 
         target_dir = Path.cwd()
 
-        ui.info(f"Extracting {len(selected_paths)} item(s) from snapshot {snapshot.name}, repository {repo.name}")
+        ui.info(f"Extracting {len(selected_paths)} item(s) from snapshot {snapshot.name} in repository {repo.name}")
         self.borg.restore(snapshot, target_dir=target_dir, folders=selected_paths, dry_run=dry_run)
         ui.success("Extract complete")
 
-    def _select_repo(self) -> Repository:
-        repo = self.fzf.select_one_item(
+    def _select_repo(self) -> Repository | None:
+        """Return selected repository or None if user aborted."""
+        repos = self.fzf.select_items(
             self.repos.values(),
             key=lambda r: r.name,
             prompt="Select repository: ",
         )
-        if repo is not None and not self.borg.repository_accessible(repo):
-            raise RuntimeError(f"Repository not accessible: {repo.name} ({repo.url})")
-        return repo
+        return repos[0] if repos else None
 
-    def _select_snapshot(self, repo) -> Snapshot:
-        snapshot = self.fzf.select_one_item(
-            self.borg.list_snapshots(repo),
+    def _select_snapshot(self, repo: Repository) -> Snapshot | None:
+        snapshots = self.borg.list_snapshots(repo)
+        snapshot = self.fzf.select_items(
+            snapshots,
             key=lambda s: f"{s.name} — {s.comment}" if s.comment else s.name,
             prompt="Select snapshot: ",
-            sortOrder=SortOrder.DESCENDING,
+            sort_order=SortOrder.DESCENDING,
         )
-        return snapshot
+        return snapshot[0] if snapshot else None
 
     def _select_paths(self, snapshot: Snapshot) -> list[Path]:
-        selected_paths = [
-            Path(p)
-            for p in self.fzf.select_multiple_strings(
-                map(str, self.borg.list_contents(snapshot)),
-                prompt="Select items to extract: ",
-            )
-        ]
-        return selected_paths
+        path_strings = self.fzf.select_strings(
+            map(str, self.borg.list_contents(snapshot)),
+            prompt="Select items to extract: ",
+        )
+        return [Path(s) for s in path_strings]
