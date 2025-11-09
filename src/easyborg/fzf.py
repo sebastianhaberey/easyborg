@@ -77,7 +77,7 @@ class Fzf:
         cmd.append(f"--prompt={prompt}")
 
         try:
-            return list(run_async(cmd, input=items))
+            return list(run_async(cmd, input_lines=items))
         except ProcessError as e:
             if e.return_code == 130:
                 return []

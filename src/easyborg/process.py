@@ -28,18 +28,18 @@ def assert_executable(executable: str):
         raise RuntimeError(f"Could not execute {cmd}") from e
 
 
-def run_sync(cmd: list[str], cwd: str | None = None) -> list[str]:
+def run_sync(cmd: list[str], *, cwd: str | None = None, input_lines: Iterable[str] | str | None = None) -> list[str]:
     """
     Run the subprocess and return all output lines as a list.
     Raises ProcessError on failure.
     """
-    return list(run_async(cmd, cwd=cwd))
+    return list(run_async(cmd, cwd=cwd, input_lines=input_lines))
 
 
 def run_async(
     cmd: list[str],
     *,
-    input: Iterable[str] | None = None,
+    input_lines: Iterable[str] | None = None,
     cwd: str | None = None,
 ) -> Iterator[str]:
     """
@@ -51,16 +51,16 @@ def run_async(
     process = subprocess.Popen(
         cmd,
         cwd=cwd,
-        stdin=subprocess.PIPE if input is not None else None,
+        stdin=subprocess.PIPE if input_lines is not None else None,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         text=True,
     )
 
     # Feed streaming input to stdin
-    if input is not None:
+    if input_lines is not None:
         assert process.stdin is not None
-        for line in input:
+        for line in input_lines:
             process.stdin.write(line + "\n")
         process.stdin.close()
 

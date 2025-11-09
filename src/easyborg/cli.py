@@ -4,6 +4,7 @@ import typer
 
 from easyborg.config import load_config
 from easyborg.core import Core
+from easyborg.cron import Cron
 from easyborg.logging_setup import setup_logging
 
 app = typer.Typer(
@@ -24,9 +25,7 @@ def info():
     """
     Outputs info about the current configuration.
     """
-
     core.info()
-    return
 
 
 @app.command()
@@ -36,9 +35,7 @@ def backup(
     """
     Create a snapshot of configured folders in each backup repository.
     """
-
     core.backup(dry_run=dry_run)
-    return
 
 
 @app.command()
@@ -50,9 +47,7 @@ def archive(
     """
     Create snapshot of given folder in each archive repository.
     """
-
     core.archive(folder, dry_run=dry_run, comment=comment)
-    return
 
 
 @app.command()
@@ -62,7 +57,6 @@ def restore(
     """
     Restore snapshot to the current working directory.
     """
-
     core.restore(dry_run=dry_run)
 
 
@@ -75,3 +69,25 @@ def extract(
     """
 
     core.extract(dry_run=dry_run)
+
+
+@app.command()
+def enable():
+    """
+    Enable automatic backups.
+
+    On macOS and Linux this creates a system job that runs `easyborg backup` hourly.
+    """
+    cron = Cron(command="easyborg backup")
+    cron.enable("@hourly")
+
+
+@app.command()
+def disable():
+    """
+    Disable automatic backups.
+
+    Removes previously created system jobs (e.g. crontab entries on macOS/Linux).
+    """
+    cron = Cron(command="easyborg backup")
+    cron.disable()

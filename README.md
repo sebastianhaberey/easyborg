@@ -1,7 +1,5 @@
 # easyborg
 
-easyborg - Borg for Dummies
-
 easyborg provides a simple workflow on top of [BorgBackup](https://www.borgbackup.org/) (aka Borg).
 
 ## Concept
