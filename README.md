@@ -8,29 +8,28 @@ This project is currently WIP and cannot be used yet.
 
 easyborg distinguishes between _backup_ and _archive_ repositories:
 
-|                | Backup (short-term)           | Archive (long-term)                  |
-|----------------|-------------------------------|--------------------------------------|
-| **Purpose**    | recovery in case of emergency | preservation for long-term reference |
-| **Data state** | current, changing             | old, stable                          |
-| **Retention**  | days to months                | years or forever                     |
+|             | Purpose                                    | Data              | Retention        |
+|-------------|--------------------------------------------|-------------------|------------------|
+| **Backup**  | recovery in case of emergency (short-term) | current, changing | days to months   |
+| **Archive** | preservation for reference (long-term)     | old, stable       | years or forever |
 
 ## Backup
 
-easyborg creates snapshots of your configured backup folders regularly.
+easyborg creates snapshots of your configured backup folders regularly:
 
-| Snapshot frequency | Availability |
-|--------------------|--------------|
-| hourly             | 24 hours     |
-| daily              | 7 days       |
-| weekly             | 12 weeks     |
-| monthly            | 12 months    |
+| Frequency | Availability |
+|-----------|--------------|
+| hourly    | 24 hours     |
+| daily     | 7 days       |
+| weekly    | 12 weeks     |
+| monthly   | 12 months    |
 
 ## Archive
 
-easyborg lets you create archive snapshots manually when needed
+easyborg lets you create archive snapshots manually when needed.
 
-Do this when you want to *keep a specific state* for the long term. Each folder is stored in its own snapshot to allow
-selective pruning later.
+Do this when you want to *keep a specific state*. Each folder is stored in its own snapshot to allow selective pruning
+later.
 
 ## Glossary
 
