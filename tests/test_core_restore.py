@@ -11,7 +11,7 @@ from easyborg.util import to_relative_path
 
 def test_core_backup(tmp_path, testdata_dir, borg):
     """
-    End-to-end: Core.backup() creates snapshots in real repositories.
+    End-to-end: Core.backup() creates snapshot in backup repository.
     """
 
     repo_parent = tmp_path / "repos"
@@ -51,7 +51,7 @@ def test_core_backup(tmp_path, testdata_dir, borg):
 
 def test_core_backup_multiple_repos(tmp_path, testdata_dir, borg):
     """
-    End-to-end: Core.backup() creates snapshots in real repositories.
+    End-to-end: Core.backup() creates snapshot in in multiple backup repositories.
     """
 
     repo_parent = tmp_path / "repos"
@@ -78,7 +78,7 @@ def test_core_backup_multiple_repos(tmp_path, testdata_dir, borg):
 
 def test_core_archive(tmp_path, testdata_dir, borg):
     """
-    End-to-end: Core.archive() creates snapshots in the archive repository.
+    End-to-end: Core.archive() creates snapshot in archive repository.
     """
 
     repo_parent = tmp_path / "repos"
@@ -124,7 +124,7 @@ def test_core_archive(tmp_path, testdata_dir, borg):
 
 def test_core_archive_multiple_repos(tmp_path, testdata_dir, borg):
     """
-    End-to-end: Core.archive() creates snapshots in real repositories.
+    End-to-end: Core.archive() creates snapshot in multiple archive repositories.
     """
 
     repo_parent = tmp_path / "repos"
@@ -150,7 +150,9 @@ def test_core_archive_multiple_repos(tmp_path, testdata_dir, borg):
 
 
 def test_core_restore(tmp_path, borg, repo, testdata_dir):
-    # Create snapshot
+    """
+    End-to-end: Core.restore() restores snapshot from repository.
+    """
     snap = Snapshot(repo, "snap1")
     borg.create_snapshot(snap, [testdata_dir])
 

@@ -2,6 +2,8 @@
 
 easyborg provides a simple workflow on top of [BorgBackup](https://www.borgbackup.org/) (aka Borg).
 
+This project is currently WIP and cannot be used yet.
+
 ## Concept
 
 easyborg distinguishes between _backup_ and _archive_ repositories:
