@@ -5,8 +5,8 @@ from pathlib import Path
 
 from easyborg import ui
 from easyborg.borg import Borg
-from easyborg.fzf import Fzf
-from easyborg.model import Config, RepositoryType, Snapshot
+from easyborg.fzf import Fzf, SortOrder
+from easyborg.model import Config, Repository, RepositoryType, Snapshot
 from easyborg.util import create_snapshot_name
 
 
@@ -104,39 +104,19 @@ class Core:
         Interactively restore entire snapshot.
         """
 
-        # 1) Select repository
-        selected = self.fzf.select_item(
-            self.repos.values(),
-            key=lambda r: r.name,
-            prompt="Select repository: ",
-            multi=False,
-        )
-        if not selected:
+        repo = self._select_repo()
+        if not repo:
             ui.warn("Aborted")
             return
-        repo = selected[0]
 
-        if not self.borg.repository_accessible(repo):
-            raise RuntimeError(f"Repository not accessible: {repo.name} ({repo.url})")
-
-        # 2) Select snapshot
-        snapshots = self.borg.list_snapshots(repo)
-        snapshots.sort(key=lambda s: s.name, reverse=True)
-
-        selected = self.fzf.select_item(
-            snapshots,
-            key=lambda s: f"{s.name} — {s.comment}" if s.comment else s.name,
-            prompt="Select snapshot: ",
-            multi=False,
-        )
-        if not selected:
+        snapshot = self._select_snapshot(repo)
+        if not snapshot:
             ui.warn("Aborted")
             return
-        snapshot = selected[0]
 
         target_dir = Path.cwd()
 
-        ui.info(f"Restoring {snapshot.name} from {repo.name} ({repo.url})")
+        ui.info(f"Restoring snapshot {snapshot.name} from repository {repo.name} ({repo.url})")
         self.borg.restore(snapshot, target_dir, dry_run=dry_run)
         ui.success("Restore complete")
 
@@ -145,50 +125,52 @@ class Core:
         Interactively extract selected files / folders from snapshot.
         """
 
-        # 1) Select repository
-        selected = self.fzf.select_item(
+        repo = self._select_repo()
+        if not repo:
+            ui.warn("Aborted")
+            return
+
+        snapshot = self._select_snapshot(repo)
+        if not snapshot:
+            ui.warn("Aborted")
+            return
+
+        selected_paths = self._select_paths(snapshot)
+        if not selected_paths:
+            ui.warn("Aborted")
+            return
+
+        target_dir = Path.cwd()
+
+        ui.info(f"Extracting {len(selected_paths)} item(s) from snapshot {snapshot.name}, repository {repo.name}")
+        self.borg.restore(snapshot, target_dir=target_dir, folders=selected_paths, dry_run=dry_run)
+        ui.success("Extract complete")
+
+    def _select_repo(self) -> Repository:
+        repo = self.fzf.select_one_item(
             self.repos.values(),
             key=lambda r: r.name,
             prompt="Select repository: ",
-            multi=False,
         )
-        if not selected:
-            ui.warn("Aborted")
-            return
-        repo = selected[0]
+        if repo is not None and not self.borg.repository_accessible(repo):
+            raise RuntimeError(f"Repository not accessible: {repo.name} ({repo.url})")
+        return repo
 
-        # 2) Select snapshot
-        snapshots = self.borg.list_snapshots(repo)
-        snapshots.sort(key=lambda s: s.name, reverse=True)
-
-        selected = self.fzf.select_item(
-            snapshots,
+    def _select_snapshot(self, repo) -> Snapshot:
+        snapshot = self.fzf.select_one_item(
+            self.borg.list_snapshots(repo),
             key=lambda s: f"{s.name} — {s.comment}" if s.comment else s.name,
             prompt="Select snapshot: ",
-            multi=False,
+            sortOrder=SortOrder.DESCENDING,
         )
-        if not selected:
-            ui.warn("Aborted")
-            return
-        snapshot = selected[0]
+        return snapshot
 
-        # 3) Select paths
-        selected_paths_str = self.fzf.select(
-            map(str, self.borg.list_contents(snapshot)),
-            prompt="Select items to extract: ",
-            multi=True,
-        )
-
-        if not selected_paths_str:
-            ui.warn("Aborted")
-            return
-
-        selected_paths = [Path(p) for p in selected_paths_str]
-        target_dir = Path.cwd()
-
-        if not self.borg.repository_accessible(repo):
-            raise RuntimeError(f"Repository does not exist or is not accessible: {repo.name} ({repo.url})")
-
-        ui.info(f"Extracting {len(selected_paths)} item(s) from repository {repo.name}, snapshot {snapshot.name}")
-        self.borg.restore(snapshot, target_dir=target_dir, folders=selected_paths, dry_run=dry_run)
-        ui.success("Extract complete")
+    def _select_paths(self, snapshot: Snapshot) -> list[Path]:
+        selected_paths = [
+            Path(p)
+            for p in self.fzf.select_multiple_strings(
+                map(str, self.borg.list_contents(snapshot)),
+                prompt="Select items to extract: ",
+            )
+        ]
+        return selected_paths

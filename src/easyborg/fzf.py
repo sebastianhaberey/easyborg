@@ -1,5 +1,6 @@
 import logging
 from collections.abc import Callable, Iterable
+from enum import Enum
 from typing import TypeVar
 
 from easyborg.process import ProcessError, assert_executable, run_async
@@ -7,6 +8,11 @@ from easyborg.process import ProcessError, assert_executable, run_async
 logger = logging.getLogger(__name__)
 
 T = TypeVar("T")
+
+
+class SortOrder(str, Enum):
+    ASCENDING = "ascending"
+    DESCENDING = "descending"
 
 
 class Fzf:
@@ -17,27 +23,68 @@ class Fzf:
         assert_executable(fzf_executable)
         self.fzf = fzf_executable
 
-    def select_item(
+    def select_one_item(
+        self,
+        items: Iterable[T],
+        *,
+        key: Callable[[T], str],
+        prompt: str,
+        sortOrder: SortOrder = None,
+    ) -> T:
+        selected = self._select_items(items, key=key, multi=False, prompt=prompt, sortOrder=sortOrder)
+        return selected[0] if selected else None
+
+    def select_multiple_items(
+        self,
+        items: Iterable[T],
+        *,
+        key: Callable[[T], str],
+        prompt: str,
+        sortOrder: SortOrder = None,
+    ) -> T:
+        return self._select_items(items, key=key, multi=True, prompt=prompt, sortOrder=sortOrder)
+
+    def select_one_string(
+        self,
+        items: Iterable[str],
+        *,
+        prompt: str,
+        sortOrder: SortOrder = None,
+    ) -> str:
+        selected = self._select(items, multi=False, prompt=prompt)
+        return selected[0] if selected else None
+
+    def select_multiple_strings(
+        self,
+        items: Iterable[str],
+        *,
+        prompt: str,
+    ) -> list[str]:
+        return self._select(items, multi=True, prompt=prompt)
+
+    def _select_items(
         self,
         items: Iterable[T],
         *,
         key: Callable[[T], str],
         multi: bool = False,
         prompt: str,
+        sortOrder: SortOrder = None,
     ) -> list[T]:
         """
         Select objects using fzf based on a string key function.
         """
-        # Build lookup table (preserves unique mapping)
         lookup = {key(item): item for item in items}
+        keys = list(lookup.keys())
 
-        # Stream just the keys to fzf
-        selected_keys = self.select(lookup.keys(), multi=multi, prompt=prompt)
+        if sortOrder is not None:
+            keys.sort(reverse=True if sortOrder == SortOrder.DESCENDING else False)
 
-        # Map strings back to original objects
+        selected_keys = self._select(keys, multi=multi, prompt=prompt)
+
         return [lookup[k] for k in selected_keys]
 
-    def select(
+    def _select(
         self,
         items: Iterable[str],
         *,
