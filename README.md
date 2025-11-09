@@ -8,11 +8,11 @@ This project is currently WIP and cannot be used yet.
 
 easyborg distinguishes between _backup_ and _archive_ repositories:
 
-| Aspect     | Backup (short-term)           | Archive (long-term)                  |
-|------------|-------------------------------|--------------------------------------|
-| Purpose    | recovery in case of emergency | preservation for long-term reference |
-| Data State | current, changing             | old, stable                          |
-| Retention  | days to months                | years or forever                     |
+|                | Backup (short-term)           | Archive (long-term)                  |
+|----------------|-------------------------------|--------------------------------------|
+| **Purpose**    | recovery in case of emergency | preservation for long-term reference |
+| **Data state** | current, changing             | old, stable                          |
+| **Retention**  | days to months                | years or forever                     |
 
 ## Backup
 
@@ -27,21 +27,21 @@ easyborg creates snapshots of your configured backup folders regularly.
 
 ## Archive
 
-Archiving is manual and intentional.
+easyborg lets you create archive snapshots manually when needed
 
-Do this when you want to *keep a specific state* for the long term.  
-Each folder is stored in its own snapshot to allow selective pruning later.
+Do this when you want to *keep a specific state* for the long term. Each folder is stored in its own snapshot to allow
+selective pruning later.
 
 ## Glossary
 
-| Term               | Meaning                                                         | Borg term        |
+| easyborg term      | Meaning                                                         | Borg term        |
 |--------------------|-----------------------------------------------------------------|------------------|
-| Snapshot           | Immutable point-in-time view of data                            | Archive          |
-| Backup Repository  | Storage of snapshots intended for recovery                      | Repository       |
-| Archive Repository | Storage of snapshots intended for preservation                  | Repository       |
-| Backup (action)    | Create snapshot in backup repository                            | `borg create`    |
-| Archive (action)   | Create snapshot in archive repository                           | `borg create`    |
-| Extract (action)   | Fetch selected items from snapshot                              | `borg extract`   | 
-| Restore (action)   | Fetch entire snapshot                                           | `borg extract`   |
+| Snapshot           | immutable point-in-time view of data                            | Archive          |
+| Backup Repository  | storage of snapshots intended for recovery                      | Repository       |
+| Archive Repository | storage of snapshots intended for preservation                  | Repository       |
+| Backup (action)    | create snapshot in backup repository                            | `borg create`    |
+| Archive (action)   | create snapshot in archive repository                           | `borg create`    |
+| Extract (action)   | fetch selected items from snapshot                              | `borg extract`   | 
+| Restore (action)   | fetch entire snapshot                                           | `borg extract`   |
 | Repository URL     | Borg-style repository reference (local or remote)               | (same)           |
 | Snapshot Location  | Borg-style snapshot reference (`repository_url::snapshot_name`) | Archive Location |
