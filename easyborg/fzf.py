@@ -49,12 +49,6 @@ class Fzf:
 
         selected_keys = self.select_strings(keys, multi=multi, prompt=prompt)
 
-        for item in items:
-            k = key(item)
-            if k in lookup:
-                raise ValueError(f"Duplicate fzf key detected: {k!r}")
-            lookup[k] = item
-
         return [lookup[k] for k in selected_keys]
 
     def select_strings(
