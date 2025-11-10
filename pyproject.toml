@@ -10,11 +10,11 @@ readme = "README.md"
 requires-python = ">=3.9"
 
 dependencies = [
-    "typer",
+    "click",
 ]
 
 [project.scripts]
-easyborg = "easyborg.cli:app"
+easyborg = "easyborg.cli:cli"
 
 # Development-only dependencies
 [project.optional-dependencies]

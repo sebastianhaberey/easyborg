@@ -33,27 +33,29 @@ class Core:
         """
         Display configuration details.
         """
+        ui.newline()
+
+        ui.info("Global Settings")
+        ui.info(f"  - Configuration file: {self.config.source}")
+        ui.info(f"  - Log file: {get_current_log_file() or 'not configured'}")
+        ui.info(f"  - Log level: {get_current_log_level() or 'not configured'}")
 
         ui.newline()
-        ui.table(
-            title="Global Settings",
-            headers=["Item", "Value"],
-            rows=[
-                ("Configuration file", str(self.config.source)),
-                ("Log file", str(get_current_log_file()) or "not configured"),
-                ("Log level", str(get_current_log_level()) or "not configured"),
-            ],
-        )
-        ui.table(
-            title="Backup Folders",
-            headers=["Folder"],
-            rows=[(str(folder),) for folder in self.folders],
-        )
-        ui.table(
-            title="Repositories",
-            headers=["Name", "Type", "Path"],
-            rows=[(repo.name, repo.type.value, repo.url) for repo in self.repos.values()],
-        )
+        ui.info("Backup Folders")
+        if self.folders:
+            for folder in self.folders:
+                ui.info(f"  - {folder}")
+        else:
+            ui.info("No backup folders configured.")
+
+        ui.newline()
+        ui.info("Repositories")
+        if self.repos:
+            for repo in self.repos.values():
+                ui.info(f"  - {repo.name}: {repo.type.value} @ {repo.url}")
+        else:
+            ui.info("No repositories configured.")
+
         ui.newline()
 
     def backup(self, dry_run: bool = False) -> None:

@@ -1,7 +1,6 @@
 from pathlib import Path
 
 import pytest
-
 from easyborg.borg import Borg
 from easyborg.logging_setup import setup_logging
 from easyborg.model import RepositoryType

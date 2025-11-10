@@ -1,10 +1,10 @@
 # easyborg/__main__.py
 from easyborg import ui
-from easyborg.cli import app
+from easyborg.cli import cli
 
 if __name__ == "__main__":
     try:
-        app()
+        cli()
     except KeyboardInterrupt:
         ui.warn("Aborted by user.")
     except Exception as e:
