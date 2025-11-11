@@ -33,30 +33,26 @@ class Core:
         """
         Display configuration details.
         """
+        ui.header("Configuration")
+        ui.info(f"  - [cyan]Configuration file[/cyan] {self.config.source}")
+        ui.info(f"  - [cyan]Log file[/cyan] {get_current_log_file() or 'not configured'}")
+        ui.info(f"  - [cyan]Log level[/cyan] {get_current_log_level() or 'not configured'}")
         ui.newline()
 
-        ui.info("Global Settings")
-        ui.info(f"  - Configuration file: {self.config.source}")
-        ui.info(f"  - Log file: {get_current_log_file() or 'not configured'}")
-        ui.info(f"  - Log level: {get_current_log_level() or 'not configured'}")
-
-        ui.newline()
-        ui.info("Backup Folders")
+        ui.header("Backup Folders")
         if self.folders:
             for folder in self.folders:
                 ui.info(f"  - {folder}")
         else:
             ui.info("No backup folders configured.")
-
         ui.newline()
-        ui.info("Repositories")
+
+        ui.header("Repositories")
         if self.repos:
             for repo in self.repos.values():
-                ui.info(f"  - {repo.name}: {repo.type.value} @ {repo.url}")
+                ui.info(f"  - {repo.name}: {repo.url} ({repo.type.value})")
         else:
-            ui.info("No repositories configured.")
-
-        ui.newline()
+            ui.info("  No repositories configured.")
 
     def backup(self, dry_run: bool = False) -> None:
         """
