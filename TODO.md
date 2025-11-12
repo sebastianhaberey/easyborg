@@ -9,6 +9,7 @@
 - add status command (checks repository access and directory existence)
 - implement long path strategy (1024 macOS / 4096 Linux ext4 )
 - auto-completion (CLI)
+- add env vars for all useful tweaks
 
 # DONE
 

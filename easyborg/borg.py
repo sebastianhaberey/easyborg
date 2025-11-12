@@ -1,10 +1,10 @@
 import logging
 import os
-from collections.abc import Callable, Iterator
+from collections.abc import Iterator
 from pathlib import Path
 
 from easyborg.model import ProgressEvent, Repository, RepositoryType, Snapshot
-from easyborg.process import assert_executable, run_async, run_sync
+from easyborg.process import Output, assert_executable, run_async, run_sync
 from easyborg.progress_parser import parse_progress
 from easyborg.util import to_relative_path
 
@@ -104,7 +104,6 @@ class Borg:
         folders: list[Path],
         *,
         dry_run: bool = False,
-        progress_func: Callable[[Iterator[ProgressEvent]], None] | None = None,
     ):
         """
         Create a new snapshot.
@@ -116,8 +115,6 @@ class Borg:
                 raise RuntimeError(f"Folder does not exist: {folder}")
 
         cmd = [self.borg, "create"]
-        if progress_func:
-            cmd.extend(["--progress", "--log-json"])
         if dry_run:
             cmd.append("--dry-run")
         if snap.comment:
@@ -125,10 +122,7 @@ class Borg:
         cmd.append(snap.location())
         cmd.append(*map(str, folders))
 
-        if progress_func:
-            progress_func(parse_progress(run_async(cmd, stream="stderr")))
-        else:
-            run_sync(cmd)
+        run_sync(cmd)
 
     def restore(
         self,
@@ -137,10 +131,11 @@ class Borg:
         folders: list[Path] | None = None,
         *,
         dry_run: bool = False,
-        progress_func: Callable[[Iterator[ProgressEvent]], None] | None = None,
-    ):
+        progress: bool = False,
+    ) -> Iterator[ProgressEvent] | None:
         """
         Restore folders (or the entire snapshot if folders=None) into target_dir.
+        Returns progress events if progress=True (slows down performance).
         """
         if folders is None:
             folders = []
@@ -154,23 +149,23 @@ class Borg:
         relative_folders = [to_relative_path(folder) for folder in folders]
 
         cmd = [self.borg, "extract"]
-        if progress_func:
+        if progress:
             cmd.extend(["--progress", "--log-json"])
         if dry_run:
             cmd.append("--dry-run")
         cmd.extend([snap.location(), *map(str, relative_folders)])
 
-        if progress_func:
-            progress_func(parse_progress(run_async(cmd, cwd=str(target_dir), stream="stderr")))
-        else:
-            run_sync(cmd, cwd=str(target_dir))
+        if progress:
+            return parse_progress(run_async(cmd, cwd=str(target_dir), output=Output.STDERR))
+
+        run_sync(cmd, cwd=str(target_dir))
+        return None
 
     def prune(
         self,
         repo: Repository,
         *,
         dry_run: bool = False,
-        progress_func: Callable[[Iterator[ProgressEvent]], None] | None = None,
     ) -> None:
         """
         Prune old snapshots in the repository according to retention policy.
@@ -179,23 +174,17 @@ class Borg:
 
         cmd = [self.borg, "prune"]
         cmd.extend(["--keep-daily=7", "--keep-weekly=12", "--keep-monthly=12"])
-        if progress_func:
-            cmd.extend(["--progress", "--log-json"])
         if dry_run:
             cmd.append("--dry-run")
         cmd.append(repo.url)
 
-        if progress_func:
-            progress_func(parse_progress(run_async(cmd, stream="stderr")))
-        else:
-            run_sync(cmd)
+        run_sync(cmd)
 
     def compact(
         self,
         repo: Repository,
         *,
         dry_run: bool = False,
-        progress_func=Callable[[Iterator[ProgressEvent]], None],
     ) -> None:
         """
         Run `borg compact` to reclaim space.
@@ -203,13 +192,9 @@ class Borg:
         logger.debug("Compacting repository %s (%s)", repo.name, repo.url)
 
         cmd = [self.borg, "compact"]
-        if progress_func:
-            cmd.extend(["--progress", "--log-json"])
         if dry_run:
             cmd.append("--dry-run")
         cmd.append(repo.url)
 
-        if progress_func:
-            progress_func(parse_progress(run_async(cmd, stream="stderr")))
-        else:
-            run_sync(cmd)
+        run_sync(cmd)
+        return None

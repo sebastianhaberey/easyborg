@@ -30,7 +30,7 @@ class Fzf:
         key: Callable[[T], str],
         multi: bool = False,
         prompt: str,
-        sort_order: SortOrder = None,
+        sort_order: SortOrder | None = None,
     ) -> list[T]:
         """
         Select objects using fzf based on a string key function.

@@ -1,8 +1,14 @@
 import logging
 import subprocess
 from collections.abc import Iterable, Iterator
+from enum import Enum
 
 logger = logging.getLogger(__name__)
+
+
+class Output(Enum):
+    STDOUT = "stdout"
+    STDERR = "stderr"
 
 
 class ProcessError(RuntimeError):
@@ -39,7 +45,7 @@ def run_async(
     *,
     input_lines: Iterable[str] | None = None,
     cwd: str | None = None,
-    stream: str = "stdout",  # can be "stdout" or "stderr"
+    output: Output = Output.STDOUT,
 ) -> Iterator[str]:
     """
     Run a subprocess and yield lines from either stdout or stderr.
@@ -62,10 +68,10 @@ def run_async(
             process.stdin.write(line + "\n")
         process.stdin.close()
 
-    stream_pipe = process.stdout if stream == "stdout" else process.stderr
-    assert stream_pipe is not None
+    stream = process.stdout if output == Output.STDOUT else process.stderr
+    assert stream is not None
 
-    for line in stream_pipe:
+    for line in stream:
         yield line.rstrip("\n")
 
     return_code = process.wait()
