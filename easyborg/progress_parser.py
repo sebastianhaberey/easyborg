@@ -1,0 +1,29 @@
+import json
+from collections.abc import Generator, Iterator
+
+from easyborg.model import ProgressEvent
+
+CRITICAL_LEVELS = ["WARNING", "ERROR", "CRITICAL"]
+
+
+def parse_progress(lines: Iterator[str]) -> Generator[ProgressEvent, None, None]:
+    """
+    Transform Borg extract JSON progress lines into progress events.
+    """
+    for line in lines:
+        try:
+            event = json.loads(line)
+        except json.JSONDecodeError:
+            raise RuntimeError(f"Unexpected event: '{line}'")
+
+        # print(f"{line}")
+
+        event_type = event.get("type")
+
+        if event_type == "log_message" and (event.get("levelname") in CRITICAL_LEVELS):
+            raise RuntimeError(f"Received error event: {event.get('message')}")
+
+        if event_type != "progress_percent" or event.get("total") is None or event.get("current") is None:
+            continue
+
+        yield ProgressEvent(total=(event.get("total")), current=(event.get("current")))

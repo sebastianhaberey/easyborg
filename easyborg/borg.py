@@ -1,10 +1,11 @@
 import logging
 import os
-from collections.abc import Iterator
+from collections.abc import Callable, Iterator
 from pathlib import Path
 
-from easyborg.model import Repository, RepositoryType, Snapshot
+from easyborg.model import ProgressEvent, Repository, RepositoryType, Snapshot
 from easyborg.process import assert_executable, run_async, run_sync
+from easyborg.progress_parser import parse_progress
 from easyborg.util import to_relative_path
 
 logger = logging.getLogger(__name__)
@@ -25,7 +26,10 @@ class Borg:
         Return True if the repository exists and is accessible.
         """
         try:
-            run_sync([self.borg, "info", repo.url])
+            cmd = [self.borg, "info"]
+            cmd.append(repo.url)
+
+            run_sync(cmd)
             return True
         except RuntimeError:
             return False
@@ -42,7 +46,11 @@ class Borg:
         """
         logger.debug("Listing snapshots in %s (%s)", repo.name, repo.url)
 
-        lines = run_sync([self.borg, "list", repo.url, "--format", "{archive}{TAB}{comment}\n"])
+        cmd = [self.borg, "list"]
+        cmd.extend(["--format", "{archive}{TAB}{comment}\n"])
+        cmd.append(repo.url)
+
+        lines = run_sync(cmd)
 
         snapshots = []
         for line in lines:
@@ -58,7 +66,11 @@ class Borg:
         """
         logger.debug("Listing contents of %s", snap.location())
 
-        for line in run_async([self.borg, "list", snap.location(), "--format", "{path}\n"]):
+        cmd = [self.borg, "list"]
+        cmd.extend(["--format", "{path}\n"])
+        cmd.append(snap.location())
+
+        for line in run_async(cmd):
             if line:
                 yield Path(line)
 
@@ -77,15 +89,23 @@ class Borg:
         directory.mkdir(parents=False, exist_ok=False)
 
         cmd = [self.borg, "init"]
+        cmd.append(f"--encryption={encryption}")
         if dry_run:
             cmd.append("--dry-run")
-        cmd.extend([f"--encryption={encryption}", str(directory)])
+        cmd.append(str(directory))
 
         run_sync(cmd)
 
         return Repository(name=name, url=str(directory), type=type)
 
-    def create_snapshot(self, snap: Snapshot, folders: list[Path], *, dry_run: bool = False):
+    def create_snapshot(
+        self,
+        snap: Snapshot,
+        folders: list[Path],
+        *,
+        dry_run: bool = False,
+        progress_func=Callable[[Iterator[ProgressEvent]], None],
+    ):
         """
         Create a new snapshot.
         """
@@ -96,15 +116,29 @@ class Borg:
                 raise RuntimeError(f"Folder does not exist: {folder}")
 
         cmd = [self.borg, "create"]
+        if progress_func:
+            cmd.extend(["--progress", "--log-json"])
         if dry_run:
             cmd.append("--dry-run")
         if snap.comment:
             cmd.extend(["--comment", snap.comment])
-        cmd.extend([snap.location(), *map(str, folders)])
+        cmd.append(snap.location())
+        cmd.append(*map(str, folders))
 
-        run_sync(cmd)
+        if progress_func:
+            progress_func(parse_progress(run_async(cmd, stream="stderr")))
+        else:
+            run_sync(cmd)
 
-    def restore(self, snap: Snapshot, target_dir: Path, folders: list[Path] | None = None, *, dry_run: bool = False):
+    def restore(
+        self,
+        snap: Snapshot,
+        target_dir: Path,
+        folders: list[Path] | None = None,
+        *,
+        dry_run: bool = False,
+        progress_func=Callable[[Iterator[ProgressEvent]], None],
+    ):
         """
         Restore folders (or the entire snapshot if folders=None) into target_dir.
         """
@@ -120,41 +154,62 @@ class Borg:
         relative_folders = [to_relative_path(folder) for folder in folders]
 
         cmd = [self.borg, "extract"]
+        if progress_func:
+            cmd.extend(["--progress", "--log-json"])
         if dry_run:
             cmd.append("--dry-run")
         cmd.extend([snap.location(), *map(str, relative_folders)])
 
-        run_sync(cmd, cwd=str(target_dir))
+        if progress_func:
+            progress_func(parse_progress(run_async(cmd, cwd=str(target_dir), stream="stderr")))
+        else:
+            run_sync(cmd, cwd=str(target_dir))
 
-    def prune(self, repo: Repository, *, dry_run: bool = False) -> None:
+    def prune(
+        self,
+        repo: Repository,
+        *,
+        dry_run: bool = False,
+        progress_func=Callable[[Iterator[ProgressEvent]], None],
+    ) -> None:
         """
         Prune old snapshots in the repository according to retention policy.
         """
         logger.debug("Pruning snapshots in %s (%s)", repo.name, repo.url)
 
-        cmd = [
-            self.borg,
-            "prune",
-            repo.url,
-            "--keep-daily=7",
-            "--keep-weekly=12",
-            "--keep-monthly=12",
-        ]
-
+        cmd = [self.borg, "prune"]
+        cmd.extend(["--keep-daily=7", "--keep-weekly=12", "--keep-monthly=12"])
+        if progress_func:
+            cmd.extend(["--progress", "--log-json"])
         if dry_run:
             cmd.append("--dry-run")
+        cmd.append(repo.url)
 
-        run_sync(cmd)
+        if progress_func:
+            progress_func(parse_progress(run_async(cmd, stream="stderr")))
+        else:
+            run_sync(cmd)
 
-    def compact(self, repo: Repository, *, dry_run: bool = False) -> None:
+    def compact(
+        self,
+        repo: Repository,
+        *,
+        dry_run: bool = False,
+        progress_func=Callable[[Iterator[ProgressEvent]], None],
+    ) -> None:
         """
         Run `borg compact` to reclaim space.
         """
         logger.debug("Compacting repository %s (%s)", repo.name, repo.url)
 
-        cmd = [self.borg, "compact", repo.url]
-
+        cmd = [self.borg, "compact"]
+        if progress_func:
+            cmd.extend(["--progress", "--log-json"])
         if dry_run:
             cmd.append("--dry-run")
+        cmd.append(repo.url)
 
-        run_sync(cmd)
+        if progress_func:
+            progress_func(parse_progress(run_async(cmd, stream="stderr")))
+        else:
+            run_sync(cmd)

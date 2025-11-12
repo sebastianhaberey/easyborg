@@ -59,6 +59,7 @@ class Core:
         Create snapshot of all configured folders in each repository configured as 'backup'.
         """
 
+        index = 0
         for repo in self.repos.values():
             if repo.type is not RepositoryType.BACKUP:
                 continue
@@ -66,18 +67,22 @@ class Core:
             if not self.borg.repository_accessible(repo):
                 raise RuntimeError(f"Repository not accessible: {repo.name} ({repo.url})")
 
+            if index:
+                ui.newline()
+
             snapshot = Snapshot(repo, create_snapshot_name())
             ui.info(f"Creating snapshot {snapshot.name} in repository {repo.name}")
-            self.borg.create_snapshot(snapshot, self.folders, dry_run=dry_run)
+            self.borg.create_snapshot(snapshot, self.folders, progress_func=ui.show_progress_bar, dry_run=dry_run)
 
             ui.info(f"Pruning old snapshots in repository {repo.name}")
-            self.borg.prune(repo, dry_run=dry_run)
+            self.borg.prune(repo, progress_func=ui.show_progress_bar, dry_run=dry_run)
 
             if random.random() < self.compact_probability:
-                ui.info(f"(Random check) Compacting repository {repo.name}")
-                self.borg.compact(repo, dry_run=dry_run)
+                ui.info(f"Compacting repository (random chance {_get_percent(self.compact_probability)}%) {repo.name}")
+                self.borg.compact(repo, progress_func=ui.show_progress_bar, dry_run=dry_run)
 
             ui.success("Backup complete")
+            index += 1
 
     def archive(self, folder: Path, dry_run: bool = False, comment: str | None = None) -> None:
         """
@@ -87,6 +92,7 @@ class Core:
         if not folder.is_dir():
             raise RuntimeError(f"Folder does not exist: {folder}")
 
+        index = 0
         for repo in self.repos.values():
             if repo.type is not RepositoryType.ARCHIVE:
                 continue
@@ -94,18 +100,22 @@ class Core:
             if not self.borg.repository_accessible(repo):
                 raise RuntimeError(f"Repository not accessible: {repo.name} ({repo.url})")
 
+            if index:
+                ui.newline()
+
             snapshot = Snapshot(repo, create_snapshot_name(), comment=comment)
             ui.info(f"Creating snapshot {snapshot.name} in repository {repo.name}")
-            self.borg.create_snapshot(snapshot, [folder], dry_run=dry_run)
+            self.borg.create_snapshot(snapshot, [folder], progress_func=ui.show_progress_bar, dry_run=dry_run)
 
             ui.info(f"Pruning old snapshots in repository {repo.name}")
-            self.borg.prune(repo, dry_run=dry_run)
+            self.borg.prune(repo, progress_func=ui.show_progress_bar, dry_run=dry_run)
 
             if random.random() < self.compact_probability:
-                ui.info(f"(Random check) Compacting repository {repo.name}")
-                self.borg.compact(repo, dry_run=dry_run)
+                ui.info(f"Compacting repository (random chance {_get_percent(self.compact_probability)}%) {repo.name}")
+                self.borg.compact(repo, progress_func=ui.show_progress_bar, dry_run=dry_run)
 
             ui.success("Archive complete")
+            index += 1
 
     def restore(self, dry_run: bool = False) -> None:
         """
@@ -128,7 +138,7 @@ class Core:
         target_dir = Path.cwd()
 
         ui.info(f"Restoring snapshot {snapshot.name} from repository {repo.name}")
-        self.borg.restore(snapshot, target_dir, dry_run=dry_run)
+        self.borg.restore(snapshot, target_dir, dry_run=dry_run, progress_func=ui.show_progress_bar)
         ui.success("Restore complete")
 
     def extract(self, dry_run: bool = False) -> None:
@@ -157,7 +167,13 @@ class Core:
         target_dir = Path.cwd()
 
         ui.info(f"Extracting {len(selected_paths)} item(s) from snapshot {snapshot.name} in repository {repo.name}")
-        self.borg.restore(snapshot, target_dir=target_dir, folders=selected_paths, dry_run=dry_run)
+        self.borg.restore(
+            snapshot,
+            target_dir=target_dir,
+            folders=selected_paths,
+            dry_run=dry_run,
+            progress_func=ui.show_progress_bar,
+        )
         ui.success("Extract complete")
 
     def _select_repo(self) -> Repository | None:
@@ -185,3 +201,9 @@ class Core:
             prompt="Select items to extract: ",
         )
         return [Path(s) for s in path_strings]
+
+
+def _get_percent(probability: float) -> int:
+    # Clamp to [0, 1] in case of small floating-point drift or rounding errors
+    probability = max(0.0, min(1.0, probability))
+    return int(round(probability * 100))

@@ -1,5 +1,3 @@
-# easyborg/util/run.py
-
 import logging
 import subprocess
 from collections.abc import Iterable, Iterator
@@ -41,10 +39,10 @@ def run_async(
     *,
     input_lines: Iterable[str] | None = None,
     cwd: str | None = None,
+    stream: str = "stdout",  # can be "stdout" or "stderr"
 ) -> Iterator[str]:
     """
-    Run a subprocess and yield stdout lines as they arrive.
-    Raises ProcessError(return_code) on non-zero exit.
+    Run a subprocess and yield lines from either stdout or stderr.
     """
     logger.debug("Running: %s", cmd)
 
@@ -55,21 +53,22 @@ def run_async(
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         text=True,
+        bufsize=1,
     )
 
-    # Feed streaming input to stdin
     if input_lines is not None:
         assert process.stdin is not None
         for line in input_lines:
             process.stdin.write(line + "\n")
         process.stdin.close()
 
-    assert process.stdout is not None
-    for line in process.stdout:
+    stream_pipe = process.stdout if stream == "stdout" else process.stderr
+    assert stream_pipe is not None
+
+    for line in stream_pipe:
         yield line.rstrip("\n")
 
     return_code = process.wait()
-
     if return_code != 0:
         stderr = process.stderr.read().strip() if process.stderr else None
         raise ProcessError(return_code, stderr)

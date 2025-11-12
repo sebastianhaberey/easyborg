@@ -32,3 +32,9 @@ class Config:
     source: Path
     folders: list[Path]
     repos: dict[str, Repository]
+
+
+@dataclass(slots=True)
+class ProgressEvent:
+    total: float | None
+    current: float | None
