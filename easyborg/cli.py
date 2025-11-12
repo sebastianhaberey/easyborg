@@ -1,45 +1,51 @@
-import sys
 from pathlib import Path
+from typing import Any
 
 import cloup
 from click import version_option
 from cloup import Context, HelpFormatter, HelpTheme, Style, argument, command, group, option
+from easyborg import ui
 from easyborg.config import load_config
 from easyborg.core import Core
 from easyborg.cron import Cron
 from easyborg.logging_setup import setup_logging
+from easyborg.model import Config
 
-CONTEXT_SETTINGS = Context.settings(
-    # parameters of Command:
-    formatter_settings=HelpFormatter.settings(
-        theme=HelpTheme(
-            invoked_command=Style(fg="magenta", bold=True),
-            heading=Style(fg="yellow", bold=True),
-            col1=Style(fg="cyan", bold=True),
-        ),
-    ),
-)
-
-setup_logging()
-config = load_config()
-core = Core(config, compact_probability=0.10)
+context_settings: dict[str, Any] | None = None
+config: Config | None = None
+core: Core | None = None
 
 
 def main() -> None:
-    import click
-
-    is_tty = sys.stdout.isatty()
-
-    if is_tty:
-        click.echo()  # add leading newline (only if TTY)
     try:
+        ui.newline()
+
+        global config, core, context_settings
+
+        context_settings = Context.settings(
+            # parameters of Command:
+            formatter_settings=HelpFormatter.settings(
+                theme=HelpTheme(
+                    invoked_command=Style(fg="magenta", bold=True),
+                    heading=Style(fg="yellow", bold=True),
+                    col1=Style(fg="cyan", bold=True),
+                ),
+            ),
+        )
+
+        setup_logging()
+        config = load_config()
+        core = Core(config, compact_probability=0.10)
+
         cli()
+
+    except Exception as e:
+        ui.error(f"{e}")
     finally:
-        if is_tty:
-            click.echo()  # add leading newline (only if TTY)
+        ui.newline()
 
 
-@group(help="easyborg – Borg for Dummies", context_settings=CONTEXT_SETTINGS)
+@group(help="easyborg – Borg for Dummies", context_settings=context_settings)
 @version_option(package_name="easyborg")
 def cli():
     pass

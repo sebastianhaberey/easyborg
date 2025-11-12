@@ -23,7 +23,10 @@ def parse_progress(lines: Iterator[str]) -> Generator[ProgressEvent, None, None]
         if event_type == "log_message" and (event.get("levelname") in CRITICAL_LEVELS):
             raise RuntimeError(f"Received error event: {event.get('message')}")
 
-        if event_type != "progress_percent" or event.get("total") is None or event.get("current") is None:
+        total = event.get("total")
+        current = event.get("current")
+
+        if event_type != "progress_percent" or not total or current is None:
             continue
 
-        yield ProgressEvent(total=(event.get("total")), current=(event.get("current")))
+        yield ProgressEvent(total=total, current=current)

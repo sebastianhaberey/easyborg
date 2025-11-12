@@ -104,7 +104,7 @@ class Borg:
         folders: list[Path],
         *,
         dry_run: bool = False,
-        progress_func=Callable[[Iterator[ProgressEvent]], None],
+        progress_func: Callable[[Iterator[ProgressEvent]], None] | None = None,
     ):
         """
         Create a new snapshot.
@@ -137,7 +137,7 @@ class Borg:
         folders: list[Path] | None = None,
         *,
         dry_run: bool = False,
-        progress_func=Callable[[Iterator[ProgressEvent]], None],
+        progress_func: Callable[[Iterator[ProgressEvent]], None] | None = None,
     ):
         """
         Restore folders (or the entire snapshot if folders=None) into target_dir.
@@ -170,7 +170,7 @@ class Borg:
         repo: Repository,
         *,
         dry_run: bool = False,
-        progress_func=Callable[[Iterator[ProgressEvent]], None],
+        progress_func: Callable[[Iterator[ProgressEvent]], None] | None = None,
     ) -> None:
         """
         Prune old snapshots in the repository according to retention policy.

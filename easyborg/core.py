@@ -34,25 +34,25 @@ class Core:
         Display configuration details.
         """
         ui.header("Configuration")
-        ui.info(f"  - [cyan]Configuration file[/cyan] {self.config.source}")
-        ui.info(f"  - [cyan]Log file[/cyan] {get_current_log_file() or 'not configured'}")
-        ui.info(f"  - [cyan]Log level[/cyan] {get_current_log_level() or 'not configured'}")
+        ui.out(f"  - [cyan]Configuration file[/cyan] {self.config.source}", log=False)
+        ui.out(f"  - [cyan]Log file[/cyan] {get_current_log_file() or 'not configured'}", log=False)
+        ui.out(f"  - [cyan]Log level[/cyan] {get_current_log_level() or 'not configured'}", log=False)
         ui.newline()
 
         ui.header("Backup Folders")
         if self.folders:
             for folder in self.folders:
-                ui.info(f"  - {folder}")
+                ui.out(f"  - {folder}", log=False)
         else:
-            ui.info("No backup folders configured.")
+            ui.out("No backup folders configured.", log=False)
         ui.newline()
 
         ui.header("Repositories")
         if self.repos:
             for repo in self.repos.values():
-                ui.info(f"  - {repo.name}: {repo.url} ({repo.type.value})")
+                ui.out(f"  - {repo.name}: {repo.url} ({repo.type.value})", log=False)
         else:
-            ui.info("  No repositories configured.")
+            ui.out("  No repositories configured.", log=False)
 
     def backup(self, dry_run: bool = False) -> None:
         """
@@ -64,21 +64,21 @@ class Core:
             if repo.type is not RepositoryType.BACKUP:
                 continue
 
-            if not self.borg.repository_accessible(repo):
-                raise RuntimeError(f"Repository not accessible: {repo.name} ({repo.url})")
+            # if not self.borg.repository_accessible(repo):
+            #     raise RuntimeError(f"Repository not accessible: {repo.name} ({repo.url})")
 
             if index:
                 ui.newline()
 
             snapshot = Snapshot(repo, create_snapshot_name())
-            ui.info(f"Creating snapshot {snapshot.name} in repository {repo.name}")
+            ui.out(f"Creating snapshot '{snapshot.name}' in repository '{repo.name}'")
             self.borg.create_snapshot(snapshot, self.folders, progress_func=ui.show_progress_bar, dry_run=dry_run)
 
-            ui.info(f"Pruning old snapshots in repository {repo.name}")
+            ui.out(f"Pruning old snapshots in repository '{repo.name}'")
             self.borg.prune(repo, progress_func=ui.show_progress_bar, dry_run=dry_run)
 
             if random.random() < self.compact_probability:
-                ui.info(f"Compacting repository (random chance {_get_percent(self.compact_probability)}%) {repo.name}")
+                ui.out(f"Compacting repository (random chance {_get_percent(self.compact_probability)}%) '{repo.name}'")
                 self.borg.compact(repo, progress_func=ui.show_progress_bar, dry_run=dry_run)
 
             ui.success("Backup complete")
@@ -97,21 +97,21 @@ class Core:
             if repo.type is not RepositoryType.ARCHIVE:
                 continue
 
-            if not self.borg.repository_accessible(repo):
-                raise RuntimeError(f"Repository not accessible: {repo.name} ({repo.url})")
+            # if not self.borg.repository_accessible(repo):
+            #     raise RuntimeError(f"Repository not accessible: '{repo.name}' ({repo.url})")
 
             if index:
                 ui.newline()
 
             snapshot = Snapshot(repo, create_snapshot_name(), comment=comment)
-            ui.info(f"Creating snapshot {snapshot.name} in repository {repo.name}")
+            ui.out(f"Creating snapshot '{snapshot.name}' in repository '{repo.name}'")
             self.borg.create_snapshot(snapshot, [folder], progress_func=ui.show_progress_bar, dry_run=dry_run)
 
-            ui.info(f"Pruning old snapshots in repository {repo.name}")
+            ui.out(f"Pruning old snapshots in repository '{repo.name}'")
             self.borg.prune(repo, progress_func=ui.show_progress_bar, dry_run=dry_run)
 
             if random.random() < self.compact_probability:
-                ui.info(f"Compacting repository (random chance {_get_percent(self.compact_probability)}%) {repo.name}")
+                ui.out(f"Compacting repository (random chance {_get_percent(self.compact_probability)}%) '{repo.name}'")
                 self.borg.compact(repo, progress_func=ui.show_progress_bar, dry_run=dry_run)
 
             ui.success("Archive complete")
@@ -127,9 +127,10 @@ class Core:
             ui.warn("Aborted")
             return
 
-        if not self.borg.repository_accessible(repo):
-            raise RuntimeError(f"Repository not accessible: {repo.name} ({repo.url})")
+        # if not self.borg.repository_accessible(repo):
+        #     raise RuntimeError(f"Repository not accessible: {repo.name} ({repo.url})")
 
+        ui.out(f"Listing snapshots in repository '{repo.name}'")
         snapshot = self._select_snapshot(repo)
         if not snapshot:
             ui.warn("Aborted")
@@ -137,7 +138,7 @@ class Core:
 
         target_dir = Path.cwd()
 
-        ui.info(f"Restoring snapshot {snapshot.name} from repository {repo.name}")
+        ui.out(f"Restoring snapshot '{snapshot.name}' from repository '{repo.name}'")
         self.borg.restore(snapshot, target_dir, dry_run=dry_run, progress_func=ui.show_progress_bar)
         ui.success("Restore complete")
 
@@ -151,8 +152,8 @@ class Core:
             ui.warn("Aborted")
             return
 
-        if not self.borg.repository_accessible(repo):
-            raise RuntimeError(f"Repository not accessible: {repo.name} ({repo.url})")
+        # if not self.borg.repository_accessible(repo):
+        #     raise RuntimeError(f"Repository not accessible: {repo.name} ({repo.url})")
 
         snapshot = self._select_snapshot(repo)
         if not snapshot:
@@ -166,7 +167,7 @@ class Core:
 
         target_dir = Path.cwd()
 
-        ui.info(f"Extracting {len(selected_paths)} item(s) from snapshot {snapshot.name} in repository {repo.name}")
+        ui.out(f"Extracting {len(selected_paths)} item(s) from snapshot '{snapshot.name}' in repository '{repo.name}'")
         self.borg.restore(
             snapshot,
             target_dir=target_dir,

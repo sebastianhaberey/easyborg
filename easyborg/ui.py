@@ -3,7 +3,6 @@ from __future__ import annotations
 import logging
 from collections.abc import Iterator
 
-import rich
 from easyborg.model import ProgressEvent
 from rich.console import Console
 from rich.progress import BarColumn, Progress, TextColumn, TimeRemainingColumn
@@ -13,12 +12,13 @@ console = Console(highlight=False)
 
 
 def newline(count: int = 1) -> None:
-    rich.print("\n" * count, end="")
+    console.print("\n" * count, end="")
 
 
-def info(msg: str) -> None:
+def out(msg: str, *, log=True) -> None:
     console.print(msg)
-    logger.info(msg)
+    if log:
+        logger.info(msg)
 
 
 def success(msg: str) -> None:
@@ -58,7 +58,7 @@ def show_progress_bar(events: Iterator[ProgressEvent]) -> None:
         TimeRemainingColumn(elapsed_when_finished=True),
         refresh_per_second=10,
     ) as progress:
-        task_id = progress.add_task("task")
+        task_id = progress.add_task("task", total=None)
         total = None
         for event in events:
             # print(f"EVENT: {event}")

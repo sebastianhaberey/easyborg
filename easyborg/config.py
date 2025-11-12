@@ -16,7 +16,10 @@ def load_config(path: Path | None = None) -> Config:
     if path is None:
         path = Path.cwd() / "easyborg.toml"
 
-    raw = _load_toml(path)
+    try:
+        raw = _load_toml(path)
+    except FileNotFoundError:
+        raise RuntimeError(f"Configuration file not found at: {path}")
     return _parse_config(raw, source=path)
 
 

@@ -45,6 +45,22 @@ def test_skips_non_progress_events():
     assert result == []
 
 
+def test_skips_progress_events_with_total_zero():
+    # this occurs at the start of extract
+    lines = _to_iterator(
+        {
+            "message": "Calculating total archive size for the progress indicator",
+            "current": 0,
+            "total": 0,
+            "msgid": "extract",
+            "type": "progress_percent",
+        }
+    )
+
+    result = list(parse_progress(lines))
+    assert result == []
+
+
 def test_skips_finished_event():
     lines = _to_iterator(
         {
