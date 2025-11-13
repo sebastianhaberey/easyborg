@@ -38,3 +38,4 @@ class Config:
 class ProgressEvent:
     total: float | None
     current: float | None
+    message: str | None

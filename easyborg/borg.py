@@ -104,6 +104,7 @@ class Borg:
         folders: list[Path],
         *,
         dry_run: bool = False,
+        progress: bool = False,
     ):
         """
         Create a new snapshot.
@@ -115,6 +116,8 @@ class Borg:
                 raise RuntimeError(f"Folder does not exist: {folder}")
 
         cmd = [self.borg, "create"]
+        if progress:
+            cmd.extend(["--progress", "--log-json"])
         if dry_run:
             cmd.append("--dry-run")
         if snap.comment:
@@ -122,7 +125,11 @@ class Borg:
         cmd.append(snap.location())
         cmd.append(*map(str, folders))
 
+        if progress:
+            return parse_progress(run_async(cmd, output=Output.STDERR))
+
         run_sync(cmd)
+        return None
 
     def restore(
         self,
@@ -166,7 +173,8 @@ class Borg:
         repo: Repository,
         *,
         dry_run: bool = False,
-    ) -> None:
+        progress: bool = False,
+    ) -> Iterator[ProgressEvent] | None:
         """
         Prune old snapshots in the repository according to retention policy.
         """
@@ -174,27 +182,39 @@ class Borg:
 
         cmd = [self.borg, "prune"]
         cmd.extend(["--keep-daily=7", "--keep-weekly=12", "--keep-monthly=12"])
+        if progress:
+            cmd.extend(["--progress", "--log-json"])
         if dry_run:
             cmd.append("--dry-run")
         cmd.append(repo.url)
 
+        if progress:
+            return parse_progress(run_async(cmd, output=Output.STDERR))
+
         run_sync(cmd)
+        return None
 
     def compact(
         self,
         repo: Repository,
         *,
         dry_run: bool = False,
-    ) -> None:
+        progress: bool = False,
+    ) -> Iterator[ProgressEvent] | None:
         """
         Run `borg compact` to reclaim space.
         """
         logger.debug("Compacting repository %s (%s)", repo.name, repo.url)
 
         cmd = [self.borg, "compact"]
+        if progress:
+            cmd.extend(["--progress", "--log-json"])
         if dry_run:
             cmd.append("--dry-run")
         cmd.append(repo.url)
+
+        if progress:
+            return parse_progress(run_async(cmd, output=Output.STDERR))
 
         run_sync(cmd)
         return None

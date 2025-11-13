@@ -1,13 +1,14 @@
 from __future__ import annotations
 
 import random
+from collections.abc import Iterator
 from pathlib import Path
 
 from easyborg import ui
 from easyborg.borg import Borg
 from easyborg.fzf import Fzf, SortOrder
 from easyborg.logging_setup import get_current_log_file, get_current_log_level
-from easyborg.model import Config, Repository, RepositoryType, Snapshot
+from easyborg.model import Config, ProgressEvent, Repository, RepositoryType, Snapshot
 from easyborg.util import create_snapshot_name
 
 
@@ -34,25 +35,25 @@ class Core:
         Display configuration details.
         """
         ui.header("Configuration")
-        ui.out(f"  - [cyan]Configuration file[/cyan] {self.config.source}", log=False)
-        ui.out(f"  - [cyan]Log file[/cyan] {get_current_log_file() or 'not configured'}", log=False)
-        ui.out(f"  - [cyan]Log level[/cyan] {get_current_log_level() or 'not configured'}", log=False)
+        ui.out(f"  - [cyan]Configuration file[/cyan] {self.config.source}", write_log=False)
+        ui.out(f"  - [cyan]Log file[/cyan] {get_current_log_file() or 'not configured'}", write_log=False)
+        ui.out(f"  - [cyan]Log level[/cyan] {get_current_log_level() or 'not configured'}", write_log=False)
         ui.newline()
 
         ui.header("Backup Folders")
         if self.folders:
             for folder in self.folders:
-                ui.out(f"  - {folder}", log=False)
+                ui.out(f"  - {folder}", write_log=False)
         else:
-            ui.out("No backup folders configured.", log=False)
+            ui.out("No backup folders configured.", write_log=False)
         ui.newline()
 
         ui.header("Repositories")
         if self.repos:
             for repo in self.repos.values():
-                ui.out(f"  - {repo.name}: {repo.url} ({repo.type.value})", log=False)
+                ui.out(f"  - {repo.name}: {repo.url} ({repo.type.value})", write_log=False)
         else:
-            ui.out("  No repositories configured.", log=False)
+            ui.out("  No repositories configured.", write_log=False)
 
     def backup(self, dry_run: bool = False) -> None:
         """
@@ -68,20 +69,21 @@ class Core:
                 ui.newline()
 
             snapshot = Snapshot(repo, create_snapshot_name())
+
+            ui.out(f"Creating snapshot '{snapshot.name}' in repository '{repo.name}'")
             ui.spinner(
-                lambda: self.borg.create_snapshot(snapshot, self.folders, dry_run=dry_run),
-                f"Creating snapshot '{snapshot.name}' in repository '{repo.name}'",
+                lambda: self.borg.create_snapshot(snapshot, self.folders, dry_run=dry_run, progress=True),
             )
 
+            ui.out(f"Pruning old snapshots in repository '{repo.name}'")
             ui.spinner(
-                lambda: self.borg.prune(repo, dry_run=dry_run),
-                f"Pruning old snapshots in repository '{repo.name}'",
+                lambda: self.borg.prune(repo, dry_run=dry_run, progress=True),
             )
 
             if random.random() < self.compact_probability:
+                ui.out(f"Compacting repository '{repo.name}' (random chance {_get_percent(self.compact_probability)}%)")
                 ui.spinner(
-                    lambda: self.borg.compact(repo, dry_run=dry_run),
-                    f"Compacting repository (random chance {_get_percent(self.compact_probability)}%) '{repo.name}'",
+                    lambda: self.borg.compact(repo, dry_run=dry_run, progress=True),
                 )
 
             ui.success("Backup complete")
@@ -104,20 +106,21 @@ class Core:
                 ui.newline()
 
             snapshot = Snapshot(repo, create_snapshot_name(), comment=comment)
+
+            ui.out(f"Creating snapshot '{snapshot.name}' in repository '{repo.name}'")
             ui.spinner(
-                lambda: self.borg.create_snapshot(snapshot, [folder], dry_run=dry_run),
-                f"Creating snapshot '{snapshot.name}' in repository '{repo.name}'",
+                lambda: self.borg.create_snapshot(snapshot, [folder], dry_run=dry_run, progress=True),
             )
 
+            ui.out(f"Pruning old snapshots in repository '{repo.name}'")
             ui.spinner(
-                lambda: self.borg.prune(repo, dry_run=dry_run),
-                f"Pruning old snapshots in repository '{repo.name}'",
+                lambda: self.borg.prune(repo, dry_run=dry_run, progress=True),
             )
 
+            ui.out(f"Compacting repository '{repo.name}' (random chance {_get_percent(self.compact_probability)}%)")
             if random.random() < self.compact_probability:
                 ui.spinner(
-                    lambda: self.borg.compact(repo, dry_run=dry_run),
-                    f"Compacting repository (random chance {_get_percent(self.compact_probability)}%) '{repo.name}'",
+                    lambda: self.borg.compact(repo, dry_run=dry_run, progress=True),
                 )
 
             ui.success("Archive complete")
@@ -133,9 +136,16 @@ class Core:
             ui.warn("Aborted")
             return
 
-        snapshots = ui.spinner(
-            lambda: self.borg.list_snapshots(repo),
-            f"Listing snapshots in repository '{repo.name}'",
+        snapshots: list[Snapshot] | None = None
+
+        def list_snapshots(repo: Repository) -> Iterator[ProgressEvent]:
+            nonlocal snapshots
+            snapshots = self.borg.list_snapshots(repo)
+            return iter([])
+
+        ui.out(f"Listing snapshots in repository '{repo.name}'")
+        ui.spinner(
+            lambda: list_snapshots(repo),
         )
         snapshot = self._select_snapshot(snapshots)
         if not snapshot:
@@ -144,6 +154,7 @@ class Core:
 
         target_dir = Path.cwd()
 
+        ui.out(f"Restoring snapshot '{snapshot.name}' from repository '{repo.name}'")
         ui.progress(
             lambda: self.borg.restore(
                 snapshot,
@@ -151,7 +162,6 @@ class Core:
                 dry_run=dry_run,
                 progress=True,
             ),
-            f"Restoring snapshot '{snapshot.name}' from repository '{repo.name}' into CWD",
         )
         ui.success("Restore complete")
 
@@ -165,10 +175,18 @@ class Core:
             ui.warn("Aborted")
             return
 
-        snapshots = ui.spinner(
-            lambda: self.borg.list_snapshots(repo),
-            f"Listing snapshots in repository '{repo.name}'",
+        snapshots: list[Snapshot] | None = None
+
+        def list_snapshots(repo: Repository) -> Iterator[ProgressEvent]:
+            nonlocal snapshots
+            snapshots = self.borg.list_snapshots(repo)
+            return iter([])
+
+        ui.out(f"Listing snapshots in repository '{repo.name}'")
+        ui.spinner(
+            lambda: list_snapshots(repo),
         )
+
         snapshot = self._select_snapshot(snapshots)
         if not snapshot:
             ui.warn("Aborted")
@@ -181,6 +199,7 @@ class Core:
 
         target_dir = Path.cwd()
 
+        ui.out(f"Extracting {len(selected_paths)} item(s) from snapshot '{snapshot.name}' in repository '{repo.name}'")
         ui.progress(
             lambda: self.borg.restore(
                 snapshot,
@@ -189,8 +208,6 @@ class Core:
                 dry_run=dry_run,
                 progress=True,
             ),
-            f"Extracting {len(selected_paths)} item(s) "
-            f"from snapshot '{snapshot.name}' in repository '{repo.name}' into CWD",
         )
 
         ui.success("Extract complete")
@@ -220,7 +237,6 @@ class Core:
         return [Path(s) for s in path_strings]
 
 
-def _get_percent(probability: float) -> int:
-    # Clamp to [0, 1] in case of small floating-point drift or rounding errors
-    probability = max(0.0, min(1.0, probability))
-    return int(round(probability * 100))
+def _get_percent(value: float) -> int:
+    value = max(0.0, min(1.0, value))
+    return int(round(value * 100))

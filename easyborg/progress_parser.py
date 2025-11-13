@@ -25,8 +25,9 @@ def parse_progress(lines: Iterator[str]) -> Generator[ProgressEvent, None, None]
 
         total = event.get("total")
         current = event.get("current")
+        message = event.get("message")
 
-        if event_type != "progress_percent" or not total or current is None:
+        if total is None and current is None and message is None or message == "":
             continue
 
-        yield ProgressEvent(total=total, current=current)
+        yield ProgressEvent(total=total, current=current, message=message)
