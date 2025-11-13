@@ -69,6 +69,16 @@ class Fzf:
         if multi:
             cmd.append("--multi")
         cmd.append(f"--prompt={prompt}")
+        cmd.append("--cycle")
+        cmd.append("--color=prompt:-1,marker:bright-cyan,pointer:cyan,hl:cyan,hl+:bright-cyan")
+        cmd.append("--margin=1")
+        cmd.append("--info=right")
+        if multi:
+            # cmd.append("--marker=■ ")
+            # cmd.append("--marker=▌")
+            cmd.append("--marker=█ ")
+        else:
+            cmd.append("--marker=")
 
         try:
             return list(run_async(cmd, input_lines=items))

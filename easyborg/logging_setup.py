@@ -41,6 +41,9 @@ def setup_logging(test_mode: bool = False):
     CURRENT_LOG_FILE = log_file
     CURRENT_LOG_LEVEL = logging.getLevelName(level)
 
+    # mark beginning of this invocation
+    logger.info("--------------------------------------------------------------------------------")
+
 
 def get_log_dir() -> Path:
     """

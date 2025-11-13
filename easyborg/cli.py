@@ -25,17 +25,13 @@ config: Config | None = None
 core: Core | None = None
 
 
-def main() -> None:
+def run() -> None:
     try:
         ui.newline()
 
         global config, core
 
         setup_logging()
-        ui.out(
-            "--------------------------------------------------------------------------------",
-            write_console=False,
-        )
         config = load_config()
         core = Core(config, compact_probability=0.10)
 

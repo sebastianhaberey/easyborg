@@ -16,7 +16,7 @@ dependencies = [
 ]
 
 [project.scripts]
-easyborg = "easyborg.cli:main"
+easyborg = "easyborg.cli:run"
 
 # Development-only dependencies
 [project.optional-dependencies]

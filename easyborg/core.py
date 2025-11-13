@@ -199,7 +199,9 @@ class Core:
 
         target_dir = Path.cwd()
 
-        ui.out(f"Extracting {len(selected_paths)} item(s) from snapshot '{snapshot.name}' in repository '{repo.name}'")
+        item_count = len(selected_paths)
+        item_str = "one item" if item_count == 1 else f"{item_count} items"
+        ui.out(f"Extracting {item_str} from snapshot '{snapshot.name}' in repository '{repo.name}'")
         ui.progress(
             lambda: self.borg.restore(
                 snapshot,
@@ -232,6 +234,7 @@ class Core:
     def _select_paths(self, snapshot: Snapshot) -> list[Path]:
         path_strings = self.fzf.select_strings(
             map(str, self.borg.list_contents(snapshot)),
+            multi=True,
             prompt="Select items to extract: ",
         )
         return [Path(s) for s in path_strings]
