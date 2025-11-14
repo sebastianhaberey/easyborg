@@ -1,6 +1,7 @@
 # Easyborg
 
-Easyborg provides a simple workflow on top of [BorgBackup](https://www.borgbackup.org/) (aka Borg).
+Easyborg is a simple frontend for the awesome [BorgBackup](https://www.borgbackup.org/) (aka Borg) that uses
+[fzf](https://github.com/junegunn/fzf) for user input.
 
 This project is currently WIP and cannot be used yet.
 
@@ -13,7 +14,6 @@ This project is currently WIP and cannot be used yet.
 ### Backup
 
 <img src="https://haberey.com/easyborg/backup.gif" width="1024"  alt="Backup command in terminal"/>
-
 
 ## Installation
 
