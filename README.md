@@ -4,34 +4,68 @@ easyborg provides a simple workflow on top of [BorgBackup](https://www.borgbacku
 
 This project is currently WIP and cannot be used yet.
 
+## Screenshots
+
+TBD
+
+## Installation
+
+TBD
+
+## Usage
+
+TBD
+
 ## Concept
 
-easyborg distinguishes between _backup_ and _archive_ repositories:
+_easyborg_ makes a distinction between _backup_ and _archive_.
 
-|             | Purpose                                    | Data              | Retention        |
+|             | Purpose                                    | Data Type         | Retention        |
 |-------------|--------------------------------------------|-------------------|------------------|
-| **Backup**  | recovery in case of emergency (short-term) | current, changing | days to months   |
-| **Archive** | preservation for reference (long-term)     | old, stable       | years or forever |
+| **Backup**  | Recovery in case of emergency (short-term) | Current, changing | Days to months   |
+| **Archive** | Preservation for reference (long-term)     | Old, stable       | Years or forever |
 
-## Backup
+### Backup
 
-easyborg creates snapshots of your configured backup folders regularly:
+If you enable automatic backups, _easyborg_ will create a snapshot of all configured folders in each configured
+**backup repository** each full hour. Also, it will prune snapshots to save space. Here's how snapshots are
+preserved:
 
-| Frequency | Availability |
-|-----------|--------------|
-| hourly    | 24 hours     |
-| daily     | 7 days       |
-| weekly    | 12 weeks     |
-| monthly   | 12 months    |
+- one per day for the past seven days
+- one per week for the past three months
 
-## Archive
+Any snapshot older than three months will be deleted.
 
-easyborg lets you create archive snapshots manually when needed.
+> **NOTE** Pruning only occurs if _easyborg backup_ is called, manually or automatically.
+> If you don't call it, your existing snapshots won't be touched.
 
-Do this when you want to *keep a specific state*. Each folder is stored in its own snapshot to allow selective pruning
-later.
+### Archive
 
-## Glossary
+With _easyborg_ you can create a snapshot in each configured **archive repository** whenever you want. For example if
+you decide to tidy up your documents folder, a good strategy would be:
+
+1. Delete all files you want to get rid of forever (especially big files)
+2. Archive the remaining files (that you want to keep) using _easyborg archive_
+3. Delete all files you want to keep but don't need for your daily work
+
+That way, you can start with a nice clean slate and still have all the documents you might need for later reference
+stored safely in your archive repositories. Even if you accidentally deleted anything useful in step 1, you can still
+restore it using your backup repositories.
+
+Of course you can follow a different approach - it's up to you what you archive and when. Archive snapshots are never
+pruned automatically. If you want to delete a snapshot, use _easyborg delete_.
+
+### Relativization
+
+If you _backup_ or _archive_ a folder like `/Users/user/Documents`, it will be stored in the snapshot as
+`Users/user/Documents`. When you restore the folder, it will be written to
+`<current working directory>/Users/user/Documents` instead of overwriting the original folder.
+This is a safety feature. If you _do_ want to overwrite the original folder, you can
+
+- go to its parent folder (`/` in the example) and run the restore action there, or
+- remove the original folder and move the restored one (recommended)
+
+### Glossary
 
 | easyborg term      | Meaning                                                         | Borg term        |
 |--------------------|-----------------------------------------------------------------|------------------|

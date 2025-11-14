@@ -6,9 +6,11 @@ from pathlib import Path
 from easyborg.model import ProgressEvent, Repository, RepositoryType, Snapshot
 from easyborg.process import Output, assert_executable, run_async, run_sync
 from easyborg.progress_parser import parse_progress
-from easyborg.util import to_relative_path
 
 logger = logging.getLogger(__name__)
+
+# Options and arguments are written in the order recommended by Borg: borg <command> [options] [arguments].
+# (see https://borgbackup.readthedocs.io/en/stable/usage/general.html#positional-arguments-and-options-order-matters)
 
 
 class Borg:
@@ -26,8 +28,7 @@ class Borg:
         Return True if the repository exists and is accessible.
         """
         try:
-            cmd = [self.borg]
-            cmd.append("info")
+            cmd = [self.borg, "info"]
             cmd.append(repo.url)
 
             run_sync(cmd)
@@ -47,8 +48,7 @@ class Borg:
         """
         logger.debug("Listing snapshots in repository '%s'", repo.url)
 
-        cmd = [self.borg]
-        cmd.append("list")
+        cmd = [self.borg, "list"]
         cmd.extend(["--format", "{archive}{TAB}{comment}\n"])
         cmd.append(repo.url)
 
@@ -68,8 +68,7 @@ class Borg:
         """
         logger.debug("Listing contents of %s", snap.location())
 
-        cmd = [self.borg]
-        cmd.append("list")
+        cmd = [self.borg, "list"]
         cmd.extend(["--format", "{path}\n"])
         cmd.append(snap.location())
 
@@ -91,10 +90,9 @@ class Borg:
         directory = parent / name
         directory.mkdir(parents=False, exist_ok=False)
 
-        cmd = [self.borg]
+        cmd = [self.borg, "init"]
         if dry_run:
             cmd.append("--dry-run")
-        cmd.append("init")
         cmd.append(f"--encryption={encryption}")
         cmd.append(str(directory))
 
@@ -119,12 +117,11 @@ class Borg:
             if not os.path.isdir(folder):
                 raise RuntimeError(f"Folder does not exist: {folder}")
 
-        cmd = [self.borg]
+        cmd = [self.borg, "create"]
         if progress:
             cmd.extend(["--progress", "--log-json"])
         if dry_run:
             cmd.append("--dry-run")
-        cmd.append("create")
         if snap.comment:
             cmd.extend(["--comment", snap.comment])
         cmd.append(snap.location())
@@ -157,16 +154,12 @@ class Borg:
         if not target_dir.is_dir():
             raise RuntimeError(f"Target directory does not exist: {target_dir}")
 
-        # make absolute folders relative for safety
-        relative_folders = [to_relative_path(folder) for folder in folders]
-
-        cmd = [self.borg]
+        cmd = [self.borg, "extract"]
         if progress:
             cmd.extend(["--progress", "--log-json"])
         if dry_run:
             cmd.append("--dry-run")
-        cmd.append("extract")
-        cmd.extend([snap.location(), *map(str, relative_folders)])
+        cmd.extend([snap.location(), *map(str, folders)])
 
         if progress:
             return parse_progress(run_async(cmd, cwd=str(target_dir), output=Output.STDERR))
@@ -186,13 +179,12 @@ class Borg:
         """
         logger.debug("Pruning repository '%s'", repo.url)
 
-        cmd = [self.borg]
+        cmd = [self.borg, "prune"]
         if progress:
             cmd.extend(["--progress", "--log-json"])
         if dry_run:
             cmd.append("--dry-run")
-        cmd.append("prune")
-        cmd.extend(["--keep-daily=7", "--keep-weekly=12", "--keep-monthly=12"])
+        cmd.extend(["--keep-daily=7", "--keep-weekly=13"])
         cmd.append(repo.url)
 
         if progress:
@@ -213,12 +205,11 @@ class Borg:
         """
         logger.debug("Compacting repository '%s'", repo.url)
 
-        cmd = [self.borg]
+        cmd = [self.borg, "compact"]
         if progress:
             cmd.extend(["--progress", "--log-json"])
         if dry_run:
             cmd.append("--dry-run")
-        cmd.append("compact")
         cmd.append(repo.url)
 
         if progress:
@@ -239,12 +230,11 @@ class Borg:
         """
         logger.debug("Deleting snapshot '%s' from repository '%s' ", snap.name, snap.repository.url)
 
-        cmd = [self.borg]
+        cmd = [self.borg, "delete"]
         if progress:
             cmd.extend(["--progress", "--log-json"])
         if dry_run:
             cmd.append("--dry-run")
-        cmd.append("delete")
         cmd.append(snap.location())
 
         if progress:

@@ -51,7 +51,9 @@ class Core:
         ui.header("Repositories")
         if self.repos:
             for repo in self.repos.values():
-                ui.out(f"  - {repo.name}: {repo.url} ({repo.type.value})", write_log=False)
+                ui.out(
+                    rf"  - [cyan]{repo.name}[/cyan] {repo.url} [magenta]{repo.type.value}[/magenta]", write_log=False
+                )
         else:
             ui.out("  No repositories configured.", write_log=False)
 
