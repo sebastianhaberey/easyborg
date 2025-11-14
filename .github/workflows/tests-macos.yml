@@ -1,0 +1,45 @@
+name: Tests (macOS)
+
+on:
+  push:
+    branches: [ "main" ]     # only run on pushes to main
+  pull_request:
+    branches: [ "main" ]     # only run on PRs targeting main
+
+jobs:
+  test-macos:
+    runs-on: macos-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+
+      - name: Cache pip
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: macos-pip-${{ hashFiles('**/pyproject.toml') }}
+          restore-keys: |
+            macos-pip-
+
+      - name: Install system dependencies (fzf + borg)
+        run: |
+          brew update
+          brew install fzf borgbackup
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e .
+          pip install ".[dev]"
+
+      - name: Run ruff
+        run: ruff check .
+
+      - name: Run pytest
+        run: pytest -vv

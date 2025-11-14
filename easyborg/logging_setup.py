@@ -18,6 +18,10 @@ def setup_logging(test_mode: bool = False):
     """
     global CURRENT_LOG_FILE, CURRENT_LOG_LEVEL
 
+    is_test = test_mode or "PYTEST_CURRENT_TEST" in os.environ
+    if is_test:
+        return  # use settings from pytest.ini
+
     level = logging.getLevelName(os.environ.get("EASYBORG_LOG_LEVEL", "INFO").upper())
 
     logger = logging.getLogger()
@@ -25,9 +29,7 @@ def setup_logging(test_mode: bool = False):
     logger.handlers.clear()
 
     is_tty = sys.stdout.isatty()
-    is_test = test_mode or "PYTEST_CURRENT_TEST" in os.environ
-
-    if is_test or is_tty:
+    if is_tty:
         logger.addHandler(logging.NullHandler())
         return
 

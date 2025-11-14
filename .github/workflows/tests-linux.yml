@@ -1,4 +1,4 @@
-name: Tests
+name: Tests (Linux)
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
     branches: [ "**" ]
 
 jobs:
-  test:
+  test-linux:
     runs-on: ubuntu-latest
 
     steps:
@@ -17,17 +17,17 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: "3.14"
 
       - name: Cache pip
         uses: actions/cache@v4
         with:
           path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('**/pyproject.toml') }}
+          key: linux-pip-${{ hashFiles('**/pyproject.toml') }}
           restore-keys: |
-            ${{ runner.os }}-pip-
+            linux-pip-
 
-      - name: Install system dependencies (fzf, borg)
+      - name: Install system dependencies (fzf + borg)
         run: |
           sudo apt-get update
           sudo apt-get install -y fzf borgbackup
