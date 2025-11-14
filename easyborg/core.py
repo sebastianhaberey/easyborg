@@ -112,11 +112,6 @@ class Core:
                 lambda: self.borg.create_snapshot(snapshot, [folder], dry_run=dry_run, progress=True),
             )
 
-            ui.out(f"Pruning old snapshots in repository '{repo.name}'")
-            ui.spinner(
-                lambda: self.borg.prune(repo, dry_run=dry_run, progress=True),
-            )
-
             ui.out(f"Compacting repository '{repo.name}' (random chance {_get_percent(self.compact_probability)}%)")
             if random.random() < self.compact_probability:
                 ui.spinner(
