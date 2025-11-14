@@ -6,7 +6,14 @@ This project is currently WIP and cannot be used yet.
 
 ## Screenshots
 
-TBD
+### Extract
+
+<img src="https://haberey.com/easyborg/extract.gif" width="1024"  alt="Extract command in terminal"/>
+
+### Backup
+
+<img src="https://haberey.com/easyborg/backup.gif" width="1024"  alt="Backup command in terminal"/>
+
 
 ## Installation
 
