@@ -28,8 +28,8 @@ def assert_executable(executable: str):
     cmd = [executable, "--version"]
     try:
         run_sync(cmd)
-    except ProcessError as e:
-        raise RuntimeError(f"Could not execute {cmd}") from e
+    except Exception as e:
+        raise RuntimeError(f"Could not execute command {cmd}: {str(e)}") from e
 
 
 def run_sync(cmd: list[str], *, cwd: str | None = None, input_lines: Iterable[str] | str | None = None) -> list[str]:
