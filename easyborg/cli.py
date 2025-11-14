@@ -80,6 +80,13 @@ def extract(dry_run: bool):
 
 
 @command()
+@option("--dry-run", is_flag=True, help="Do not modify data.")
+def delete(dry_run: bool):
+    """Interactively delete snapshot from repository"""
+    core.delete(dry_run=dry_run)
+
+
+@command()
 def info():
     """Output info about the current configuration"""
     core.info()
@@ -105,6 +112,7 @@ cli.section(
     archive,
     restore,
     extract,
+    delete,
 )
 
 cli.section(

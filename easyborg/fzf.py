@@ -23,13 +23,19 @@ class Fzf:
         assert_executable(fzf_executable)
         self.fzf = fzf_executable
 
+    def confirm(self, prompt: str) -> bool | None:
+        response = self.select_strings(["MAYBE", "NO", "YES"], prompt=prompt)
+        if len(response) == 0:
+            return None
+        return response[0] == "YES"
+
     def select_items(
         self,
         items: Iterable[T],
-        *,
         key: Callable[[T], str],
+        *,
         multi: bool = False,
-        prompt: str,
+        prompt: str | None = None,
         sort_order: SortOrder | None = None,
     ) -> list[T]:
         """
@@ -56,7 +62,7 @@ class Fzf:
         items: Iterable[str],
         *,
         multi: bool = False,
-        prompt: str,
+        prompt: str = "Select: ",
     ) -> list[str]:
         """
         Run fzf on a stream of items and return the selected items.

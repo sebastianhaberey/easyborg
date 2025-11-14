@@ -1,7 +1,6 @@
 from pathlib import Path
 
 import pytest
-
 from easyborg.borg import Borg
 from easyborg.model import Repository, RepositoryType, Snapshot
 from easyborg.util import compare_directories, to_relative_path
@@ -120,3 +119,29 @@ def test_list_contents_fails_if_snapshot_not_found(borg, repo):
 
     with pytest.raises(RuntimeError):
         list(borg.list_contents(snap))
+
+
+def test_delete_snapshot(tmp_path, borg, repo, testdata_dir):
+    snap = Snapshot(repo, "snapshot")
+    borg.create_snapshot(snap, [testdata_dir])
+
+    assert len(borg.list_snapshots(repo)) == 1
+
+    borg.delete(snap)
+
+    assert len(borg.list_snapshots(repo)) == 0
+
+
+def test_delete_selected_snapshot_only(tmp_path, borg, repo, testdata_dir):
+    snap1 = Snapshot(repo, "snapshot1")
+    borg.create_snapshot(snap1, [testdata_dir])
+    snap2 = Snapshot(repo, "snapshot2")
+    borg.create_snapshot(snap2, [testdata_dir])
+
+    assert len(borg.list_snapshots(repo)) == 2
+
+    borg.delete(snap2)
+
+    snapshots = borg.list_snapshots(repo)
+    assert len(snapshots) == 1
+    assert snapshots[0].name == snap1.name

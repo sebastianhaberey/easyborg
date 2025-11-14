@@ -86,7 +86,7 @@ class Core:
                     lambda: self.borg.compact(repo, dry_run=dry_run, progress=True),
                 )
 
-            ui.success("Backup complete")
+            ui.success("Backup completed")
             index += 1
 
     def archive(self, folder: Path, dry_run: bool = False, comment: str | None = None) -> None:
@@ -118,7 +118,7 @@ class Core:
                     lambda: self.borg.compact(repo, dry_run=dry_run, progress=True),
                 )
 
-            ui.success("Archive complete")
+            ui.success("Archive completed")
             index += 1
 
     def restore(self, dry_run: bool = False) -> None:
@@ -158,7 +158,7 @@ class Core:
                 progress=True,
             ),
         )
-        ui.success("Restore complete")
+        ui.success("Restore completed")
 
     def extract(self, dry_run: bool = False) -> None:
         """
@@ -208,7 +208,7 @@ class Core:
             ),
         )
 
-        ui.success("Extract complete")
+        ui.success("Extract completed")
 
     def _select_repo(self) -> Repository | None:
         repos = self.fzf.select_items(
@@ -234,6 +234,53 @@ class Core:
             prompt="Select items to extract: ",
         )
         return [Path(s) for s in path_strings]
+
+    def delete(self, dry_run: bool = False) -> None:
+        """
+        Interactively delete entire snapshot.
+        """
+
+        repo = self._select_repo()
+        if not repo:
+            ui.warn("Aborted")
+            return
+
+        snapshots: list[Snapshot] | None = None
+
+        def list_snapshots(repo: Repository) -> Iterator[ProgressEvent]:
+            nonlocal snapshots
+            snapshots = self.borg.list_snapshots(repo)
+            return iter([])
+
+        ui.out(f"Listing snapshots in repository '{repo.name}'")
+        ui.spinner(
+            lambda: list_snapshots(repo),
+        )
+        snapshot = self._select_snapshot(snapshots)
+        if not snapshot:
+            ui.warn("Aborted")
+            return
+
+        response = self.fzf.confirm(f"Delete snaphshot '{snapshot.name}' from repository '{repo.name}': ")
+        if not response:
+            ui.warn("Aborted")
+            return
+
+        ui.out(f"Deleting snapshot '{snapshot.name}' from repository '{repo.name}'")
+        ui.progress(
+            lambda: self.borg.delete(
+                snapshot,
+                dry_run=dry_run,
+                progress=True,
+            ),
+        )
+
+        ui.out(f"Compacting repository '{repo.name}'")
+        ui.spinner(
+            lambda: self.borg.compact(repo, dry_run=dry_run, progress=True),
+        )
+
+        ui.success("Delete completed")
 
 
 def _get_percent(value: float) -> int:
