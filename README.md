@@ -15,7 +15,7 @@ This project is currently WIP and cannot be used yet.
 
 <img src="https://haberey.com/easyborg/backup.gif" width="1024"  alt="Backup command in terminal"/>
 
-## Installation
+## Setup
 
 TBD
 
@@ -43,30 +43,46 @@ preserved:
 
 Any snapshot older than three months will be deleted.
 
-> **NOTE** Pruning only occurs if _easyborg backup_ is called, manually or automatically.
+> **NOTE** Pruning only occurs when _easyborg backup_ is called, manually or automatically.
 > If you don't call it, your existing snapshots won't be touched.
 
 ### Archive
 
 With Easyborg you can create a snapshot in each configured **archive repository** whenever you want. For example if
-you decide to tidy up your documents folder, a good strategy would be:
+you decide to tidy up your _Documents_ folder, a resonable strategy would be:
 
-1. Delete all files you want to get rid of forever (especially big files)
-2. Archive the remaining files (that you want to keep) using _easyborg archive_
+1. Delete all files you want to get rid of (especially big files)
+2. Archive the remaining files using _easyborg archive_
 3. Delete all files you want to keep but don't need for your daily work
 
 That way, you can start with a nice clean slate and still have all the documents you might need for later reference
-stored safely in your archive repositories. Even if you accidentally deleted anything useful in step 1, you can still
-restore it using your backup repositories.
+stored in your archive repositories. Even if you accidentally deleted anything useful in step 1, you can still
+restore it using your backup repositories. Of course you can follow a different approach. It's up to you what to archive
+and when.
 
-Of course you can follow a different approach - it's up to you what you archive and when. Archive snapshots are never
-pruned automatically. If you want to delete a snapshot, use _easyborg delete_.
+> **NOTE** Archive snapshots are never pruned automatically. If you want to delete an archive snapshot, use _easyborg
+delete_.
 
 ### Relativization
 
-If you _backup_ or _archive_ a folder like _/Users/user/Documents_, it will be stored in the snapshot as
-_Users/user/Documents_. When you restore the folder, it will be written to
-_CURRENT_WORKING_DIRECTORY/Users/user/Documents_ instead of overwriting the original folder.
+If you _backup_ or _archive_ a folder, e.g.:
+
+```
+/Users/user/Documents
+```
+
+it will be stored in the snapshot as:
+
+```
+Users/user/Documents
+```
+
+When you restore the folder, it will be written to the current working directory:
+
+```
+<CWD>/Users/user/Documents
+```
+
 This is a safety feature. If you _do_ want to overwrite the original folder, you can
 
 - go to its parent folder (/ in the example) and run the restore action there, or
