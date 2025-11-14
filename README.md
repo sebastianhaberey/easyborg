@@ -5,7 +5,8 @@ with [fzf](https://github.com/junegunn/fzf) for user input.
 
 This project is currently WIP and cannot be used yet.
 
-[![Tests](https://github.com/sebastianhaberey/easyborg/actions/workflows/tests.yml/badge.svg)](https://github.com/sebastianhaberey/easyborg/actions/workflows/tests.yml)
+[![Tests (Linux)](https://github.com/sebastianhaberey/easyborg/actions/workflows/tests-linux.yml/badge.svg)](https://github.com/sebastianhaberey/easyborg/actions/workflows/tests-linux.yml)
+[![Tests (macOS)](https://github.com/sebastianhaberey/easyborg/actions/workflows/tests-macos.yml/badge.svg)](https://github.com/sebastianhaberey/easyborg/actions/workflows/tests-macos.yml) 
 
 ## Screenshots
 
