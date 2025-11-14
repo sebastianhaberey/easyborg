@@ -41,12 +41,5 @@ jobs:
       - name: Run ruff
         run: ruff check .
 
-      - name: Run pytest with JUnit reporting
-        run: |
-          pytest -vv --junitxml=pytest-report.xml
-
-      - name: Upload test results
-        uses: actions/upload-test-results@v1
-        if: always()
-        with:
-          files: pytest-report.xml
+      - name: Run pytest
+        run: pytest -vv
