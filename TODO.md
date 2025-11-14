@@ -1,5 +1,6 @@
 # TODO
 
+- record screenshots
 - option for light mode (fzf)
 - e2e test one repo fails -> next repo ok
 - show stack trace in debug mode only
