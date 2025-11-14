@@ -9,11 +9,11 @@ This project is currently WIP and cannot be used yet.
 
 ### Extract
 
-<img src="https://haberey.com/easyborg/extract-00.gif" width="1024"  alt="Extract command in terminal"/>
+<img src="https://haberey.com/easyborg/extract-01.gif" width="1024"  alt="Extract command in terminal"/>
 
 ### Backup
 
-<img src="https://haberey.com/easyborg/backup-00.gif" width="1024"  alt="Backup command in terminal"/>
+<img src="https://haberey.com/easyborg/backup-01.gif" width="1024"  alt="Backup command in terminal"/>
 
 ## Setup
 
@@ -60,17 +60,13 @@ I repeat:
 Example _easyborg.toml_
 
 ```
-# -----------------------------------------------------------------------------
-# Folders (backup)
-# -----------------------------------------------------------------------------
+# BACKUP FOLDERS
 
 folders = [
     "/Users/user/Documents",
 ]
 
-# -----------------------------------------------------------------------------
-# Repositories
-# -----------------------------------------------------------------------------
+# REPOSITORIES
 
 [repositories.BACKUP]
 type = "backup"
