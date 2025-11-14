@@ -1,6 +1,6 @@
-# easyborg
+# Easyborg
 
-easyborg provides a simple workflow on top of [BorgBackup](https://www.borgbackup.org/) (aka Borg).
+Easyborg provides a simple workflow on top of [BorgBackup](https://www.borgbackup.org/) (aka Borg).
 
 This project is currently WIP and cannot be used yet.
 
@@ -18,7 +18,7 @@ TBD
 
 ## Concept
 
-_easyborg_ makes a distinction between _backup_ and _archive_.
+Easyborg makes a distinction between _backup_ and _archive_.
 
 |             | Purpose                                    | Data Type         | Retention        |
 |-------------|--------------------------------------------|-------------------|------------------|
@@ -27,7 +27,7 @@ _easyborg_ makes a distinction between _backup_ and _archive_.
 
 ### Backup
 
-If you enable automatic backups, _easyborg_ will create a snapshot of all configured folders in each configured
+If you enable automatic backups, Easyborg will create a snapshot of all configured folders in each configured
 **backup repository** each full hour. Also, it will prune snapshots to save space. Here's how snapshots are
 preserved:
 
@@ -41,7 +41,7 @@ Any snapshot older than three months will be deleted.
 
 ### Archive
 
-With _easyborg_ you can create a snapshot in each configured **archive repository** whenever you want. For example if
+With Easyborg you can create a snapshot in each configured **archive repository** whenever you want. For example if
 you decide to tidy up your documents folder, a good strategy would be:
 
 1. Delete all files you want to get rid of forever (especially big files)
@@ -57,17 +57,17 @@ pruned automatically. If you want to delete a snapshot, use _easyborg delete_.
 
 ### Relativization
 
-If you _backup_ or _archive_ a folder like `/Users/user/Documents`, it will be stored in the snapshot as
-`Users/user/Documents`. When you restore the folder, it will be written to
-`<current working directory>/Users/user/Documents` instead of overwriting the original folder.
+If you _backup_ or _archive_ a folder like _/Users/user/Documents_, it will be stored in the snapshot as
+_Users/user/Documents_. When you restore the folder, it will be written to
+_CURRENT_WORKING_DIRECTORY/Users/user/Documents_ instead of overwriting the original folder.
 This is a safety feature. If you _do_ want to overwrite the original folder, you can
 
-- go to its parent folder (`/` in the example) and run the restore action there, or
+- go to its parent folder (/ in the example) and run the restore action there, or
 - remove the original folder and move the restored one (recommended)
 
 ### Glossary
 
-| easyborg term      | Meaning                                                         | Borg term        |
+| Easyborg term      | Meaning                                                         | Borg term        |
 |--------------------|-----------------------------------------------------------------|------------------|
 | Snapshot           | immutable point-in-time view of data                            | Archive          |
 | Backup Repository  | storage of snapshots intended for recovery                      | Repository       |

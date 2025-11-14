@@ -43,7 +43,7 @@ def run() -> None:
         ui.newline()
 
 
-@group(help="easyborg – Borg for Dummies", context_settings=CONTEXT_SETTINGS)
+@group(help="Easyborg – Borg for Dummies", context_settings=CONTEXT_SETTINGS)
 @version_option(package_name="easyborg")
 def cli():
     pass
