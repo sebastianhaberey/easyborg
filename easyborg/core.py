@@ -9,7 +9,7 @@ from easyborg.borg import Borg
 from easyborg.fzf import Fzf, SortOrder
 from easyborg.logging_setup import get_current_log_file, get_current_log_level
 from easyborg.model import Config, ProgressEvent, Repository, RepositoryType, Snapshot
-from easyborg.util import create_snapshot_name
+from easyborg.util import create_snapshot_name, remove_redundant_paths
 
 
 class Core:
@@ -192,10 +192,11 @@ class Core:
             ui.warn("Aborted")
             return
 
+        selected_paths = remove_redundant_paths(selected_paths)
         target_dir = Path.cwd()
-
         item_count = len(selected_paths)
         item_str = "one item" if item_count == 1 else f"{item_count} items"
+
         ui.out(f"Extracting {item_str} from snapshot '{snapshot.name}' in repository '{repo.name}'")
         ui.progress(
             lambda: self.borg.restore(

@@ -56,3 +56,26 @@ def find_snapshot_by_name(name: str, snapshots: list[Snapshot]) -> Snapshot | No
     if matching is None:
         raise RuntimeError(f"Snapshot does not exist: {name}")
     return matching
+
+
+def remove_redundant_paths(paths: list[Path]) -> list[Path]:
+    """
+    Normalize a list of Paths by removing redundant descendants.
+    Preserves the input order.
+
+    NOTE: complexity is about O(n^2) - dont use it on huge lists.
+    """
+    result: list[Path] = []
+
+    for p in paths:
+        # Skip if this path is already covered by an existing parent
+        if any(p.is_relative_to(parent) for parent in result):
+            continue
+
+        # Remove existing children now that we have a better (higher) parent
+        result = [parent for parent in result if not parent.is_relative_to(p)]
+
+        # Add current path
+        result.append(p)
+
+    return result
