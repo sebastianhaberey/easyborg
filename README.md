@@ -17,11 +17,67 @@ This project is currently WIP and cannot be used yet.
 
 ## Setup
 
-TBD
+### Prerequisites
+
+#### Dependencies
+
+- [BorgBackup](https://www.borgbackup.org/) (tested with v1.4.2)
+- [fzf](https://github.com/junegunn/fzf) (tested with 0.66.1)
+
+#### Repositories
+
+Easyborg doesn't supply any commands for creating repositories. It's easy enough to do this with Borg directly, and you
+only have to do it once. So make sure you have one or more repositories ready. For Easybork to use a repository, _borg
+list_ command must work WITHOUT you having to enter a password of any kind:
+
+```
+borg list /Volumes/STICK/backup
+2025-11-13T17:46:47-F1AC35F6         Thu, 2025-11-13 17:46:47 [7b9fd68dd8e991ea9fd598ca015e10266498afc156969ccdfe67149124fd27cc]
+2025-11-14T20:20:25-2965DCFB         Fri, 2025-11-14 20:20:25 [33539a1e5f2b83852cf5396ed442531d6b5d4cb2137522280285725c3ea5df48]
+```
+
+If you're asked for a SSH password, set up SSH access to your server. If you're asked for a Borg repository password,
+[set up BORG_PASSCOMMAND](https://borgbackup.readthedocs.io/en/stable/usage/general.html#environment-variables). I
+repeat:
+
+> **NOTE** Any repository you want to use with Easyborg should be accessible on your commandline **without** password
+> request.
+
+### Configuration
+
+Example _easyborg.toml_
+
+```
+# -----------------------------------------------------------------------------
+# Folders (backup)
+# -----------------------------------------------------------------------------
+
+folders = [
+    "/Users/user/Documents",
+]
+
+# -----------------------------------------------------------------------------
+# Repositories
+# -----------------------------------------------------------------------------
+
+[repositories.BACKUP]
+type = "backup"
+url = "/Volumes/STICK/backup"
+
+[repositories.ARCHIVE]
+type = "archive"
+url = "ssh://user@example.com/./archive"
+```
 
 ## Usage
 
-TBD
+Easyborg currently supports five commands: _backup_, _archive_, _restore_, _extract_ and _delete_. Use
+
+```
+easyborg --help
+```
+
+for details.
 
 ## Concept
 
