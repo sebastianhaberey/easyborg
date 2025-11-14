@@ -19,12 +19,12 @@ This project is currently WIP and cannot be used yet.
 
 ### Dependencies
 
-The following dependencies must be installed:
+Install:
 
 - [BorgBackup](https://www.borgbackup.org/) (tested with v1.4.2)
-- [fzf](https://github.com/junegunn/fzf) (tested with 0.66.1)
+- [fzf](https://github.com/junegunn/fzf) (tested with v0.66.1)
 
-Verify with
+Verify:
 
 ```
 $ borg --version
@@ -36,9 +36,8 @@ $ fzf --version
 
 ### Repositories
 
-Easyborg doesn't supply any commands for creating repositories. It's easy to do this with Borg directly, and you
-only have to do it once. For Easyborg to use a repository, the _borg list_ command must work **without** you having to
-enter a password of any kind:
+Easyborg doesn't provide any commands for creating repositories. It's easy to do with Borg, and you only have to do
+it once. For Easyborg to access a repository, Borg commands must work on it **without** having to enter a password:
 
 ```
 $ borg list /Volumes/STICK/backup
@@ -46,11 +45,9 @@ $ borg list /Volumes/STICK/backup
 2025-11-14T20:20:25-2965DCFB         Fri, 2025-11-14 20:20:25 [33539a1e5f2b83852cf5396ed442531d6b5d4cb2137522280285725c3ea5df48]
 ```
 
-- If you're asked for a SSH password, set up SSH access to your server.
+- If you're asked for a SSH password, set up access to your server via SSH key.
 - If you're asked for a Borg repository password,
   [set up BORG_PASSCOMMAND](https://borgbackup.readthedocs.io/en/stable/usage/general.html#environment-variables).
-
-I repeat:
 
 > **NOTE** Any repository you want to use with Easyborg should be accessible on your terminal **without** password
 > request.
@@ -79,7 +76,7 @@ url = "ssh://user@example.com/./archive"
 
 ## Usage
 
-Easyborg currently supports five commands: _backup_, _archive_, _restore_, _extract_ and _delete_. Use
+Easyborg currently supports five actions: _backup_, _archive_, _restore_, _extract_ and _delete_. Use
 
 ```
 $ easyborg --help
@@ -99,11 +96,11 @@ Easyborg makes a distinction between _backup_ and _archive_.
 ### Backup
 
 If you enable automatic backups, Easyborg will create a snapshot of all configured folders in each configured
-**backup repository** each full hour. Also, it will prune snapshots to save space. Here's how snapshots are
-preserved:
+**backup repository** every full hour. Meaning at 12:00, 13:00 and so on. Then, snapshots are pruned to save space.
+So after the 13:00 snapshot is written, the 12:00 snapshot will be deleted. Here's how snapshots are retained:
 
-- one per day for the past seven days
-- one per week for the past three months
+- the last snapshot of the day for the past seven days
+- one snapshot per week for the past three months
 
 Any snapshot older than three months will be deleted.
 
@@ -112,16 +109,15 @@ Any snapshot older than three months will be deleted.
 
 ### Archive
 
-With Easyborg you can create a snapshot in each configured **archive repository** whenever you want. For example if
+With Easyborg you create a snapshot in each configured **archive repository** whenever you want. For example if
 you decide to tidy up your _Documents_ folder, a resonable strategy would be:
 
 1. Delete all files you want to get rid of (especially big files)
 2. Archive the remaining files using _easyborg archive_
 3. Delete all files you want to keep but don't need for your daily work
 
-That way, you can start with a nice clean slate and still have all the documents you might need for later reference
-stored in your archive repositories. Even if you accidentally deleted anything useful in step 1, you can still
-restore it using your backup repositories. Of course you can follow a different approach. It's up to you what to archive
+That way, you start with a nice clean slate and still have all the documents you might need for later reference
+stored away in your archive repositories. Of course you can follow a different approach. It's up to you what to archive
 and when.
 
 > **NOTE** Archive snapshots are never pruned automatically. If you want to delete an archive snapshot, use _easyborg
@@ -141,7 +137,7 @@ it will be stored in the snapshot as:
 Users/user/Documents
 ```
 
-When you restore the folder, it will be written to the current working directory:
+When you _restore_ or _extract_ the folder, it will be written to the current working directory:
 
 ```
 <CWD>/Users/user/Documents
@@ -154,7 +150,7 @@ This is a safety feature. If you _do_ want to overwrite the original folder, you
 
 ### Glossary
 
-| Easyborg term      | Meaning                                                         | Borg term        |
+| Easyborg           | Meaning                                                         | Borg             |
 |--------------------|-----------------------------------------------------------------|------------------|
 | Snapshot           | immutable point-in-time view of data                            | Archive          |
 | Backup Repository  | storage of snapshots intended for recovery                      | Repository       |
