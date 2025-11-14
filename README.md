@@ -1,7 +1,7 @@
 # Easyborg
 
-Easyborg is a simple frontend for the awesome [BorgBackup](https://www.borgbackup.org/) (aka Borg) that uses
-[fzf](https://github.com/junegunn/fzf) for user input.
+Easyborg is a simple frontend for the awesome [BorgBackup](https://www.borgbackup.org/) (aka Borg)
+with [fzf](https://github.com/junegunn/fzf) for user input.
 
 This project is currently WIP and cannot be used yet.
 
