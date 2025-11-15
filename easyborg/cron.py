@@ -1,5 +1,3 @@
-# easyborg/cron.py
-
 from easyborg import ui
 from easyborg.process import ProcessError, run_sync
 
@@ -11,18 +9,17 @@ class Cron:
     Adds or removes entries in the user's crontab using the `crontab` CLI.
     """
 
-    def __init__(self, command: str = "easyborg backup", name="default"):
-        self.command = command
-        self.marker = f"# easyborg:{name}"
+    def __init__(self, profile: str):
+        self.marker = f"# easyborg:{profile}"
 
-    def enable(self, schedule: str = "@hourly"):
+    def enable(self, command: str, schedule: str = "@hourly"):
         """
         Add a cron entry with the given schedule (e.g. '@daily', '0 3 * * *').
 
         Idempotent: if the entry already exists, it won't be duplicated.
         """
         existing = _get_crontab()
-        entry = f"{schedule} {self.command} {self.marker}"
+        entry = f"{schedule} {command} {self.marker}"
 
         if entry in existing:
             ui.warn("Easyborg cron entry already exists")

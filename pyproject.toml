@@ -12,11 +12,12 @@ requires-python = ">=3.9"
 dependencies = [
     "click",
     "cloup",
-    "rich"
+    "rich",
+    "platformdirs"
 ]
 
 [project.scripts]
-easyborg = "easyborg.cli:run"
+easyborg = "easyborg.__main__:main"
 
 # Development-only dependencies
 [project.optional-dependencies]

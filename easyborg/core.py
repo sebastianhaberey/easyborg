@@ -6,9 +6,10 @@ from pathlib import Path
 
 from easyborg import ui
 from easyborg.borg import Borg
+from easyborg.context import Context
 from easyborg.fzf import Fzf, SortOrder
-from easyborg.logging_setup import get_current_log_file, get_current_log_level
 from easyborg.model import Config, ProgressEvent, Repository, RepositoryType, Snapshot
+from easyborg.ui import link_path
 from easyborg.util import create_snapshot_name, remove_redundant_paths
 
 
@@ -18,42 +19,58 @@ class Core:
     Borg backup operations, and interactive selection via fzf.
     """
 
-    def __init__(self, config: Config, borg: Borg | None = None, fzf: Fzf | None = None, compact_probability=1.0):
+    def __init__(self, config: Config, borg: Borg | None = Borg(), fzf: Fzf | None = Fzf()):
         """
         Initialize the controller.
         """
-
         self.config = config
         self.repos = config.repos
         self.folders = config.folders
-        self.borg = borg or Borg()
-        self.fzf = fzf or Fzf()
-        self.compact_probability = compact_probability
+        self.borg = borg
+        self.fzf = fzf
 
-    def info(self) -> None:
+    def info(self, context: Context) -> None:
         """
         Display configuration details.
         """
-        ui.header("Configuration")
-        ui.out(f"  - [cyan]Configuration file[/cyan] {self.config.source}", write_log=False)
-        ui.out(f"  - [cyan]Log file[/cyan] {get_current_log_file() or 'not configured'}", write_log=False)
-        ui.out(f"  - [cyan]Log level[/cyan] {get_current_log_level() or 'not configured'}", write_log=False)
-        ui.newline()
+        rows = [
+            ("Config dir", link_path(context.config_dir)),
+            ("Config file", link_path(context.config_file)),
+            ("Log dir", link_path(context.log_dir) if context.log_dir else "not configured"),
+            ("Log file", link_path(context.log_file) if context.log_file else "not configured"),
+            ("Log level", context.log_level or "not configured"),
+        ]
+        if context.expert:
+            rows.extend(
+                [
+                    ("Expert mode", context.expert),
+                    ("Profile", context.profile),
+                ]
+            )
+        ui.table(
+            rows,
+            column_colors=(None, "bold cyan"),
+            title="Configuration",
+        )
 
-        ui.header("Backup Folders")
         if self.folders:
-            for folder in self.folders:
-                ui.out(f"  - {folder}", write_log=False)
+            rows = [(link_path(folder),) for folder in self.folders]
+            ui.table(
+                rows,
+                column_colors=("bold cyan",),
+                title="Backup Folders",
+            )
         else:
             ui.out("No backup folders configured.", write_log=False)
-        ui.newline()
 
-        ui.header("Repositories")
         if self.repos:
-            for repo in self.repos.values():
-                ui.out(
-                    rf"  - [cyan]{repo.name}[/cyan] {repo.url} [magenta]{repo.type.value}[/magenta]", write_log=False
-                )
+            rows = [(repo.name, repo.url, repo.type.value) for repo in self.repos.values()]
+            ui.table(
+                rows,
+                title="Repositories",
+                column_colors=("white", "bold cyan", "bold magenta"),
+                headers=("Name", "URL", "Type"),
+            )
         else:
             ui.out("  No repositories configured.", write_log=False)
 
@@ -82,8 +99,8 @@ class Core:
                 lambda: self.borg.prune(repo, dry_run=dry_run, progress=True),
             )
 
-            if random.random() < self.compact_probability:
-                ui.out(f"Compacting repository '{repo.name}' (random chance {_get_percent(self.compact_probability)}%)")
+            if random.random() < self.config.compact_probability:
+                ui.out(f"Compacting repository '{repo.name}'")
                 ui.spinner(
                     lambda: self.borg.compact(repo, dry_run=dry_run, progress=True),
                 )
@@ -114,8 +131,8 @@ class Core:
                 lambda: self.borg.create_snapshot(snapshot, [folder], dry_run=dry_run, progress=True),
             )
 
-            ui.out(f"Compacting repository '{repo.name}' (random chance {_get_percent(self.compact_probability)}%)")
-            if random.random() < self.compact_probability:
+            ui.out(f"Compacting repository '{repo.name}'")
+            if random.random() < self.config.compact_probability:
                 ui.spinner(
                     lambda: self.borg.compact(repo, dry_run=dry_run, progress=True),
                 )

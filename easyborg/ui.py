@@ -2,12 +2,15 @@ from __future__ import annotations
 
 import logging
 import sys
-from collections.abc import Callable, Iterator
+from collections.abc import Callable, Iterable, Iterator, Sequence
+from pathlib import Path
 from typing import TypeVar
 
 from easyborg.model import ProgressEvent
+from rich import box
 from rich.console import Console
 from rich.progress import BarColumn, Progress, TextColumn, TimeRemainingColumn
+from rich.table import Table
 from rich.theme import Theme
 
 T = TypeVar("T")
@@ -111,3 +114,53 @@ def spinner(func: Callable[[], Iterator[ProgressEvent]]) -> None:
 
 def is_tty() -> bool:
     return sys.stdout.isatty()
+
+
+def table(
+    rows: Iterable[Sequence[str | object]] = (),
+    *,
+    title: str | None = None,
+    headers: Sequence[str] | None = None,
+    column_colors: Sequence[str | None] = (),
+    box=box.SIMPLE_HEAD,
+) -> None:
+    """
+    Print a table to the console using Rich.
+    """
+    # Infer number of columns from headers / first row
+    num_columns = len(headers) if headers else len(next(iter(rows)))
+
+    # Pad column colors to match number of columns
+    column_colors = list(column_colors) + [None] * (num_columns - len(column_colors))
+
+    table = Table(
+        title=title + ":",
+        title_style="yellow bold",
+        title_justify="left",
+        show_header=bool(headers),
+        box=box,
+    )
+
+    # Add headers (unstyled)
+    if headers:
+        for header in headers:
+            table.add_column(header)
+    else:
+        for _ in range(num_columns):
+            table.add_column("")
+
+    # Add rows with per-column formatting
+    for row in rows:
+        formatted_row = []
+        for cell, color in zip(row, column_colors):
+            cell_str = str(cell)
+            if color:
+                cell_str = f"[{color}]{cell_str}[/{color}]"
+            formatted_row.append(cell_str)
+        table.add_row(*formatted_row)
+
+    console.print(table)
+
+
+def link_path(path: Path) -> str:
+    return f"[link={path.as_uri()}]{path}[/link]"

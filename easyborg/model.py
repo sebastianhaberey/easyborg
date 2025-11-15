@@ -20,22 +20,36 @@ class Snapshot:
         return f"{self.repository.url}::{self.name}"
 
 
-@dataclass(slots=True)
+@dataclass(frozen=True, slots=True)
 class Repository:
     name: str
     url: str
     type: RepositoryType
 
 
-@dataclass(slots=True)
+@dataclass(frozen=True, slots=True)
 class Config:
     source: Path
     folders: list[Path]
     repos: dict[str, Repository]
+    compact_probability: float = 0.10  # TODO SH is this the right place for defaults?
 
 
-@dataclass(slots=True)
+@dataclass(frozen=True, slots=True)
+class Context:
+    profile: str
+    log_dir: Path
+    log_file: Path
+    log_level: str
+    config_dir: Path
+    config_file: Path
+    test: bool
+    tty: bool
+    expert: bool
+
+
+@dataclass(frozen=True, slots=True)
 class ProgressEvent:
-    total: float | None
-    current: float | None
-    message: str | None
+    total: float | None = None
+    current: float | None = None
+    message: str | None = None
