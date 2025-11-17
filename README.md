@@ -70,7 +70,7 @@ Configuration:
   Log file      /Users/user/Library/Logs/easyborg/default/easyborg.log
   Log level     INFO
   
-[...]
+...
 
 ```
 

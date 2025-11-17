@@ -4,10 +4,17 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "easyborg"
-version = "0.1.0"
+version = "1.0.0"
 description = "Borg for Dummies"
 readme = "README.md"
-requires-python = ">=3.9"
+readme-content-type = "text/markdown"
+requires-python = ">=3.10"
+
+license = { text = "MIT" }
+
+authors = [
+    { name = "Sebastian Haberey", email = "sebastian@haberey.com" }
+]
 
 dependencies = [
     "click",
@@ -16,10 +23,30 @@ dependencies = [
     "platformdirs"
 ]
 
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: MacOS :: MacOS X",
+    "Operating System :: POSIX :: Linux",
+    "Environment :: Console",
+    "Topic :: System :: Archiving :: Backup",
+    "Topic :: Utilities",
+]
+
+[project.urls]
+Homepage = "https://github.com/sebastianhaberey/easyborg"
+Repository = "https://github.com/sebastianhaberey/easyborg"
+"Bug Tracker" = "https://github.com/sebastianhaberey/easyborg/issues"
+
 [project.scripts]
 easyborg = "easyborg.__main__:main"
 
-# Development-only dependencies
 [project.optional-dependencies]
 dev = [
     "pytest",
@@ -28,9 +55,16 @@ dev = [
 
 [tool.setuptools]
 package-dir = { "" = "." }
+include-package-data = true
 
 [tool.setuptools.packages.find]
 where = ["."]
+exclude = [
+    "tests*",
+]
+
+[tool.setuptools.package-data]
+easyborg = ["resources/template-easyborg.toml"]
 
 [tool.ruff]
 line-length = 120
@@ -48,6 +82,3 @@ select = [
 
 [tool.ruff.format]
 quote-style = "double"
-
-[tool.setuptools.package-data]
-easyborg = ["resources/template-easyborg.toml"]
