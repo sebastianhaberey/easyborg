@@ -58,9 +58,6 @@ include-package-data = true
 
 [tool.setuptools.packages.find]
 where = ["."]
-exclude = [
-    "tests*",
-]
 
 [tool.setuptools.package-data]
 easyborg = ["resources/template-easyborg.toml"]
