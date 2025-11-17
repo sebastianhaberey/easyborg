@@ -25,7 +25,7 @@ class Core:
         """
         self.config = config
         self.repos = config.repos
-        self.folders = config.folders
+        self.backup_folders = config.backup_folders
         self.borg = borg
         self.fzf = fzf
 
@@ -47,32 +47,30 @@ class Core:
                     ("Profile", context.profile),
                 ]
             )
-        ui.table(
-            rows,
-            column_colors=(None, "bold cyan"),
-            title="Configuration",
-        )
+        ui.header("Configuration")
+        ui.table(rows, column_colors=(None, "bold cyan"))
 
-        if self.folders:
-            rows = [(link_path(folder),) for folder in self.folders]
-            ui.table(
-                rows,
-                column_colors=("bold cyan",),
-                title="Backup Folders",
-            )
+        ui.header("Backup Folders")
+        if self.backup_folders:
+            rows = [(link_path(folder),) for folder in self.backup_folders]
+            ui.table(rows, column_colors=("bold cyan",))
         else:
-            ui.out("No backup folders configured.", write_log=False)
+            ui.newline()
+            ui.out("(no backup folders configured)", indent=1)
+            ui.newline()
 
+        ui.header("Repositories")
         if self.repos:
             rows = [(repo.name, repo.url, repo.type.value) for repo in self.repos.values()]
             ui.table(
                 rows,
-                title="Repositories",
                 column_colors=("white", "bold cyan", "bold magenta"),
                 headers=("Name", "URL", "Type"),
             )
         else:
-            ui.out("  No repositories configured.", write_log=False)
+            ui.newline()
+            ui.out("(no repositories configured)", indent=1)
+            ui.newline()
 
     def backup(self, dry_run: bool = False) -> None:
         """
@@ -91,7 +89,7 @@ class Core:
 
             ui.out(f"Creating snapshot '{snapshot.name}' in repository '{repo.name}'")
             ui.spinner(
-                lambda: self.borg.create_snapshot(snapshot, self.folders, dry_run=dry_run, progress=True),
+                lambda: self.borg.create_snapshot(snapshot, self.backup_folders, dry_run=dry_run, progress=True),
             )
 
             ui.out(f"Pruning old snapshots in repository '{repo.name}'")

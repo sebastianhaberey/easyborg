@@ -21,7 +21,7 @@ def test_core_backup(tmp_path, testdata_dir, borg):
 
     config = Config(
         source=tmp_path,
-        folders=[testdata_dir],
+        backup_folders=[testdata_dir],
         repos={"backup": backup_repo, "archive": archive_repo},
     )
 
@@ -61,7 +61,7 @@ def test_core_backup_multiple_repos(tmp_path, testdata_dir, borg):
 
     config = Config(
         source=tmp_path,
-        folders=[testdata_dir],
+        backup_folders=[testdata_dir],
         repos={"backup1": backup1_repo, "backup2": backup2_repo},
     )
 
@@ -88,7 +88,7 @@ def test_core_archive(tmp_path, testdata_dir, borg):
 
     config = Config(
         source=tmp_path,
-        folders=[testdata_dir],
+        backup_folders=[testdata_dir],
         repos={"backup": backup_repo, "archive": archive_repo},
     )
 
@@ -134,7 +134,7 @@ def test_core_archive_multiple_repos(tmp_path, testdata_dir, borg):
 
     config = Config(
         source=tmp_path,
-        folders=[testdata_dir],
+        backup_folders=[testdata_dir],
         repos={"archive1": archive1_repo, "archive2": archive2_repo},
     )
 
@@ -163,7 +163,7 @@ def test_core_restore(tmp_path, borg, repo, testdata_dir):
     config = Config(
         source=testdata_dir,
         repos={"repo": repo},
-        folders=[testdata_dir],
+        backup_folders=[testdata_dir],
     )
 
     core = Core(config, borg=borg, fzf=fzf)
@@ -204,7 +204,7 @@ def test_core_extract(tmp_path, borg, repo, testdata_dir):
     config = Config(
         source=testdata_dir,
         repos={"repo": repo},
-        folders=[testdata_dir],
+        backup_folders=[testdata_dir],
     )
 
     core = Core(config, borg=borg, fzf=fzf)

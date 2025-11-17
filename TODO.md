@@ -2,13 +2,12 @@
 
 ## Release
 
-- automatically create / copy config file if not found
-- find out why easyborg info --profile production doesn't work (but easyborg --profile production info does)
 - brew tap
 - install on own system
 
 ## Later
 
+- fix double error message if CLI fails (e.g. "cli() got an unexpected keyword argument 'expert'")
 - option for light mode (fzf)
 - e2e test one repo fails -> next repo ok
 - install command
@@ -23,6 +22,8 @@
 
 # DONE
 
+- automatically create / copy config file if not found
+- find out why easyborg info --profile production doesn't work (but easyborg --profile production info does)
 - concept for configuration file location (dev vs prod)
 - revisit Context class
 - add expert mode

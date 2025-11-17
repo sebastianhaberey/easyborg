@@ -30,7 +30,7 @@ class Repository:
 @dataclass(frozen=True, slots=True)
 class Config:
     source: Path
-    folders: list[Path]
+    backup_folders: list[Path]
     repos: dict[str, Repository]
     compact_probability: float = 0.10  # TODO SH is this the right place for defaults?
 

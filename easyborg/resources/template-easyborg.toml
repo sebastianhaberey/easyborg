@@ -1,0 +1,20 @@
+# BACKUP FOLDERS
+
+#backup_folders = [
+#    "/a/b/c",
+#    "/d/e/f"
+#]
+
+# REPOSITORIES
+
+#[repositories.BACKUP-HD]
+#type = "backup"
+#url = "/example/directory/backup"
+
+#[repositories.ARCHIVE-HD]
+#type = "archive"
+#url = "/example/directory/archive"
+
+#[repositories.BACKUP-SERVER]
+#type = "backup"
+#url = "ssh://user@example/./backup"

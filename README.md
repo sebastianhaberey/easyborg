@@ -6,7 +6,7 @@ with [fzf](https://github.com/junegunn/fzf) for user input.
 This project is currently WIP and cannot be used yet.
 
 [![Tests (Linux)](https://github.com/sebastianhaberey/easyborg/actions/workflows/tests-linux.yml/badge.svg)](https://github.com/sebastianhaberey/easyborg/actions/workflows/tests-linux.yml)
-[![Tests (macOS)](https://github.com/sebastianhaberey/easyborg/actions/workflows/tests-macos.yml/badge.svg)](https://github.com/sebastianhaberey/easyborg/actions/workflows/tests-macos.yml) 
+[![Tests (macOS)](https://github.com/sebastianhaberey/easyborg/actions/workflows/tests-macos.yml/badge.svg)](https://github.com/sebastianhaberey/easyborg/actions/workflows/tests-macos.yml)
 
 ## Screenshots
 
@@ -57,25 +57,25 @@ $ borg list /Volumes/STICK/backup
 
 ### Configuration
 
-Example _easyborg.toml_
+Call _easyborg info_ to generate an empty config file and show its path:
 
 ```
-# BACKUP FOLDERS
+$ easyborg info
 
-folders = [
-    "/Users/user/Documents",
-]
+Configuration:
 
-# REPOSITORIES
+  Config dir    /Users/user/Library/Application Support/easyborg/default
+  Config file   /Users/user/Library/Application Support/easyborg/default/easyborg.toml
+  Log dir       /Users/user/Library/Logs/easyborg/default
+  Log file      /Users/user/Library/Logs/easyborg/default/easyborg.log
+  Log level     INFO
+  
+[...]
 
-[repositories.BACKUP]
-type = "backup"
-url = "/Volumes/STICK/backup"
-
-[repositories.ARCHIVE]
-type = "archive"
-url = "ssh://user@example.com/./archive"
 ```
+
+If you're on a modern terminal, you may be able to click on a path to open it (Ctrl + click on iTerm2).
+Open the config file, configure the folders you want to back up, and your backup and archive repositories.
 
 ## Usage
 

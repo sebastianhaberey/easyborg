@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import shutil
 import tomllib
+from importlib import resources
 from pathlib import Path
 from typing import Any
 
@@ -11,6 +13,12 @@ def load(path: Path) -> Config:
     """
     Load configuration from a TOML file.
     """
+
+    if not path.exists():
+        path.parent.mkdir(parents=True, exist_ok=True)
+        with resources.as_file(resources.files("easyborg.resources")) as source:
+            shutil.copy(source / "template-easyborg.toml", path)
+
     try:
         with path.open("rb") as f:
             raw = tomllib.load(f)
@@ -20,7 +28,7 @@ def load(path: Path) -> Config:
 
 
 def _parse(raw: dict[str, Any], source: Path) -> Config:
-    folders = [Path(p) for p in raw.get("folders", [])]
+    backup_folders = [Path(p) for p in raw.get("backup_folders", [])]
 
     repos = {
         name: Repository(
@@ -33,6 +41,6 @@ def _parse(raw: dict[str, Any], source: Path) -> Config:
 
     return Config(
         source=source,
-        folders=folders,
+        backup_folders=backup_folders,
         repos=repos,
     )

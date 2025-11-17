@@ -48,3 +48,6 @@ select = [
 
 [tool.ruff.format]
 quote-style = "double"
+
+[tool.setuptools.package-data]
+easyborg.resources = ["template-easyborg.toml"]

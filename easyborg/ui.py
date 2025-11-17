@@ -10,8 +10,11 @@ from easyborg.model import ProgressEvent
 from rich import box
 from rich.console import Console
 from rich.progress import BarColumn, Progress, TextColumn, TimeRemainingColumn
+from rich.style import StyleType
 from rich.table import Table
 from rich.theme import Theme
+
+INDENT_SIZE = 2
 
 T = TypeVar("T")
 logger = logging.getLogger(__name__)
@@ -37,10 +40,8 @@ def newline(count: int = 1) -> None:
     console.print("\n" * count, end="")
 
 
-def out(msg: str, *, write_log=True) -> None:
-    console.print(msg)
-    if write_log:
-        logger.info(msg)
+def out(msg: str, *, indent: int = 1, style: StyleType = None) -> None:
+    console.print((" " * indent * INDENT_SIZE) + msg, style=style)
 
 
 def success(msg: str) -> None:
@@ -134,7 +135,7 @@ def table(
     column_colors = list(column_colors) + [None] * (num_columns - len(column_colors))
 
     table = Table(
-        title=title + ":",
+        title=title + ":" if title else None,
         title_style="yellow bold",
         title_justify="left",
         show_header=bool(headers),
