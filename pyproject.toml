@@ -50,4 +50,4 @@ select = [
 quote-style = "double"
 
 [tool.setuptools.package-data]
-easyborg.resources = ["template-easyborg.toml"]
+easyborg = ["resources/template-easyborg.toml"]
