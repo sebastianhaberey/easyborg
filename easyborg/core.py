@@ -104,18 +104,18 @@ class Core:
 
             snapshot = Snapshot(repo, create_snapshot_name())
 
-            ui.info(f"Creating snapshot '{snapshot.name}' in repository '{repo.name}'")
+            ui.info(f"Creating snapshot {snapshot.name} in repository {repo.name}")
             ui.spinner(
                 lambda: self.borg.create_snapshot(snapshot, self.backup_folders, dry_run=dry_run, progress=True),
             )
 
-            ui.info(f"Pruning old snapshots in repository '{repo.name}'")
+            ui.info(f"Pruning old snapshots in repository {repo.name}")
             ui.spinner(
                 lambda: self.borg.prune(repo, dry_run=dry_run, progress=True),
             )
 
             if random.random() < repo.compact_probability:
-                ui.info(f"Compacting repository '{repo.name}'")
+                ui.info(f"Compacting repository {repo.name}")
                 ui.spinner(
                     lambda: self.borg.compact(repo, dry_run=dry_run, progress=True),
                 )
@@ -141,12 +141,12 @@ class Core:
 
             snapshot = Snapshot(repo, create_snapshot_name(), comment=comment)
 
-            ui.info(f"Creating snapshot '{snapshot.name}' in repository '{repo.name}'")
+            ui.info(f"Creating snapshot {snapshot.name} in repository {repo.name}")
             ui.spinner(
                 lambda: self.borg.create_snapshot(snapshot, [folder], dry_run=dry_run, progress=True),
             )
 
-            ui.info(f"Compacting repository '{repo.name}'")
+            ui.info(f"Compacting repository {repo.name}")
             if random.random() < repo.compact_probability:
                 ui.spinner(
                     lambda: self.borg.compact(repo, dry_run=dry_run, progress=True),
@@ -172,7 +172,7 @@ class Core:
             snapshots = self.borg.list_snapshots(repo)
             return iter([])
 
-        ui.info(f"Listing snapshots in repository '{repo.name}'")
+        ui.info(f"Listing snapshots in repository {repo.name}")
         ui.spinner(
             lambda: list_snapshots(repo),
         )
@@ -183,7 +183,7 @@ class Core:
 
         target_dir = Path.cwd()
 
-        ui.info(f"Restoring snapshot '{snapshot.name}' from repository '{repo.name}'")
+        ui.info(f"Restoring snapshot {snapshot.name} from repository {repo.name}")
         ui.progress(
             lambda: self.borg.restore(
                 snapshot,
@@ -211,7 +211,7 @@ class Core:
             snapshots = self.borg.list_snapshots(repo)
             return iter([])
 
-        ui.info(f"Listing snapshots in repository '{repo.name}'")
+        ui.info(f"Listing snapshots in repository {repo.name}")
         ui.spinner(
             lambda: list_snapshots(repo),
         )
@@ -231,7 +231,7 @@ class Core:
         item_count = len(selected_paths)
         item_str = "one item" if item_count == 1 else f"{item_count} items"
 
-        ui.info(f"Extracting {item_str} from snapshot '{snapshot.name}' in repository '{repo.name}'")
+        ui.info(f"Extracting {item_str} from snapshot {snapshot.name} in repository {repo.name}")
         ui.progress(
             lambda: self.borg.restore(
                 snapshot,
@@ -286,7 +286,7 @@ class Core:
             snapshots = self.borg.list_snapshots(repo)
             return iter([])
 
-        ui.info(f"Listing snapshots in repository '{repo.name}'")
+        ui.info(f"Listing snapshots in repository {repo.name}")
         ui.spinner(
             lambda: list_snapshots(repo),
         )
@@ -295,12 +295,12 @@ class Core:
             ui.warn("Aborted")
             return
 
-        response = self.fzf.confirm(f"Delete snaphshot '{snapshot.name}' from repository '{repo.name}': ")
+        response = self.fzf.confirm(f"Delete snaphshot {snapshot.name} from repository {repo.name}: ")
         if not response:
             ui.warn("Aborted")
             return
 
-        ui.info(f"Deleting snapshot '{snapshot.name}' from repository '{repo.name}'")
+        ui.info(f"Deleting snapshot {snapshot.name} from repository {repo.name}")
         ui.progress(
             lambda: self.borg.delete(
                 snapshot,
@@ -309,7 +309,7 @@ class Core:
             ),
         )
 
-        ui.info(f"Compacting repository '{repo.name}'")
+        ui.info(f"Compacting repository {repo.name}")
         ui.spinner(
             lambda: self.borg.compact(repo, dry_run=dry_run, progress=True),
         )
