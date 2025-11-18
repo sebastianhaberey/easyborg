@@ -2,7 +2,6 @@
 
 ## Release
 
-- Spinner instead of Bar for indeterminate progress
 - error on repository password request / ssh password request
 - remove quotes in output
 - brew tap
@@ -23,6 +22,7 @@
 
 # DONE
 
+- spinner instead of bar for indeterminate progress
 - fix stacktrace behavior (see "easyborg dsable")
 - find out where the extra console line comes from on "easyborg disable" 
 - "--debug" instead of "--log-level"

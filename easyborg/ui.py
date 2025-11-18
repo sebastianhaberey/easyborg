@@ -12,7 +12,7 @@ import rich
 from easyborg.model import ProgressEvent
 from rich import box
 from rich.console import Console
-from rich.progress import BarColumn, Progress, TextColumn, TimeRemainingColumn
+from rich.progress import BarColumn, Progress, SpinnerColumn, TextColumn, TimeRemainingColumn
 from rich.style import StyleType
 from rich.table import Table
 from rich.theme import Theme
@@ -24,8 +24,8 @@ logger = logging.getLogger(__name__)
 
 theme = Theme(
     {
-        "progress.remaining": "yellow",
-        "progress.elapsed": "yellow",
+        "progress.remaining": "cyan",
+        "progress.elapsed": "cyan",
     }
 )
 
@@ -93,15 +93,14 @@ def progress(func: Callable[[], Iterator[ProgressEvent]]) -> None:
         return
 
     with Progress(
-        TextColumn("Processing"),
         progress_bar_column,
-        TextColumn("{task.percentage:>3.0f}%"),
+        # TextColumn("{task.percentage:>3.0f}%"),  # don't need it currently as Borg's messages contain percentage
         TimeRemainingColumn(),
         TextColumn("{task.description}", style="white"),
         console=console,
         transient=True,
     ) as p:
-        task_id = p.add_task("", total=None)
+        task_id = p.add_task("Processing", total=None)
         for event in func():
             # print(f"EVENT: {event}")
             p.update(
@@ -122,14 +121,12 @@ def spinner(func: Callable[[], Iterator[ProgressEvent]]) -> None:
         return
 
     with Progress(
-        TextColumn("Processing"),
-        progress_bar_column,
-        TimeRemainingColumn(),
+        SpinnerColumn(style="bold cyan"),
         TextColumn("{task.description}", style="white"),
         console=console,
         transient=True,
     ) as p:
-        task_id = p.add_task("", total=None)
+        task_id = p.add_task("Processing", total=None)
         for event in func():
             p.update(task_id, description=event.message)
 
