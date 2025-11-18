@@ -2,9 +2,6 @@
 
 ## Release
 
-- "--debug" instead of "--log-level"
-- fix stacktrace behavior (see "easyborg dsable")
-- find out where the extra console line comes from on "easyborg disable" 
 - Spinner instead of Bar for indeterminate progress
 - error on repository password request / ssh password request
 - remove quotes in output
@@ -26,6 +23,9 @@
 
 # DONE
 
+- fix stacktrace behavior (see "easyborg dsable")
+- find out where the extra console line comes from on "easyborg disable" 
+- "--debug" instead of "--log-level"
 - test scheduled backups
 - add log level option (expert)
 - print stacktraces only if log level is DEBUG

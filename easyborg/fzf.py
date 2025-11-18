@@ -21,6 +21,7 @@ class Fzf:
         """
         Initialize an Fzf instance.
         """
+        logger.debug("Initializing fzf (executable: '%s')", executable)
         assert_executable_valid(executable)
         self.executable_path = executable
 

@@ -6,6 +6,9 @@ from collections.abc import Callable, Iterable, Iterator, Sequence
 from pathlib import Path
 from typing import TypeVar
 
+import click
+import cloup
+import rich
 from easyborg.model import ProgressEvent
 from rich import box
 from rich.console import Console
@@ -36,14 +39,6 @@ progress_bar_column = BarColumn(
 console = Console(highlight=False, theme=theme)
 
 
-def newline(count: int = 1) -> None:
-    console.print("\n" * count, end="")
-
-
-def out(msg: str, *, indent: int = 0, style: StyleType = None) -> None:
-    console.print((" " * indent * INDENT_SIZE) + msg, style=style)  # TODO SH clarify console vs. logging
-
-
 def info(msg: str) -> None:
     console.print(msg)
     logger.info(msg)
@@ -59,9 +54,30 @@ def warn(msg: str) -> None:
     logger.warning("⚠️ " + msg)
 
 
-def error(msg: str) -> None:
-    console.print(msg, style="red bold")
-    logger.error("❌ " + msg)
+def error(msg: str, secondary: str = None) -> None:
+    console_msg = f"[red][bold]{msg}[/bold][/red]"
+    log_msg = "❌ " + msg
+    if secondary:
+        console_msg += " " + secondary
+        log_msg += " " + secondary
+    console.print(console_msg)
+    logger.error(log_msg)
+
+
+def exception(msg: str) -> None:
+    console.print_exception(suppress=[click, cloup, rich], extra_lines=0)
+    logger.exception("❌ " + msg)
+
+
+# CONSOLE ONLY
+
+
+def newline(count: int = 1) -> None:
+    console.print("\n" * count, end="")
+
+
+def out(msg: str, *, indent: int = 0, style: StyleType = None) -> None:
+    console.print((" " * indent * INDENT_SIZE) + msg, style=style)  # TODO SH clarify console vs. logging
 
 
 def header(msg: str) -> None:

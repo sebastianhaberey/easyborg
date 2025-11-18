@@ -13,7 +13,7 @@ platform_dirs = PlatformDirs(APPNAME)
 
 def load(
     profile: str,
-    log_level: str,
+    debug: bool,
     *,
     borg_executable: Path | None = None,
     fzf_executable: Path | None = None,
@@ -31,7 +31,7 @@ def load(
         profile=profile,
         log_dir=log_dir,
         log_file=_get_log_file(log_dir),
-        log_level=log_level,
+        debug=debug,
         config_dir=config_dir,
         config_file=_get_config_file(config_dir),
         test=_is_test(),

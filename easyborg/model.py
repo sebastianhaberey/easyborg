@@ -42,7 +42,7 @@ class Context:
     profile: str
     log_dir: Path
     log_file: Path
-    log_level: str
+    debug: bool
     config_dir: Path
     config_file: Path
     test: bool

@@ -38,7 +38,6 @@ class Core:
             ("Configuration file", link_path(context.config_file)),
             ("Log directory", link_path(context.log_dir) if context.log_dir else "not configured"),
             ("Log file", link_path(context.log_file) if context.log_file else "not configured"),
-            ("Log level", context.log_level or "not configured"),
             ("Easyborg executable path", context.easyborg_executable),
             ("Borg executable path", context.borg_executable),
             ("fzf executable path", context.fzf_executable),
@@ -47,6 +46,7 @@ class Core:
             rows.extend(
                 [
                     ("Expert mode", context.expert),
+                    ("Debug mode", context.debug),
                     ("Profile", context.profile),
                 ]
             )
@@ -75,6 +75,10 @@ class Core:
                 column_colors=(None, "bold cyan", "bold magenta"),
                 headers=("Name", "URL", "Type"),
             )
+        else:
+            ui.newline()
+            ui.out("(no repositories configured)", indent=1)
+            ui.newline()
 
         if self.repos and context.expert:
             ui.header("Repository Environments")
@@ -84,10 +88,6 @@ class Core:
                 headers=("Repository", "Environment"),
                 column_colors=(None, None),
             )
-        else:
-            ui.newline()
-            ui.out("(no repositories configured)", indent=1)
-            ui.newline()
 
     def backup(self, dry_run: bool = False) -> None:
         """

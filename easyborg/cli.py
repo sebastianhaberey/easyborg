@@ -29,12 +29,12 @@ CONTEXT_SETTINGS = cloup.Context.settings(
 # noinspection PyProtectedMember
 EXPERT_MODE: bool = easyborg.context._is_expert_mode()
 
-# TODO SH find a better way to pass log level to exception logic
-LOG_LEVEL: str | None = None
+# TODO SH find a better way to pass debug flag to exception handling
+DEBUG_MODE: bool = False
 
 
 @group(help="Easyborg – Borg for Dummies", context_settings=CONTEXT_SETTINGS)
-@version_option(package_name="easyborg")
+@version_option(package_name="easyborg", help="Show version information")
 @option(
     "--profile",
     type=str,
@@ -43,11 +43,11 @@ LOG_LEVEL: str | None = None
     default="default",
 )
 @option(
-    "--log-level",
-    type=str,
+    "--debug",
+    type=bool,
+    is_flag=True,
     hidden=not EXPERT_MODE,
-    help="Set log level (expert)",
-    default="INFO",
+    help="Enable debug mode (expert)",
 )
 @option(
     "--borg-executable",
@@ -65,12 +65,12 @@ LOG_LEVEL: str | None = None
 def cli(
     ctx: cloup.Context,
     profile: str,
-    log_level: str,
+    debug: bool,
     borg_executable: Path | None,
     fzf_executable: Path | None,
 ) -> None:
-    global LOG_LEVEL
-    LOG_LEVEL = log_level
+    global DEBUG_MODE
+    DEBUG_MODE = debug
 
     ctx.ensure_object(dict)
 
@@ -78,14 +78,15 @@ def cli(
 
     context = easyborg.context.load(
         profile,
-        log_level,
+        debug,
         borg_executable=borg_executable,
         fzf_executable=fzf_executable,
         easyborg_executable=easyborg_executable,
     )
     ctx.obj["context"] = context
 
-    log_utils.initialize(context.log_file, context.log_level, context.tty, context.test)
+    if not context.tty and not context.test:
+        log_utils.enable_file_logging(context.log_file, context.debug)
 
     configuration = config.load(context.config_file)
     os.environ.update(configuration.env)
