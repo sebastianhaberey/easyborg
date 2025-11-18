@@ -1,7 +1,10 @@
 import logging
+import os
+import shutil
 import subprocess
-from collections.abc import Iterable, Iterator
+from collections.abc import Iterable, Iterator, Mapping
 from enum import Enum
+from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
@@ -21,23 +24,36 @@ class ProcessError(RuntimeError):
         super().__init__(msg)
 
 
-def assert_executable(executable: str):
+def get_full_executable_path(executable_name: str) -> Path:
+    try:
+        return Path(shutil.which(executable_name))
+    except Exception as e:
+        raise RuntimeError(f"Could not locate executable {executable_name}: {str(e)}") from e
+
+
+def assert_executable_valid(executable_path: Path):
     """
     Ensure binary is installed and callable.
     """
-    cmd = [executable, "--version"]
+    cmd = [str(executable_path), "--version"]
     try:
         run_sync(cmd)
     except Exception as e:
         raise RuntimeError(f"Could not execute command {cmd}: {str(e)}") from e
 
 
-def run_sync(cmd: list[str], *, cwd: str | None = None, input_lines: Iterable[str] | str | None = None) -> list[str]:
+def run_sync(
+    cmd: list[str],
+    *,
+    cwd: str | None = None,
+    input_lines: Iterable[str] | str | None = None,
+    env: Mapping[str, str] | None = (),
+) -> list[str]:
     """
     Run the subprocess and return all output lines as a list.
     Raises ProcessError on failure.
     """
-    return list(run_async(cmd, cwd=cwd, input_lines=input_lines))
+    return list(run_async(cmd, cwd=cwd, input_lines=input_lines, env=env))
 
 
 def run_async(
@@ -46,11 +62,14 @@ def run_async(
     input_lines: Iterable[str] | None = None,
     cwd: str | None = None,
     output: Output = Output.STDOUT,
+    env: Mapping[str, str] | None = (),
 ) -> Iterator[str]:
     """
     Run a subprocess and yield lines from either stdout or stderr.
     """
-    logger.debug("Running: %s", cmd)
+    logger.debug("Running %s with env %s", cmd, env)
+
+    env = os.environ.copy().update(env)
 
     process = subprocess.Popen(
         cmd,
@@ -60,6 +79,7 @@ def run_async(
         stderr=subprocess.PIPE,
         text=True,
         bufsize=1,
+        env=env,
     )
 
     if input_lines is not None:

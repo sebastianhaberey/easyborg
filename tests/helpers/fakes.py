@@ -1,4 +1,5 @@
 # tests/helpers/fakes.py
+from typing import Any
 
 
 class FakeFzf:
@@ -11,7 +12,7 @@ class FakeFzf:
       - a list of values  -> returned as-is
     """
 
-    def __init__(self, responses):
+    def __init__(self, responses: list[Any] = ()) -> None:
         self._responses = iter(responses)
 
     def select_items(self, *_args, **_kwargs):

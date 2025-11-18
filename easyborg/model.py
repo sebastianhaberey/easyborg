@@ -25,6 +25,8 @@ class Repository:
     name: str
     url: str
     type: RepositoryType
+    compact_probability: float = 0.1  # TODO SH find a better place for defaults
+    env: dict[str, str] = ()
 
 
 @dataclass(frozen=True, slots=True)
@@ -32,10 +34,10 @@ class Config:
     source: Path
     backup_folders: list[Path]
     repos: dict[str, Repository]
-    compact_probability: float = 0.10  # TODO SH is this the right place for defaults?
+    env: dict[str, str] = ()
 
 
-@dataclass(frozen=True, slots=True)
+@dataclass(slots=True)
 class Context:
     profile: str
     log_dir: Path
@@ -46,6 +48,9 @@ class Context:
     test: bool
     tty: bool
     expert: bool
+    borg_executable: Path
+    fzf_executable: Path
+    easyborg_executable: Path
 
 
 @dataclass(frozen=True, slots=True)

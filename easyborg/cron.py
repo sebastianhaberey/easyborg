@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from easyborg import ui
 from easyborg.process import ProcessError, run_sync
 
@@ -12,19 +14,33 @@ class Cron:
     def __init__(self, profile: str):
         self.marker = f"# easyborg:{profile}"
 
-    def enable(self, command: str, schedule: str = "@hourly"):
+    def enable(
+        self,
+        command: str,
+        easyborg_executable: Path,
+        borg_executable: Path,
+        fzf_executable: Path,
+        schedule: str = "@hourly",
+    ):
         """
         Add a cron entry with the given schedule (e.g. '@daily', '0 3 * * *').
 
-        Idempotent: if the entry already exists, it won't be duplicated.
+        Idempotent: if there's already an entry for this profile, no changes will be made.
         """
         existing = _get_crontab()
-        entry = f"{schedule} {command} {self.marker}"
 
-        if entry in existing:
+        if self.marker in existing:
             ui.warn("Easyborg cron entry already exists")
             return
 
+        entry = (
+            f"{schedule} "
+            f"{easyborg_executable} "
+            f"--borg-executable {borg_executable} "
+            f"--fzf-executable {fzf_executable} "
+            f"{command} "
+            f"{self.marker}"
+        )
         updated = _add_entry(existing, entry, self.marker)
         _write_crontab(updated)
         ui.success(f"Added easyborg cron entry: '{entry}'")

@@ -1,14 +1,11 @@
 from pathlib import Path
 
 import pytest
-from easyborg.borg import Borg
 from easyborg.model import Repository, RepositoryType, Snapshot
 from easyborg.util import compare_directories, to_relative_path
 
 
-def test_create_repository(tmp_path):
-    borg = Borg()
-
+def test_create_repository(tmp_path, borg):
     repo = borg.create_repository(tmp_path, "repo", RepositoryType.BACKUP)
     repo_path = Path(repo.url)
 

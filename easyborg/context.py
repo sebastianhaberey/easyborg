@@ -3,39 +3,68 @@ import sys
 from pathlib import Path
 
 from easyborg.model import Context
+from easyborg.process import get_full_executable_path
 from platformdirs import PlatformDirs
 
 APPNAME = "easyborg"
 
+platform_dirs = PlatformDirs(APPNAME)
 
-def load(profile: str) -> Context:
-    dirs = PlatformDirs(APPNAME)
 
+def load(
+    profile: str,
+    log_level: str,
+    *,
+    borg_executable: Path | None = None,
+    fzf_executable: Path | None = None,
+    easyborg_executable: Path | None = None,
+) -> Context:
     # macOS: ~/Library/Logs/easyborg
     # Linux: $XDG_STATE_HOME/easyborg or ~/.local/state/easyborg
-    log_dir = Path(dirs.user_log_dir) / profile
-    log_file = log_dir / f"{APPNAME}.log"
+    log_dir = _get_log_dir(profile)
 
     # macOS: ~/Library/Application Support/easyborg
     # Linux: $XDG_CONFIG_HOME/easyborg or ~/.config/easyborg
-    config_dir = Path(dirs.user_config_dir) / profile
-    config_file = config_dir / f"{APPNAME}.toml"
+    config_dir = _get_config_dir(profile)
 
     return Context(
         profile=profile,
         log_dir=log_dir,
-        log_file=log_file,
-        log_level=_get_log_level(),
+        log_file=_get_log_file(log_dir),
+        log_level=log_level,
         config_dir=config_dir,
-        config_file=config_file,
+        config_file=_get_config_file(config_dir),
         test=_is_test(),
         tty=_is_tty(),
         expert=_is_expert_mode(),
+        borg_executable=borg_executable or _get_borg_executable(),
+        fzf_executable=fzf_executable or _get_fzf_executable(),
+        easyborg_executable=easyborg_executable,
     )
 
 
-def _get_log_level() -> str | None:
-    return os.environ.get(f"{APPNAME.upper()}_LOG_LEVEL", "INFO").upper()
+def _get_borg_executable() -> Path:
+    return get_full_executable_path("borg")
+
+
+def _get_fzf_executable() -> Path:
+    return get_full_executable_path("fzf")
+
+
+def _get_config_file(config_dir: Path) -> Path:
+    return config_dir / f"{APPNAME}.toml"
+
+
+def _get_config_dir(profile: str) -> Path:
+    return Path(platform_dirs.user_config_dir) / profile
+
+
+def _get_log_file(log_dir: Path) -> Path:
+    return log_dir / f"{APPNAME}.log"
+
+
+def _get_log_dir(profile: str) -> Path:
+    return Path(platform_dirs.user_log_dir) / profile
 
 
 def _is_test() -> bool:

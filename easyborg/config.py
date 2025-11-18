@@ -21,26 +21,27 @@ def load(path: Path) -> Config:
 
     try:
         with path.open("rb") as f:
-            raw = tomllib.load(f)
+            cfg = tomllib.load(f)
     except FileNotFoundError:
         raise RuntimeError(f"Configuration file not found at: {path}")
-    return _parse(raw, source=path)
+    return _parse(cfg, source=path)
 
 
-def _parse(raw: dict[str, Any], source: Path) -> Config:
-    backup_folders = [Path(p) for p in raw.get("backup_folders", [])]
-
+def _parse(cfg: dict[str, Any], source: Path) -> Config:
     repos = {
         name: Repository(
             name=name,
-            url=cfg["url"],
-            type=RepositoryType(cfg["type"]),
+            url=cfg_repo.get("url", None),
+            type=RepositoryType(cfg_repo.get("type", None)),
+            compact_probability=cfg_repo.get("compact_probability", 0.10),
+            env=cfg_repo.get("environment", {}),
         )
-        for name, cfg in raw.get("repositories", {}).items()
+        for name, cfg_repo in cfg.get("repositories", {}).items()
     }
 
     return Config(
         source=source,
-        backup_folders=backup_folders,
+        backup_folders=[Path(p) for p in cfg.get("backup_folders", [])],
         repos=repos,
+        env=cfg.get("environment", {}),
     )

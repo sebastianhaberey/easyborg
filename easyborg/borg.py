@@ -4,7 +4,7 @@ from collections.abc import Iterator
 from pathlib import Path
 
 from easyborg.model import ProgressEvent, Repository, RepositoryType, Snapshot
-from easyborg.process import Output, assert_executable, run_async, run_sync
+from easyborg.process import Output, assert_executable_valid, run_async, run_sync
 from easyborg.progress_parser import parse_progress
 
 logger = logging.getLogger(__name__)
@@ -14,24 +14,23 @@ logger = logging.getLogger(__name__)
 
 
 class Borg:
-    def __init__(self, borg_executable="borg"):
+    def __init__(self, executable: Path):
         """
         Initialize a Borg instance.
         """
-        logger.debug("Initializing Borg (executable: '%s')", borg_executable)
-
-        assert_executable(borg_executable)
-        self.borg = borg_executable
+        logger.debug("Initializing Borg (executable: '%s')", executable)
+        assert_executable_valid(executable)
+        self.executable = executable
 
     def repository_accessible(self, repo: Repository) -> bool:
         """
         Return True if the repository exists and is accessible.
         """
         try:
-            cmd = [self.borg, "info"]
+            cmd = [str(self.executable), "info"]
             cmd.append(repo.url)
 
-            run_sync(cmd)
+            run_sync(cmd, env=repo.env)
             return True
         except RuntimeError:
             return False
@@ -48,11 +47,11 @@ class Borg:
         """
         logger.debug("Listing snapshots in repository '%s'", repo.url)
 
-        cmd = [self.borg, "list"]
+        cmd = [str(self.executable), "list"]
         cmd.extend(["--format", "{archive}{TAB}{comment}\n"])
         cmd.append(repo.url)
 
-        lines = run_sync(cmd)
+        lines = run_sync(cmd, env=repo.env)
 
         snapshots = []
         for line in lines:
@@ -68,11 +67,11 @@ class Borg:
         """
         logger.debug("Listing contents of %s", snap.location())
 
-        cmd = [self.borg, "list"]
+        cmd = [str(self.executable), "list"]
         cmd.extend(["--format", "{path}\n"])
         cmd.append(snap.location())
 
-        for line in run_async(cmd):
+        for line in run_async(cmd, env=snap.repository.env):
             if line:
                 yield Path(line)
 
@@ -90,7 +89,7 @@ class Borg:
         directory = parent / name
         directory.mkdir(parents=False, exist_ok=False)
 
-        cmd = [self.borg, "init"]
+        cmd = [str(self.executable), "init"]
         if dry_run:
             cmd.append("--dry-run")
         cmd.append(f"--encryption={encryption}")
@@ -98,7 +97,7 @@ class Borg:
 
         run_sync(cmd)
 
-        return Repository(name=name, url=str(directory), type=type)
+        return Repository(name=name, url=str(directory), type=type, compact_probability=0.1, env={})
 
     def create_snapshot(
         self,
@@ -117,7 +116,7 @@ class Borg:
             if not os.path.isdir(folder):
                 raise RuntimeError(f"Folder does not exist: {folder}")
 
-        cmd = [self.borg, "create"]
+        cmd = [str(self.executable), "create"]
         if progress:
             cmd.extend(["--progress", "--log-json"])
         if dry_run:
@@ -128,9 +127,9 @@ class Borg:
         cmd.append(*map(str, folders))
 
         if progress:
-            return parse_progress(run_async(cmd, output=Output.STDERR))
+            return parse_progress(run_async(cmd, output=Output.STDERR, env=snap.repository.env))
 
-        run_sync(cmd)
+        run_sync(cmd, env=snap.repository.env)
         return None
 
     def restore(
@@ -154,7 +153,7 @@ class Borg:
         if not target_dir.is_dir():
             raise RuntimeError(f"Target directory does not exist: {target_dir}")
 
-        cmd = [self.borg, "extract"]
+        cmd = [str(self.executable), "extract"]
         if progress:
             cmd.extend(["--progress", "--log-json"])
         if dry_run:
@@ -164,7 +163,7 @@ class Borg:
         if progress:
             return parse_progress(run_async(cmd, cwd=str(target_dir), output=Output.STDERR))
 
-        run_sync(cmd, cwd=str(target_dir))
+        run_sync(cmd, cwd=str(target_dir), env=snap.repository.env)
         return None
 
     def prune(
@@ -179,7 +178,7 @@ class Borg:
         """
         logger.debug("Pruning repository '%s'", repo.url)
 
-        cmd = [self.borg, "prune"]
+        cmd = [str(self.executable), "prune"]
         if progress:
             cmd.extend(["--progress", "--log-json"])
         if dry_run:
@@ -188,9 +187,9 @@ class Borg:
         cmd.append(repo.url)
 
         if progress:
-            return parse_progress(run_async(cmd, output=Output.STDERR))
+            return parse_progress(run_async(cmd, output=Output.STDERR, env=repo.env))
 
-        run_sync(cmd)
+        run_sync(cmd, env=repo.env)
         return None
 
     def compact(
@@ -205,7 +204,7 @@ class Borg:
         """
         logger.debug("Compacting repository '%s'", repo.url)
 
-        cmd = [self.borg, "compact"]
+        cmd = [str(self.executable), "compact"]
         if progress:
             cmd.extend(["--progress", "--log-json"])
         if dry_run:
@@ -213,9 +212,9 @@ class Borg:
         cmd.append(repo.url)
 
         if progress:
-            return parse_progress(run_async(cmd, output=Output.STDERR))
+            return parse_progress(run_async(cmd, output=Output.STDERR, env=repo.env))
 
-        run_sync(cmd)
+        run_sync(cmd, env=repo.env)
         return None
 
     def delete(
@@ -230,7 +229,7 @@ class Borg:
         """
         logger.debug("Deleting snapshot '%s' from repository '%s' ", snap.name, snap.repository.url)
 
-        cmd = [self.borg, "delete"]
+        cmd = [str(self.executable), "delete"]
         if progress:
             cmd.extend(["--progress", "--log-json"])
         if dry_run:
@@ -238,7 +237,7 @@ class Borg:
         cmd.append(snap.location())
 
         if progress:
-            return parse_progress(run_async(cmd, output=Output.STDERR))
+            return parse_progress(run_async(cmd, output=Output.STDERR, env=snap.repository.env))
 
-        run_sync(cmd)
+        run_sync(cmd, env=snap.repository.env)
         return None

@@ -9,7 +9,7 @@ from easyborg.borg import Borg
 from easyborg.context import Context
 from easyborg.fzf import Fzf, SortOrder
 from easyborg.model import Config, ProgressEvent, Repository, RepositoryType, Snapshot
-from easyborg.ui import link_path
+from easyborg.ui import link_path, render_dict
 from easyborg.util import create_snapshot_name, remove_redundant_paths
 
 
@@ -19,7 +19,7 @@ class Core:
     Borg backup operations, and interactive selection via fzf.
     """
 
-    def __init__(self, config: Config, borg: Borg | None = Borg(), fzf: Fzf | None = Fzf()):
+    def __init__(self, config: Config, borg: Borg, fzf: Fzf):
         """
         Initialize the controller.
         """
@@ -34,11 +34,14 @@ class Core:
         Display configuration details.
         """
         rows = [
-            ("Config dir", link_path(context.config_dir)),
-            ("Config file", link_path(context.config_file)),
-            ("Log dir", link_path(context.log_dir) if context.log_dir else "not configured"),
+            ("Configuration directory", link_path(context.config_dir)),
+            ("Configuration file", link_path(context.config_file)),
+            ("Log directory", link_path(context.log_dir) if context.log_dir else "not configured"),
             ("Log file", link_path(context.log_file) if context.log_file else "not configured"),
             ("Log level", context.log_level or "not configured"),
+            ("Easyborg executable path", context.easyborg_executable),
+            ("Borg executable path", context.borg_executable),
+            ("fzf executable path", context.fzf_executable),
         ]
         if context.expert:
             rows.extend(
@@ -49,6 +52,11 @@ class Core:
             )
         ui.header("Configuration")
         ui.table(rows, column_colors=(None, "bold cyan"))
+
+        if context.expert:
+            ui.header("Environment")
+            rows = [(key, value) for key, value in self.config.env.items()]
+            ui.table(rows, headers=("Variable", "Value"), column_colors=(None, "bold cyan"))
 
         ui.header("Backup Folders")
         if self.backup_folders:
@@ -64,8 +72,17 @@ class Core:
             rows = [(repo.name, repo.url, repo.type.value) for repo in self.repos.values()]
             ui.table(
                 rows,
-                column_colors=("white", "bold cyan", "bold magenta"),
+                column_colors=(None, "bold cyan", "bold magenta"),
                 headers=("Name", "URL", "Type"),
+            )
+
+        if self.repos and context.expert:
+            ui.header("Repository Environments")
+            rows = [(repo.name, render_dict(repo.env, separator="\n")) for repo in self.repos.values()]
+            ui.table(
+                rows,
+                headers=("Repository", "Environment"),
+                column_colors=(None, None),
             )
         else:
             ui.newline()
@@ -87,18 +104,18 @@ class Core:
 
             snapshot = Snapshot(repo, create_snapshot_name())
 
-            ui.out(f"Creating snapshot '{snapshot.name}' in repository '{repo.name}'")
+            ui.info(f"Creating snapshot '{snapshot.name}' in repository '{repo.name}'")
             ui.spinner(
                 lambda: self.borg.create_snapshot(snapshot, self.backup_folders, dry_run=dry_run, progress=True),
             )
 
-            ui.out(f"Pruning old snapshots in repository '{repo.name}'")
+            ui.info(f"Pruning old snapshots in repository '{repo.name}'")
             ui.spinner(
                 lambda: self.borg.prune(repo, dry_run=dry_run, progress=True),
             )
 
-            if random.random() < self.config.compact_probability:
-                ui.out(f"Compacting repository '{repo.name}'")
+            if random.random() < repo.compact_probability:
+                ui.info(f"Compacting repository '{repo.name}'")
                 ui.spinner(
                     lambda: self.borg.compact(repo, dry_run=dry_run, progress=True),
                 )
@@ -124,13 +141,13 @@ class Core:
 
             snapshot = Snapshot(repo, create_snapshot_name(), comment=comment)
 
-            ui.out(f"Creating snapshot '{snapshot.name}' in repository '{repo.name}'")
+            ui.info(f"Creating snapshot '{snapshot.name}' in repository '{repo.name}'")
             ui.spinner(
                 lambda: self.borg.create_snapshot(snapshot, [folder], dry_run=dry_run, progress=True),
             )
 
-            ui.out(f"Compacting repository '{repo.name}'")
-            if random.random() < self.config.compact_probability:
+            ui.info(f"Compacting repository '{repo.name}'")
+            if random.random() < repo.compact_probability:
                 ui.spinner(
                     lambda: self.borg.compact(repo, dry_run=dry_run, progress=True),
                 )
@@ -155,7 +172,7 @@ class Core:
             snapshots = self.borg.list_snapshots(repo)
             return iter([])
 
-        ui.out(f"Listing snapshots in repository '{repo.name}'")
+        ui.info(f"Listing snapshots in repository '{repo.name}'")
         ui.spinner(
             lambda: list_snapshots(repo),
         )
@@ -166,7 +183,7 @@ class Core:
 
         target_dir = Path.cwd()
 
-        ui.out(f"Restoring snapshot '{snapshot.name}' from repository '{repo.name}'")
+        ui.info(f"Restoring snapshot '{snapshot.name}' from repository '{repo.name}'")
         ui.progress(
             lambda: self.borg.restore(
                 snapshot,
@@ -194,7 +211,7 @@ class Core:
             snapshots = self.borg.list_snapshots(repo)
             return iter([])
 
-        ui.out(f"Listing snapshots in repository '{repo.name}'")
+        ui.info(f"Listing snapshots in repository '{repo.name}'")
         ui.spinner(
             lambda: list_snapshots(repo),
         )
@@ -214,7 +231,7 @@ class Core:
         item_count = len(selected_paths)
         item_str = "one item" if item_count == 1 else f"{item_count} items"
 
-        ui.out(f"Extracting {item_str} from snapshot '{snapshot.name}' in repository '{repo.name}'")
+        ui.info(f"Extracting {item_str} from snapshot '{snapshot.name}' in repository '{repo.name}'")
         ui.progress(
             lambda: self.borg.restore(
                 snapshot,
@@ -269,7 +286,7 @@ class Core:
             snapshots = self.borg.list_snapshots(repo)
             return iter([])
 
-        ui.out(f"Listing snapshots in repository '{repo.name}'")
+        ui.info(f"Listing snapshots in repository '{repo.name}'")
         ui.spinner(
             lambda: list_snapshots(repo),
         )
@@ -283,7 +300,7 @@ class Core:
             ui.warn("Aborted")
             return
 
-        ui.out(f"Deleting snapshot '{snapshot.name}' from repository '{repo.name}'")
+        ui.info(f"Deleting snapshot '{snapshot.name}' from repository '{repo.name}'")
         ui.progress(
             lambda: self.borg.delete(
                 snapshot,
@@ -292,7 +309,7 @@ class Core:
             ),
         )
 
-        ui.out(f"Compacting repository '{repo.name}'")
+        ui.info(f"Compacting repository '{repo.name}'")
         ui.spinner(
             lambda: self.borg.compact(repo, dry_run=dry_run, progress=True),
         )

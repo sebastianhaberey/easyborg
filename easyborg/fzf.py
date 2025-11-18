@@ -1,9 +1,10 @@
 import logging
 from collections.abc import Callable, Iterable
 from enum import Enum
+from pathlib import Path
 from typing import TypeVar
 
-from easyborg.process import ProcessError, assert_executable, run_async
+from easyborg.process import ProcessError, assert_executable_valid, run_async
 
 logger = logging.getLogger(__name__)
 
@@ -16,12 +17,12 @@ class SortOrder(str, Enum):
 
 
 class Fzf:
-    def __init__(self, fzf_executable: str = "fzf"):
+    def __init__(self, executable: Path) -> None:
         """
         Initialize an Fzf instance.
         """
-        assert_executable(fzf_executable)
-        self.fzf = fzf_executable
+        assert_executable_valid(executable)
+        self.executable_path = executable
 
     def confirm(self, prompt: str) -> bool | None:
         response = self.select_strings(["MAYBE", "NO", "YES"], prompt=prompt)
@@ -71,7 +72,7 @@ class Fzf:
         The items iterable is streamed directly into fzf via stdin,
         allowing very large lists without storing them in memory.
         """
-        cmd = [self.fzf]
+        cmd = [str(self.executable_path)]
         if multi:
             cmd.append("--multi")
         cmd.append(f"--prompt={prompt}")

@@ -28,5 +28,6 @@ def initialize(log_file: Path, log_level: str, tty: bool, test: bool) -> None:
     handler.setFormatter(Formatter("%(asctime)s [%(levelname)s] %(message)s"))
     logger.addHandler(handler)
 
-    # mark beginning of new invocation
-    logger.info("--------------------------------------------------------------------------------")
+
+def level_from_name(name: str) -> int:
+    return logging.getLevelName(name.upper())

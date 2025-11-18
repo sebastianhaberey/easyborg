@@ -40,8 +40,13 @@ def newline(count: int = 1) -> None:
     console.print("\n" * count, end="")
 
 
-def out(msg: str, *, indent: int = 1, style: StyleType = None) -> None:
-    console.print((" " * indent * INDENT_SIZE) + msg, style=style)
+def out(msg: str, *, indent: int = 0, style: StyleType = None) -> None:
+    console.print((" " * indent * INDENT_SIZE) + msg, style=style)  # TODO SH clarify console vs. logging
+
+
+def info(msg: str) -> None:
+    console.print(msg)
+    logger.info(msg)
 
 
 def success(msg: str) -> None:
@@ -165,3 +170,7 @@ def table(
 
 def link_path(path: Path) -> str:
     return f"[link={path.as_uri()}]{path}[/link]"
+
+
+def render_dict(value: dict[str, str], *, separator=", ") -> str:
+    return separator.join(f"{k}: [cyan][bold]{v}[/bold][/cyan]" for k, v in value.items())

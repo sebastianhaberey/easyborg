@@ -25,7 +25,7 @@ def test_core_backup(tmp_path, testdata_dir, borg):
         repos={"backup": backup_repo, "archive": archive_repo},
     )
 
-    core = Core(config, borg=borg)
+    core = Core(config, borg=borg, fzf=FakeFzf())
     core.backup()
 
     snapshots = borg.list_snapshots(archive_repo)
@@ -65,7 +65,7 @@ def test_core_backup_multiple_repos(tmp_path, testdata_dir, borg):
         repos={"backup1": backup1_repo, "backup2": backup2_repo},
     )
 
-    core = Core(config, borg=borg)
+    core = Core(config, borg=borg, fzf=FakeFzf())
     core.backup()
 
     snapshots = borg.list_snapshots(backup1_repo)
@@ -92,7 +92,7 @@ def test_core_archive(tmp_path, testdata_dir, borg):
         repos={"backup": backup_repo, "archive": archive_repo},
     )
 
-    core = Core(config, borg=borg)
+    core = Core(config, borg=borg, fzf=FakeFzf())
 
     some_folder = testdata_dir / "some folder"
     core.archive(some_folder)
@@ -138,7 +138,7 @@ def test_core_archive_multiple_repos(tmp_path, testdata_dir, borg):
         repos={"archive1": archive1_repo, "archive2": archive2_repo},
     )
 
-    core = Core(config, borg=borg)
+    core = Core(config, borg=borg, fzf=FakeFzf())
     core.archive(testdata_dir)
 
     snapshots = borg.list_snapshots(archive1_repo)
