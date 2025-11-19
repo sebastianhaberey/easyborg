@@ -24,8 +24,8 @@ logger = logging.getLogger(__name__)
 
 theme = Theme(
     {
-        "progress.remaining": "cyan",
-        "progress.elapsed": "cyan",
+        "progress.remaining": "bold cyan",
+        "progress.elapsed": "bold cyan",
     }
 )
 
@@ -33,7 +33,7 @@ progress_bar_column = BarColumn(
     bar_width=10,
     pulse_style="cyan",
     complete_style="cyan",
-    finished_style="white",
+    finished_style="bold cyan",
     table_column=Column(min_width=10)
 )
 
