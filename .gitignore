@@ -1,5 +1,5 @@
 # --- Local virtual environment ---
-/.venv/
+/.venv*/
 
 # --- IDE settings ---
 /.idea/
