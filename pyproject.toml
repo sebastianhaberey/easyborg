@@ -42,7 +42,7 @@ classifiers = [
 Homepage = "https://github.com/sebastianhaberey/easyborg"
 Repository = "https://github.com/sebastianhaberey/easyborg"
 "Bug Tracker" = "https://github.com/sebastianhaberey/easyborg/issues"
-Changelog = "https://github.com/sebastianhaberey/easyborg/CHANGELOG.md"
+Changelog = "https://github.com/sebastianhaberey/easyborg/blob/main/CHANGELOG.md"
 
 [project.scripts]
 easyborg = "easyborg.__main__:main"
