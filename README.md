@@ -12,11 +12,11 @@ This project is currently in beta phase.
 
 ### Extract
 
-<img src="https://haberey.com/easyborg/extract-01.gif" width="1024"  alt="Extract command in terminal"/>
+<img src="documentation/images/extract.gif" width="1024"  alt="Extract command in terminal"/>
 
 ### Backup
 
-<img src="https://haberey.com/easyborg/backup-01.gif" width="1024"  alt="Backup command in terminal"/>
+<img src="documentation/images/backup.gif" width="1024"  alt="Backup command in terminal"/>
 
 ## Setup
 
