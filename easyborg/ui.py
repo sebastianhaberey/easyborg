@@ -14,7 +14,7 @@ from rich import box
 from rich.console import Console
 from rich.progress import BarColumn, Progress, SpinnerColumn, TextColumn, TimeRemainingColumn
 from rich.style import StyleType
-from rich.table import Table, Column
+from rich.table import Column, Table
 from rich.theme import Theme
 
 INDENT_SIZE = 2
