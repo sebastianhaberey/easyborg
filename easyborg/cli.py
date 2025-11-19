@@ -50,6 +50,13 @@ DEBUG_MODE: bool = False
     help="Enable debug mode (expert)",
 )
 @option(
+    "--scheduled",
+    type=bool,
+    is_flag=True,
+    hidden=not EXPERT_MODE,
+    help="Signal easyborg that it is called by scheduler (expert)",
+)
+@option(
     "--borg-executable",
     type=cloup.Path(path_type=Path, exists=True, executable=True, file_okay=True, dir_okay=False),
     hidden=not EXPERT_MODE,
@@ -66,6 +73,7 @@ def cli(
     ctx: cloup.Context,
     profile: str,
     debug: bool,
+    scheduled: bool,
     borg_executable: Path | None,
     fzf_executable: Path | None,
 ) -> None:
@@ -74,29 +82,30 @@ def cli(
 
     ctx.ensure_object(dict)
 
-    easyborg_executable = ctx.obj.pop("easyborg_executable", None)  # remove from Click context
+    easyborg_executable = ctx.obj.pop("easyborg_executable", None)  # move from Click context to Easyborg context
 
-    context = easyborg.context.load(
+    context = easyborg.context.create(
         profile,
         debug,
+        scheduled,
         borg_executable=borg_executable,
         fzf_executable=fzf_executable,
         easyborg_executable=easyborg_executable,
     )
     ctx.obj["context"] = context
 
-    if not context.tty and not context.test:
+    if scheduled:
         log_utils.enable_file_logging(context.log_file, context.debug)
 
     configuration = config.load(context.config_file)
     os.environ.update(configuration.env)
-
     ctx.obj["configuration"] = configuration
 
-    borg = Borg(executable=context.borg_executable)
-    fzf = Fzf(executable=context.fzf_executable)
-
-    core = Core(configuration, borg, fzf)
+    core = Core(
+        configuration,
+        Borg(executable=context.borg_executable),
+        Fzf(executable=context.fzf_executable),
+    )
     ctx.obj["core"] = core
 
     cron = Cron(profile)
@@ -162,7 +171,7 @@ def enable(obj):
         context.easyborg_executable,
         context.borg_executable,
         context.fzf_executable,
-        "@hourly",
+        schedule="@hourly",
     )
 
 

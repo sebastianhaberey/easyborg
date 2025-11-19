@@ -16,9 +16,12 @@ def enable_file_logging(log_file: Path, debug: bool) -> None:
     """
 
     logger = logging.getLogger()
+    logger.handlers.clear()
     logger.setLevel(logging.DEBUG if debug else logging.INFO)
     log_file.parent.mkdir(parents=True, exist_ok=True)
     handler = RotatingFileHandler(log_file, maxBytes=5 * 1024 * 1024, backupCount=1, encoding="utf-8")
     handler.setFormatter(Formatter("%(asctime)s [%(levelname)s] %(message)s"))
     logger.addHandler(handler)
+
+    # add marker to log file to separate invocations
     logger.info("--------------------------------------------------------------------------------")

@@ -2,6 +2,7 @@
 
 ## Release
 
+- update screenshots
 - error on repository password request / ssh password request
 - brew tap
 - install on own system
@@ -21,6 +22,7 @@
 
 # DONE
 
+- fixed bug where logging was not enabled properly
 - remove quotes in output
 - spinner instead of bar for indeterminate progress
 - fix stacktrace behavior (see "easyborg dsable")

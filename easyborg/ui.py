@@ -39,6 +39,9 @@ progress_bar_column = BarColumn(
 console = Console(highlight=False, theme=theme)
 
 
+# CONSOLE PLUS LOGGING
+
+
 def info(msg: str) -> None:
     console.print(msg)
     logger.info(msg)
@@ -76,8 +79,8 @@ def newline(count: int = 1) -> None:
     console.print("\n" * count, end="")
 
 
-def out(msg: str, *, indent: int = 0, style: StyleType = None) -> None:
-    console.print((" " * indent * INDENT_SIZE) + msg, style=style)  # TODO SH clarify console vs. logging
+def display(msg: str, *, indent: int = 0, style: StyleType = None) -> None:
+    console.print((" " * indent * INDENT_SIZE) + msg, style=style)
 
 
 def header(msg: str) -> None:

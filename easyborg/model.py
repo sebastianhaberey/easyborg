@@ -43,6 +43,7 @@ class Context:
     log_dir: Path
     log_file: Path
     debug: bool
+    scheduled: bool
     config_dir: Path
     config_file: Path
     test: bool

@@ -64,7 +64,7 @@ class Core:
             ui.table(rows, column_colors=("bold cyan",))
         else:
             ui.newline()
-            ui.out("(no backup folders configured)", indent=1)
+            ui.display("(no backup folders configured)", indent=1)
             ui.newline()
 
         ui.header("Repositories")
@@ -77,7 +77,7 @@ class Core:
             )
         else:
             ui.newline()
-            ui.out("(no repositories configured)", indent=1)
+            ui.display("(no repositories configured)", indent=1)
             ui.newline()
 
         if self.repos and context.expert:
