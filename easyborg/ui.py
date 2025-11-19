@@ -14,7 +14,7 @@ from rich import box
 from rich.console import Console
 from rich.progress import BarColumn, Progress, SpinnerColumn, TextColumn, TimeRemainingColumn
 from rich.style import StyleType
-from rich.table import Table
+from rich.table import Table, Column
 from rich.theme import Theme
 
 INDENT_SIZE = 2
@@ -34,6 +34,7 @@ progress_bar_column = BarColumn(
     pulse_style="cyan",
     complete_style="cyan",
     finished_style="white",
+    table_column=Column(min_width=10)
 )
 
 console = Console(highlight=False, theme=theme)
