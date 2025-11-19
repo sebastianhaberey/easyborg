@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "easyborg"
-version = "1.0.0"
+version = "0.9.0"
 description = "Borg for Dummies"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -16,10 +16,10 @@ authors = [
 ]
 
 dependencies = [
-    "click",
-    "cloup",
-    "rich",
-    "platformdirs"
+    "click>=8.3.1",
+    "cloup>=3.0.8",
+    "rich>=14.2.0",
+    "platformdirs>=4.5.0"
 ]
 
 classifiers = [
@@ -42,14 +42,15 @@ classifiers = [
 Homepage = "https://github.com/sebastianhaberey/easyborg"
 Repository = "https://github.com/sebastianhaberey/easyborg"
 "Bug Tracker" = "https://github.com/sebastianhaberey/easyborg/issues"
+Changelog = "https://github.com/sebastianhaberey/easyborg/CHANGELOG.md"
 
 [project.scripts]
 easyborg = "easyborg.__main__:main"
 
 [project.optional-dependencies]
 dev = [
-    "pytest",
-    "ruff",
+    "pytest>=9.0.1",
+    "ruff>=0.14.5",
 ]
 
 [tool.setuptools]

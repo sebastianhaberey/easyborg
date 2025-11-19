@@ -3,12 +3,13 @@
 ## Release
 
 - update screenshots
-- error on repository password request / ssh password request
 - brew tap
 - install on own system
 
 ## Later
 
+- add "secondary" text for all log outputs
+- error on repository password request / ssh password request
 - option for light mode (fzf)
 - e2e test one repo fails -> next repo ok
 - install command

@@ -3,7 +3,7 @@
 Easyborg is a simple frontend for the awesome [BorgBackup](https://www.borgbackup.org/) (aka Borg)
 with [fzf](https://github.com/junegunn/fzf) for user input.
 
-This project is currently WIP and cannot be used yet.
+This project is currently in beta phase.
 
 [![Tests (Linux)](https://github.com/sebastianhaberey/easyborg/actions/workflows/tests-linux.yml/badge.svg)](https://github.com/sebastianhaberey/easyborg/actions/workflows/tests-linux.yml)
 [![Tests (macOS)](https://github.com/sebastianhaberey/easyborg/actions/workflows/tests-macos.yml/badge.svg)](https://github.com/sebastianhaberey/easyborg/actions/workflows/tests-macos.yml)
@@ -164,3 +164,9 @@ This is a safety feature. If you _do_ want to overwrite the original folder, you
 | Restore (action)   | fetch entire snapshot                                           | `borg extract`   |
 | Repository URL     | Borg-style repository reference (local or remote)               | (same)           |
 | Snapshot Location  | Borg-style snapshot reference (`repository_url::snapshot_name`) | Archive Location |
+
+## Disclaimer
+
+Even though I do my best, and there's an automatic test suite that covers the critical functionality on Linux and macOS,
+errors can happen. Use this application at your own risk. It is highly recommended to start with fresh repositories to
+avoid data loss.

@@ -4,7 +4,7 @@ from pathlib import Path
 
 import cloup
 import easyborg
-from click import pass_obj, version_option
+from click import help_option, pass_obj, version_option
 from cloup import HelpFormatter, HelpTheme, Style, argument, command, group, option, pass_context
 from easyborg import config, log_utils
 from easyborg.borg import Borg
@@ -22,6 +22,8 @@ CONTEXT_SETTINGS = cloup.Context.settings(
             heading=Style(fg="yellow", bold=True),
             col1=Style(fg="cyan", bold=True),
         ),
+        width=None,
+        max_width=120,
     ),
 )
 
@@ -34,7 +36,8 @@ DEBUG_MODE: bool = False
 
 
 @group(help="Easyborg – Borg for Dummies", context_settings=CONTEXT_SETTINGS)
-@version_option(package_name="easyborg", help="Show version information")
+@version_option(prog_name="Easyborg", help="Show version information", message="%(prog)s version %(version)s")
+@help_option(help="Show this page and exit")
 @option(
     "--profile",
     type=str,
@@ -126,7 +129,7 @@ def backup(obj, dry_run: bool):
 @option("--dry-run", is_flag=True, help="Do not modify data.")
 @pass_obj
 def archive(obj, folder: Path, comment: str | None, dry_run: bool):
-    """Create snapshot of specified folder in archive repositories"""
+    """Create snapshot of specified folder in archive repositories (interactive)"""
     obj["core"].archive(folder, dry_run=dry_run, comment=comment)
 
 
@@ -134,7 +137,7 @@ def archive(obj, folder: Path, comment: str | None, dry_run: bool):
 @option("--dry-run", is_flag=True, help="Do not modify data.")
 @pass_obj
 def restore(obj, dry_run: bool):
-    """Restore snapshot to current working directory"""
+    """Restore snapshot to current working directory (interactive)"""
     obj["core"].restore(dry_run=dry_run)
 
 
@@ -142,7 +145,7 @@ def restore(obj, dry_run: bool):
 @option("--dry-run", is_flag=True, help="Do not modify data.")
 @pass_obj
 def extract(obj, dry_run: bool):
-    """Interactively extract files / folders from snapshot"""
+    """Extract files / folders from snapshot (interactive)"""
     obj["core"].extract(dry_run=dry_run)
 
 
@@ -150,21 +153,21 @@ def extract(obj, dry_run: bool):
 @option("--dry-run", is_flag=True, help="Do not modify data.")
 @pass_obj
 def delete(obj, dry_run: bool):
-    """Interactively delete snapshot from repository"""
+    """Delete snapshot from repository (interactive)"""
     obj["core"].delete(dry_run=dry_run)
 
 
 @command()
 @pass_obj
 def info(obj):
-    """Output info about the current configuration"""
+    """Show info about the current configuration"""
     obj["core"].info(obj["context"])
 
 
 @command()
 @pass_obj
 def enable(obj):
-    """Enable automatic backups (runs 'easyborg backup' hourly)"""
+    """Enable scheduled backups"""
     context: Context = obj["context"]
     obj["cron"].enable(
         "backup",
@@ -178,7 +181,7 @@ def enable(obj):
 @command()
 @pass_obj
 def disable(obj):
-    """Disable automatic backups"""
+    """Disable scheduled backups"""
     obj["cron"].disable()
 
 
