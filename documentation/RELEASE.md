@@ -5,7 +5,11 @@
 1. Update [CHANGELOG.md](../CHANGELOG.md)
 2. Set version in [pyproject.toml](../pyproject.toml)
 
-## Build and deploy to TestPyPi
+## Build and publish to TestPyPi (UI)
+
+Use Github workflow "Publish to PyPi"
+
+## Build and publish to TestPyPi (manual)
 
 ```
 
