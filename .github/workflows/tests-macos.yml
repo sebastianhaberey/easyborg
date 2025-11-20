@@ -3,7 +3,7 @@ name: Tests (macOS)
 on:
   schedule:
     - cron: "0 2 * * *"   # nightly at 02:00 UTC
-  workflow_dispatch:      # allows manual run from GitHub UI
+  workflow_dispatch:
 
 jobs:
   test-macos:

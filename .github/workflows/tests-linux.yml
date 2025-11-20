@@ -5,7 +5,7 @@ on:
     branches: [ "**" ]
   pull_request:
     branches: [ "**" ]
-  workflow_dispatch:      # allows manual run from GitHub UI
+  workflow_dispatch:
 
 jobs:
   test-linux:
