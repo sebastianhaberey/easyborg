@@ -34,6 +34,15 @@ jobs:
           path: tap
           token: ${{ secrets.HOMEBREW_TAP_TOKEN }}
 
+      - name: Install Homebrew
+        run: |
+          /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+          echo 'eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"' >> $GITHUB_ENV
+
+      - name: Set up Homebrew
+        run: |
+          eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+
       - name: Update formula
         run: |
           cd tap/Formula
