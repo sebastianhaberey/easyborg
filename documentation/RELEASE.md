@@ -37,7 +37,7 @@ easyborg info
 twine upload --repository testpypi dist/*
 
 # Uninstall 
-pip uninstall easyborg
+pip uninstall -y easyborg
 
 # Install from TestPyPi
 pip install --index-url https://test.pypi.org/simple --extra-index-url https://pypi.org/simple easyborg==0.9.1rc2
@@ -46,7 +46,7 @@ pip install --index-url https://test.pypi.org/simple --extra-index-url https://p
 easyborg info
 
 # Uninstall
-pip uninstall easyborg
+pip uninstall -y easyborg
 ```
 
 ## Deploy to PyPi
