@@ -12,7 +12,8 @@ class Cron:
     """
 
     def __init__(self, profile: str):
-        self.marker = f"# easyborg:profile:{profile}"
+        self.profile = profile
+        self.marker = f"# easyborg:{profile}"
 
     def enable(
         self,
@@ -37,6 +38,7 @@ class Cron:
         entry = (
             f"{schedule} "
             f"{easyborg_executable} "
+            f"--profile {self.profile} "
             f"--scheduled "
             f"--borg-executable {borg_executable} "
             f"--fzf-executable {fzf_executable} "
