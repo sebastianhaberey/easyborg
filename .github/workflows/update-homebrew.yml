@@ -1,0 +1,60 @@
+name: Update Homebrew Formula
+
+on:
+  workflow_dispatch:
+
+jobs:
+  update-formula:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out easyborg repo
+        uses: actions/checkout@v4
+
+      - name: Extract version
+        id: version
+        run: |
+          TAG="${GITHUB_REF#refs/tags/}"
+          echo "version=${TAG#v}" >> $GITHUB_OUTPUT
+
+      - name: Download sdist from PyPI
+        run: |
+          VER=${{ steps.version.outputs.version }}
+          curl -L -o easyborg.tar.gz \
+            "https://files.pythonhosted.org/packages/source/e/easyborg/easyborg-${VER}.tar.gz"
+
+      - name: Compute sha256
+        id: sha
+        run: echo "sha256=$(sha256sum easyborg.tar.gz | cut -d ' ' -f1)" >> $GITHUB_OUTPUT
+
+      - name: Check out tap repo
+        uses: actions/checkout@v4
+        with:
+          repository: <YOURUSER>/homebrew-easyborg
+          path: tap
+          token: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+
+      - name: Update formula
+        run: |
+          cd tap/Formula
+
+          # Update the URL
+          sed -i "s|url \".*\"|url \"https://files.pythonhosted.org/packages/source/e/easyborg/easyborg-${{ steps.version.outputs.version }}.tar.gz\"|" easyborg.rb
+
+          # Update the sha256
+          sed -i "s|sha256 \".*\"|sha256 \"${{ steps.sha.outputs.sha256 }}\"|" easyborg.rb
+
+          # Enable brew developer commands
+          brew developer on
+
+          # Update resource blocks
+          brew update-python-resources easyborg.rb
+
+      - name: Commit & push the updated formula
+        run: |
+          cd tap
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git add Formula/easyborg.rb
+          git commit -m "Update easyborg to ${{ steps.version.outputs.version }}" || echo "No changes"
+          git push
