@@ -12,11 +12,11 @@ This project is currently in beta phase.
 
 ### Extract
 
-<img src="documentation/images/extract.gif" width="1024"  alt="Extract command in terminal"/>
+<img src="https://raw.githubusercontent.com/sebastianhaberey/easyborg/main/documentation/images/extract.gif" width="1024"  alt="Extract command in terminal"/>
 
 ### Backup
 
-<img src="documentation/images/backup.gif" width="1024"  alt="Backup command in terminal"/>
+<img src="https://raw.githubusercontent.com/sebastianhaberey/easyborg/main/documentation/images/backup.gif" width="1024"  alt="Backup command in terminal"/>
 
 ## Setup
 
@@ -41,7 +41,15 @@ $ fzf --version
 
 #### pipx
 
+```
+pipx install easyborg 
+```
 
+You need a Python installation for this.
+
+#### Homebrew (macOS / Linux)
+
+TBD
 
 ### Repositories
 
