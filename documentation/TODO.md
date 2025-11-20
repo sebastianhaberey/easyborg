@@ -4,14 +4,13 @@
 
 - install on own system and use
 - automatic brew tap update via Github workflow
+- add "secondary" text for all log outputs
+- error on repository password request / ssh password request
+- e2e test one repo fails -> next repo ok
 
 ## Later
 
-- add header to fzf dialogs (e.g. "Repository XYZ")
-- add "secondary" text for all log outputs
-- error on repository password request / ssh password request
 - option for light mode (fzf)
-- e2e test one repo fails -> next repo ok
 - install command
 - expert mode: prune options (--keep-xxx)
 - expert mode: cron options
@@ -23,6 +22,7 @@
 
 # DONE
 
+- add repository name to snapshot selection dialogs for safety
 - brew tap
 - update screenshots
 - fixed bug where logging was not enabled properly

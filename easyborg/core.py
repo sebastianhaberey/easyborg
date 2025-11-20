@@ -176,7 +176,7 @@ class Core:
         ui.spinner(
             lambda: list_snapshots(repo),
         )
-        snapshot = self._select_snapshot(snapshots)
+        snapshot = self._select_snapshot(snapshots, repo.name)
         if not snapshot:
             ui.warn("Aborted")
             return
@@ -216,7 +216,7 @@ class Core:
             lambda: list_snapshots(repo),
         )
 
-        snapshot = self._select_snapshot(snapshots)
+        snapshot = self._select_snapshot(snapshots, repo.name)
         if not snapshot:
             ui.warn("Aborted")
             return
@@ -252,11 +252,11 @@ class Core:
         )
         return repos[0] if repos else None
 
-    def _select_snapshot(self, snapshots: list[Snapshot]) -> Snapshot | None:
+    def _select_snapshot(self, snapshots: list[Snapshot], repo_name: str) -> Snapshot | None:
         snapshot = self.fzf.select_items(
             snapshots,
             key=lambda s: f"{s.name} — {s.comment}" if s.comment else s.name,
-            prompt="Select snapshot: ",
+            prompt=f"Select snapshot from {repo_name}: ",
             sort_order=SortOrder.DESCENDING,
         )
         return snapshot[0] if snapshot else None
@@ -290,7 +290,7 @@ class Core:
         ui.spinner(
             lambda: list_snapshots(repo),
         )
-        snapshot = self._select_snapshot(snapshots)
+        snapshot = self._select_snapshot(snapshots, repo.name)
         if not snapshot:
             ui.warn("Aborted")
             return
