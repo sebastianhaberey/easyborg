@@ -1,20 +1,29 @@
 # BACKUP FOLDERS
 
-#backup_folders = [
-#    "/a/b/c",
-#    "/d/e/f"
-#]
+backup_folders = [
+    "/Users/example/Documents", # use absolute paths here, not ~/Documents
+]
+
+[environment]
+BORG_PASSCOMMAND = "cat /Users/example/passphrase.txt" # file must be accessible by owner ONLY (via file permissions)
 
 # REPOSITORIES
 
-#[repositories.BACKUP-HD]
-#type = "backup"
-#url = "/example/directory/backup"
+[repositories.BACKUP-HD]
+type = "backup"
+url = "/Volumes/EXTERNAL/backup"
 
-#[repositories.ARCHIVE-HD]
-#type = "archive"
-#url = "/example/directory/archive"
+[repositories.ARCHIVE-HD]
+type = "archive"
+url = "/Volumes/EXTERNAL/archive"
 
-#[repositories.BACKUP-SERVER]
-#type = "backup"
-#url = "ssh://user@example/./backup"
+[repositories.BACKUP-SERVER]
+type = "backup"
+url = "ssh://user@example.com/./backup"
+
+[repositories.ARCHIVE-SERVER]
+type = "archive"
+url = "ssh://user@example.com/./archive"
+
+[repositories.ARCHIVE-SERVER.environment]
+BORG_RELOCATED_REPO_ACCESS_IS_OK = "yes" # you need this if you ever relocated your repo to another server
