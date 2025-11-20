@@ -1,9 +1,9 @@
 # TODO
 
-## Release
+## Soon
 
-- brew tap
-- install on own system
+- install on own system and use
+- automatic brew tap update via Github workflow
 
 ## Later
 
@@ -23,12 +23,13 @@
 
 # DONE
 
+- brew tap
 - update screenshots
 - fixed bug where logging was not enabled properly
 - remove quotes in output
 - spinner instead of bar for indeterminate progress
 - fix stacktrace behavior (see "easyborg dsable")
-- find out where the extra console line comes from on "easyborg disable" 
+- find out where the extra console line comes from on "easyborg disable"
 - "--debug" instead of "--log-level"
 - test scheduled backups
 - add log level option (expert)
