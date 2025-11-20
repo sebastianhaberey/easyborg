@@ -2,12 +2,12 @@
 
 ## Release
 
-- update screenshots
 - brew tap
 - install on own system
 
 ## Later
 
+- add header to fzf dialogs (e.g. "Repository XYZ")
 - add "secondary" text for all log outputs
 - error on repository password request / ssh password request
 - option for light mode (fzf)
@@ -23,6 +23,7 @@
 
 # DONE
 
+- update screenshots
 - fixed bug where logging was not enabled properly
 - remove quotes in output
 - spinner instead of bar for indeterminate progress

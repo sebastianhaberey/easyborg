@@ -22,7 +22,7 @@ This project is currently in beta phase.
 
 ### Dependencies
 
-Install:
+Required:
 
 - [BorgBackup](https://www.borgbackup.org/) (tested with v1.4.2)
 - [fzf](https://github.com/junegunn/fzf) (tested with v0.66.1)
@@ -36,6 +36,12 @@ borg 1.4.2
 $ fzf --version
 0.66.1 (brew)
 ```
+
+### Installation
+
+#### pipx
+
+
 
 ### Repositories
 

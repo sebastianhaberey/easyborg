@@ -4,12 +4,12 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "easyborg"
-version = "0.9.1rc1"
+version = "0.9.1rc2"
 description = "Borg for Dummies"
 readme = "README.md"
 requires-python = ">=3.10"
 
-license = { text = "MIT" }
+license = "MIT"
 
 authors = [
     { name = "Sebastian Haberey", email = "sebastian@haberey.com" }
@@ -30,7 +30,6 @@ classifiers = [
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
     "Programming Language :: Python :: 3.14",
-    "License :: OSI Approved :: MIT License",
     "Operating System :: MacOS :: MacOS X",
     "Operating System :: POSIX :: Linux",
     "Environment :: Console",
