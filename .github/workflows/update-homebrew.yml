@@ -30,7 +30,7 @@ jobs:
       - name: Check out tap repo
         uses: actions/checkout@v4
         with:
-          repository: <YOURUSER>/homebrew-easyborg
+          repository: sebastianhaberey/homebrew-easyborg
           path: tap
           token: ${{ secrets.HOMEBREW_TAP_TOKEN }}
 
