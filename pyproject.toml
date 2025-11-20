@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "easyborg"
-version = "0.9.1rc2"
+version = "0.9.1rc3"
 description = "Borg for Dummies"
 readme = "README.md"
 requires-python = ">=3.10"
