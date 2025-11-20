@@ -10,7 +10,7 @@
 ```
 
 # Remove old build artifacts
-rm -rf dist/ ./venv-release
+rm -rf dist/ .venv-release/
 
 # Create dedicated venv for release
 python -m venv .venv-release
@@ -18,11 +18,8 @@ python -m venv .venv-release
 # Switch to new venv
 source .venv-release/bin/activate
 
-# Upgrade pip
-pip install --upgrade pip
-
-# Install build and twine
-pip install build twine
+# Upgrade pip, install build and twine
+pip install --upgrade pip build twine
 
 # Build
 python -m build
