@@ -4,15 +4,13 @@
 
 1. Update [CHANGELOG.md](../CHANGELOG.md)
 2. Set version in [pyproject.toml](../pyproject.toml)
+3. Tag the version (e.g. v1.2.3) and push the tag
 
-## Build and publish to TestPyPi (UI)
+The PyPi release will be published automatically by a Github action.
 
-Use Github workflow "Publish to PyPi"
-
-## Build and publish to TestPyPi (manual)
+## Build and test (manual)
 
 ```
-
 # Remove old build artifacts
 rm -rf dist/ .venv-release/
 
@@ -34,11 +32,15 @@ pip install dist/easyborg-0.9.1rc2-py3-none-any.whl
 # Run
 easyborg info
 
-# Upload to TestPyPi (requires TestPyPi account, and API token in ~/.pypirc)
-twine upload --repository testpypi dist/*
-
 # Uninstall 
 pip uninstall -y easyborg
+```
+
+# Upload to TestPyPi
+
+```
+# Upload to TestPyPi (requires TestPyPi account, and API token in ~/.pypirc)
+twine upload --repository testpypi dist/*
 
 # Install from TestPyPi
 pip install --index-url https://test.pypi.org/simple --extra-index-url https://pypi.org/simple easyborg==0.9.1rc2
@@ -58,4 +60,7 @@ twine upload dist/*
 
 # Install from PyPi
 pipx install easyborg
+
+# Uninstall
+pipx uninstall easyborg
 ```
