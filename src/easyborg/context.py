@@ -15,7 +15,7 @@ platform_dirs = PlatformDirs(APPNAME)
 def create(
     profile: str,
     debug: bool,
-    scheduled: bool,
+    headless: bool,
     *,
     borg_executable: Path | None = None,
     fzf_executable: Path | None = None,
@@ -34,7 +34,7 @@ def create(
         log_dir=log_dir,
         log_file=_get_log_file(log_dir),
         debug=debug,
-        scheduled=scheduled,
+        headless=headless,
         config_dir=config_dir,
         config_file=_get_config_file(config_dir),
         test=_is_test(),

@@ -54,11 +54,11 @@ DEBUG_MODE: bool = False
     help="Enable debug mode (expert)",
 )
 @option(
-    "--scheduled",
+    "--headless",
     type=bool,
     is_flag=True,
     hidden=not EXPERT_MODE,
-    help="Signal easyborg that it is called by scheduler (expert)",
+    help="Activate headless mode (e.g. for scheduled runs) (expert)",
 )
 @option(
     "--borg-executable",
@@ -77,7 +77,7 @@ def cli(
     ctx: cloup.Context,
     profile: str,
     debug: bool,
-    scheduled: bool,
+    headless: bool,
     borg_executable: Path | None,
     fzf_executable: Path | None,
 ) -> None:
@@ -91,15 +91,16 @@ def cli(
     context = easyborg.context.create(
         profile,
         debug,
-        scheduled,
+        headless,
         borg_executable=borg_executable,
         fzf_executable=fzf_executable,
         easyborg_executable=easyborg_executable,
     )
     ctx.obj["context"] = context
 
-    if scheduled:
+    if headless:
         log_utils.enable_file_logging(context.log_file, context.debug)
+        logger.info("--------------------------------------------------------------------------------")
     else:
         ui.quiet(False)
         ui.newline()
@@ -176,7 +177,7 @@ def delete(obj, dry_run: bool):
 @help_option(help="Show this message and exit")
 @pass_obj
 def info(obj):
-    """Show info about the current configuration"""
+    """Show info about current configuration"""
     obj["core"].info(obj["context"])
 
 

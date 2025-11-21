@@ -39,7 +39,7 @@ class Cron:
             f"{schedule} "
             f"{easyborg_executable} "
             f"--profile {self.profile} "
-            f"--scheduled "
+            f"--headless "
             f"--borg-executable {borg_executable} "
             f"--fzf-executable {fzf_executable} "
             f"{command} "
