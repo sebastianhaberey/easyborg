@@ -2,7 +2,7 @@
 import os
 from pathlib import Path
 
-from tests.helpers.fakes import FakeFzf
+from helpers.fakes import FakeFzf
 
 from easyborg.core import Core
 from easyborg.model import Config, RepositoryType, Snapshot
