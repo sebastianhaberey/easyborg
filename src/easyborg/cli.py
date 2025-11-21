@@ -120,13 +120,14 @@ def cli(
 
 
 @command()
-@option("--dry-run", is_flag=True, help="Do not modify data.")
+@option("--dry-run", is_flag=True, help="Do not modify data")
 @option(
     "--tenacious",
     is_flag=True,
     hidden=not EXPERT_MODE,
     help="If snapshot creation fails, log error and continue with next repository (expert)",
 )
+@help_option(help="Show this message and exit")
 @pass_obj
 def backup(obj, dry_run: bool, tenacious: bool):
     """Create snapshot of configured folders in backup repositories"""
@@ -134,9 +135,10 @@ def backup(obj, dry_run: bool, tenacious: bool):
 
 
 @command()
-@argument("folder", type=cloup.Path(path_type=Path, exists=True), help="Folder to backup.")
-@option("--comment", help="Add comment to the created snapshot.")
-@option("--dry-run", is_flag=True, help="Do not modify data.")
+@argument("folder", type=cloup.Path(path_type=Path, exists=True), help="Folder to backup")
+@option("--comment", help="Add comment to the created snapshot")
+@option("--dry-run", is_flag=True, help="Do not modify data")
+@help_option(help="Show this message and exit")
 @pass_obj
 def archive(obj, folder: Path, comment: str | None, dry_run: bool):
     """Create snapshot of specified folder in archive repositories (interactive)"""
@@ -144,7 +146,8 @@ def archive(obj, folder: Path, comment: str | None, dry_run: bool):
 
 
 @command()
-@option("--dry-run", is_flag=True, help="Do not modify data.")
+@option("--dry-run", is_flag=True, help="Do not modify data")
+@help_option(help="Show this message and exit")
 @pass_obj
 def restore(obj, dry_run: bool):
     """Restore snapshot to current working directory (interactive)"""
@@ -152,7 +155,8 @@ def restore(obj, dry_run: bool):
 
 
 @command()
-@option("--dry-run", is_flag=True, help="Do not modify data.")
+@option("--dry-run", is_flag=True, help="Do not modify data")
+@help_option(help="Show this message and exit")
 @pass_obj
 def extract(obj, dry_run: bool):
     """Extract files / folders from snapshot (interactive)"""
@@ -160,7 +164,8 @@ def extract(obj, dry_run: bool):
 
 
 @command()
-@option("--dry-run", is_flag=True, help="Do not modify data.")
+@option("--dry-run", is_flag=True, help="Do not modify data")
+@help_option(help="Show this message and exit")
 @pass_obj
 def delete(obj, dry_run: bool):
     """Delete snapshot from repository (interactive)"""
@@ -168,6 +173,7 @@ def delete(obj, dry_run: bool):
 
 
 @command()
+@help_option(help="Show this message and exit")
 @pass_obj
 def info(obj):
     """Show info about the current configuration"""
@@ -175,6 +181,7 @@ def info(obj):
 
 
 @command()
+@help_option(help="Show this message and exit")
 @pass_obj
 def enable(obj):
     """Enable scheduled backups"""
@@ -189,6 +196,7 @@ def enable(obj):
 
 
 @command()
+@help_option(help="Show this message and exit")
 @pass_obj
 def disable(obj):
     """Disable scheduled backups"""
