@@ -1,9 +1,6 @@
 name: Update Homebrew Formula
 
 on:
-  push:
-    tags:
-      - "v*"
   workflow_dispatch:
 
 env:
@@ -22,18 +19,13 @@ jobs:
       - name: Determine version
         id: version
         run: |
-          if [[ "${{ github.event_name }}" == "push" ]]; then
-            # Use tag that triggered the push
+          if [[ "$GITHUB_REF" == refs/tags/* ]]; then
             TAG="${GITHUB_REF#refs/tags/}"
             VERSION="${TAG#v}"
-            echo "Triggered by tag: $TAG"
           else
-            # Manual run: use latest tag found in repo
             TAG=$(git describe --tags --abbrev=0)
             VERSION="${TAG#v}"
-            echo "Manual run: using latest tag $TAG"
           fi
-
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "Using version: $VERSION"
 
