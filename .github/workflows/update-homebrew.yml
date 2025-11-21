@@ -1,6 +1,8 @@
 name: Update Homebrew Formula
 
 on:
+  release:
+    types: [ published ]
   workflow_dispatch:
 
 jobs:
@@ -8,58 +10,78 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Check out easyborg repo
+      - name: Checkout Easyborg
         uses: actions/checkout@v4
 
-      - name: Extract version
+      - name: Extract Easyborg Version
         id: version
         run: |
           TAG="${GITHUB_REF#refs/tags/}"
           echo "version=${TAG#v}" >> $GITHUB_OUTPUT
 
-      - name: Download sdist from PyPI
+      - name: Install Homebrew
         run: |
-          VER=${{ steps.version.outputs.version }}
-          curl -L -o easyborg.tar.gz \
-            "https://files.pythonhosted.org/packages/source/e/easyborg/easyborg-${VER}.tar.gz"
+          /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+          echo 'eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"' >> "$HOME/.profile"
+          echo 'eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"' >> "$HOME/.bashrc"
+          eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
 
-      - name: Compute sha256
-        id: sha
-        run: echo "sha256=$(sha256sum easyborg.tar.gz | cut -d ' ' -f1)" >> $GITHUB_OUTPUT
+      - name: Detect BorgBackup Python Version
+        id: borg_py
+        run: |
+          eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
 
-      - name: Check out tap repo
+          PY_FORMULA=$(brew info borgbackup --json | jq -r '.[0].dependencies[] | select(startswith("python@"))')
+
+          if [ -z "$PY_FORMULA" ]; then
+            echo "Error: Could not detect python@XX version from borgbackup!" >&2
+            exit 1
+          fi
+
+          # Extract "3.14" from "python@3.14"
+          PY_VERSION="${PY_FORMULA#python@}"
+
+          echo "python_version=$PY_VERSION" >> $GITHUB_OUTPUT
+          echo "Detected Borg Python version: $PY_VERSION"
+
+      - name: Install Borg Python
+        run: |
+          eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+          brew install "python@${{ steps.borg_py.outputs.python_version }}"
+
+      - name: Create virtualenv
+        run: |
+          eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+
+          PYVER="${{ steps.borg_py.outputs.python_version }}"
+          PYTHON="/home/linuxbrew/.linuxbrew/opt/python@${PYVER}/bin/python${PYVER}"
+
+          echo "Using Python: $PYTHON"
+
+          "$PYTHON" -m venv venv
+          . venv/bin/activate
+          pip install --upgrade pip requests packaging
+          pip install "easyborg==${{ steps.version.outputs.version }}"
+
+      - name: Checkout Easyborg Homebrew Tap
         uses: actions/checkout@v4
         with:
           repository: sebastianhaberey/homebrew-easyborg
           path: tap
           token: ${{ secrets.HOMEBREW_TAP_TOKEN }}
 
-      - name: Install Homebrew
+      - name: Generate Easyborg Homebrew Formula
         run: |
-          /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+          . venv/bin/activate
 
-      - name: Add Homebrew to PATH
-        run: |
-          echo "/home/linuxbrew/.linuxbrew/bin" >> $GITHUB_PATH
-          echo "/home/linuxbrew/.linuxbrew/sbin" >> $GITHUB_PATH
+          python tools/generate_homebrew_formula.py \
+            --package easyborg \
+            --version "${{ steps.version.outputs.version }}" \
+            --python-version "${{ steps.borg_py.outputs.python_version }}" \
+            --template tools/easyborg.rb.template \
+            --output tap/Formula/easyborg.rb
 
-      - name: Update formula
-        run: |
-          cd tap/Formula
-
-          # Update the URL
-          sed -i "s|url \".*\"|url \"https://files.pythonhosted.org/packages/source/e/easyborg/easyborg-${{ steps.version.outputs.version }}.tar.gz\"|" easyborg.rb
-
-          # Update the sha256
-          sed -i "s|sha256 \".*\"|sha256 \"${{ steps.sha.outputs.sha256 }}\"|" easyborg.rb
-
-          # Enable brew developer commands
-          brew developer on
-
-          # Update resource blocks
-          brew update-python-resources easyborg.rb
-
-      - name: Commit & push the updated formula
+      - name: Commit and Push Changes
         run: |
           cd tap
           git config user.name "github-actions"
