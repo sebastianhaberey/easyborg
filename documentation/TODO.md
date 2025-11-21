@@ -2,7 +2,6 @@
 
 ## Soon
 
-- move easyborg to src/easyborg
 - install on own system and use
 - automatic brew tap update via Github workflow
 - add "secondary" text for all log outputs
@@ -11,6 +10,8 @@
 
 ## Later
 
+- add tooling to generate brew formula
+- move easyborg to src/easyborg
 - option for light mode (fzf)
 - install command
 - expert mode: prune options (--keep-xxx)

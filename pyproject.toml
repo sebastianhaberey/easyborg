@@ -53,11 +53,11 @@ dev = [
 ]
 
 [tool.setuptools]
-package-dir = { "" = "." }
+package-dir = { "" = "src" }
 include-package-data = true
 
 [tool.setuptools.packages.find]
-where = ["."]
+where = ["src"]
 
 [tool.setuptools.package-data]
 easyborg = ["resources/template-easyborg.toml"]
@@ -65,7 +65,7 @@ easyborg = ["resources/template-easyborg.toml"]
 [tool.ruff]
 line-length = 120
 target-version = "py311"
-src = ["easyborg", "tools"]
+src = ["src", "tools"]
 
 [tool.ruff.lint]
 select = [
