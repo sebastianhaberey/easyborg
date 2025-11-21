@@ -20,24 +20,16 @@ This project is currently in beta phase.
 
 ## Setup
 
-### Dependencies
-
-Required:
-
-- [BorgBackup](https://www.borgbackup.org/) (tested with v1.4.2)
-- [fzf](https://github.com/junegunn/fzf) (tested with v0.66.1)
-
-Verify:
-
-```
-$ borg --version
-borg 1.4.2
-
-$ fzf --version
-0.66.1 (brew)
-```
-
 ### Installation
+
+You have the choice between Homebrew / Linuxbrew or Python pipx.
+
+#### Homebrew / Linuxbrew (recommended)
+
+```
+brew tap sebastianhaberey/easyborg
+brew install easyborg
+```
 
 #### pipx
 
@@ -45,11 +37,9 @@ $ fzf --version
 pipx install easyborg 
 ```
 
-You need a Python installation for this.
-
-#### Homebrew (macOS / Linux)
-
-TBD
+> **NOTE** You'll need a Python installation for pipx. Also make sure you
+> have [BorgBackup](https://www.borgbackup.org/)
+> and [fzf](https://github.com/junegunn/fzf) installed.
 
 ### Repositories
 
@@ -93,7 +83,7 @@ Open the config file, configure the folders you want to back up, and your backup
 
 ## Usage
 
-Easyborg currently supports five actions: _backup_, _archive_, _restore_, _extract_ and _delete_. Use
+Easyborg currently supports five main commands: _backup_, _archive_, _restore_, _extract_ and _delete_. Use
 
 ```
 $ easyborg --help
