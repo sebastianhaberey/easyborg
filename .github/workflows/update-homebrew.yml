@@ -10,78 +10,55 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Easyborg
+      - name: Checkout easyborg
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-      - name: Extract Easyborg Version
+      # Determine version: tag or fallback to latest tag
+      - name: Determine version
         id: version
         run: |
-          TAG="${GITHUB_REF#refs/tags/}"
-          echo "version=${TAG#v}" >> $GITHUB_OUTPUT
-
-      - name: Install Homebrew
-        run: |
-          /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-          echo 'eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"' >> "$HOME/.profile"
-          echo 'eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"' >> "$HOME/.bashrc"
-          eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
-
-      - name: Detect BorgBackup Python Version
-        id: borg_py
-        run: |
-          eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
-
-          PY_FORMULA=$(brew info borgbackup --json | jq -r '.[0].dependencies[] | select(startswith("python@"))')
-
-          if [ -z "$PY_FORMULA" ]; then
-            echo "Error: Could not detect python@XX version from borgbackup!" >&2
-            exit 1
+          if [[ "$GITHUB_REF" == refs/tags/* ]]; then
+            TAG="${GITHUB_REF#refs/tags/}"
+            VERSION="${TAG#v}"
+          else
+            TAG=$(git describe --tags --abbrev=0)
+            VERSION="${TAG#v}"
           fi
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Using version: $VERSION"
 
-          # Extract "3.14" from "python@3.14"
-          PY_VERSION="${PY_FORMULA#python@}"
-
-          echo "python_version=$PY_VERSION" >> $GITHUB_OUTPUT
-          echo "Detected Borg Python version: $PY_VERSION"
-
-      - name: Install Borg Python
-        run: |
-          eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
-          brew install "python@${{ steps.borg_py.outputs.python_version }}"
+      - name: Install Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
 
       - name: Create virtualenv
         run: |
-          eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
-
-          PYVER="${{ steps.borg_py.outputs.python_version }}"
-          PYTHON="/home/linuxbrew/.linuxbrew/opt/python@${PYVER}/bin/python${PYVER}"
-
-          echo "Using Python: $PYTHON"
-
-          "$PYTHON" -m venv venv
+          python -m venv venv
           . venv/bin/activate
           pip install --upgrade pip requests packaging
           pip install "easyborg==${{ steps.version.outputs.version }}"
 
-      - name: Checkout Easyborg Homebrew Tap
+      - name: Checkout Homebrew tap
         uses: actions/checkout@v4
         with:
           repository: sebastianhaberey/homebrew-easyborg
           path: tap
           token: ${{ secrets.HOMEBREW_TAP_TOKEN }}
 
-      - name: Generate Easyborg Homebrew Formula
+      - name: Generate formula
         run: |
           . venv/bin/activate
-
           python tools/generate_homebrew_formula.py \
             --package easyborg \
             --version "${{ steps.version.outputs.version }}" \
-            --python-version "${{ steps.borg_py.outputs.python_version }}" \
+            --python-version "3.14" \
             --template tools/easyborg.rb.template \
             --output tap/Formula/easyborg.rb
 
-      - name: Commit and Push Changes
+      - name: Commit and push
         run: |
           cd tap
           git config user.name "github-actions"
