@@ -38,7 +38,7 @@ progress_bar_column = BarColumn(
     table_column=Column(min_width=10),
 )
 
-console = Console(quiet=True)  # start out quiet, enable later
+console = Console(highlight=False, theme=theme, quiet=True)  # start out quiet, enable later
 
 # CONSOLE PLUS LOGGING
 
@@ -58,19 +58,21 @@ def warn(msg: str) -> None:
     logger.warning("⚠️ " + msg)
 
 
-def error(msg: str, secondary: str = None) -> None:
-    console_msg = f"[red][bold]{msg}[/bold][/red]"
-    log_msg = "❌ " + msg
-    if secondary:
-        console_msg += " " + secondary
-        log_msg += " " + secondary
+def exception(e: Exception) -> None:
+    exception_name = e.__class__.__name__
+    console_msg = f"[red][bold]{exception_name}[/bold][/red]"
+    log_msg = "❌ " + exception_name
+    message = str(e)
+    if message:
+        console_msg += ": " + message
+        log_msg += ": " + message
     console.print(console_msg)
     logger.error(log_msg)
 
 
-def exception(msg: str) -> None:
+def stacktrace(message: str) -> None:
     console.print_exception(suppress=[click, cloup, rich], extra_lines=0)
-    logger.exception("❌ " + msg)
+    logger.exception("❌ " + message)
 
 
 # CONSOLE ONLY

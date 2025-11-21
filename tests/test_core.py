@@ -1,11 +1,12 @@
 # tests/test_core.py
 import os
 from pathlib import Path
+from unittest.mock import Mock
 
 from helpers.fakes import FakeFzf
 
 from easyborg.core import Core
-from easyborg.model import Config, RepositoryType, Snapshot
+from easyborg.model import Config, Repository, RepositoryType, Snapshot
 from easyborg.util import to_relative_path
 
 
@@ -74,6 +75,40 @@ def test_core_backup_multiple_repos(tmp_path, testdata_dir, borg):
 
     snapshots = borg.list_snapshots(backup2_repo)
     assert len(snapshots) == 1
+
+
+def test_core_backup_tenacious_mode(tmp_path, testdata_dir):
+    """
+    Backup to first repo fails, backup to second repo succeeds (tenacious mode).
+    """
+
+    repo_parent = tmp_path / "repos"
+    repo_parent.mkdir()
+
+    backup1_repo = Repository(url="foo", name="foo", type=RepositoryType.BACKUP)
+    backup2_repo = Repository(url="bar", name="bar", type=RepositoryType.BACKUP)
+
+    config = Config(
+        source=tmp_path,
+        backup_folders=[testdata_dir],
+        repos={"backup1": backup1_repo, "backup2": backup2_repo},
+    )
+
+    borg = Mock()
+
+    # create_snapshot: fail first time, succeed second time
+    borg.create_snapshot.side_effect = [
+        Exception("boom"),
+        None,
+    ]
+
+    borg.prune.return_value = []
+    borg.compact.return_value = []
+
+    core = Core(config, borg=borg, fzf=FakeFzf())
+    core.backup(tenacious=True)
+
+    assert borg.create_snapshot.call_count == 2
 
 
 def test_core_archive(tmp_path, testdata_dir, borg):

@@ -21,7 +21,7 @@ def parse_progress(lines: Iterator[str]) -> Generator[ProgressEvent, None, None]
         event_type = event.get("type")
 
         if event_type == "log_message" and (event.get("levelname") in CRITICAL_LEVELS):
-            raise RuntimeError(f"Received error event: {event.get('message')}")
+            raise RuntimeError(f"{event.get('message')}")
 
         total = event.get("total")
         current = event.get("current")

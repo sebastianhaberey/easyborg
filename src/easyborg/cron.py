@@ -43,6 +43,7 @@ class Cron:
             f"--borg-executable {borg_executable} "
             f"--fzf-executable {fzf_executable} "
             f"{command} "
+            f"--tenacious "
             f"{self.marker}"
         )
         updated = _add_entry(existing, entry, self.marker)

@@ -102,6 +102,7 @@ def cli(
         log_utils.enable_file_logging(context.log_file, context.debug)
     else:
         ui.quiet(False)
+        ui.newline()
 
     configuration = config.load(context.config_file)
     os.environ.update(configuration.env)
@@ -120,10 +121,16 @@ def cli(
 
 @command()
 @option("--dry-run", is_flag=True, help="Do not modify data.")
+@option(
+    "--tenacious",
+    is_flag=True,
+    hidden=not EXPERT_MODE,
+    help="If snapshot creation fails, log error and continue with next repository (expert)",
+)
 @pass_obj
-def backup(obj, dry_run: bool):
+def backup(obj, dry_run: bool, tenacious: bool):
     """Create snapshot of configured folders in backup repositories"""
-    obj["core"].backup(dry_run=dry_run)
+    obj["core"].backup(dry_run=dry_run, tenacious=tenacious)
 
 
 @command()

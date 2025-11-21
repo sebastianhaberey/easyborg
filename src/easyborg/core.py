@@ -90,7 +90,7 @@ class Core:
                 column_colors=(None, None),
             )
 
-    def backup(self, dry_run: bool = False) -> None:
+    def backup(self, *, dry_run: bool = False, tenacious=False) -> None:
         """
         Create snapshot of all configured folders in each repository configured as 'backup'.
         """
@@ -100,31 +100,38 @@ class Core:
             if repo.type is not RepositoryType.BACKUP:
                 continue
 
-            if index:
-                ui.newline()
+            try:
+                if index:
+                    ui.newline()
 
-            snapshot = Snapshot(repo, create_snapshot_name())
+                snapshot = Snapshot(repo, create_snapshot_name())
 
-            ui.info(f"Creating snapshot {snapshot.name} in repository {repo.name}")
-            ui.spinner(
-                lambda: self.borg.create_snapshot(snapshot, self.backup_folders, dry_run=dry_run, progress=True),
-            )
-
-            ui.info(f"Pruning old snapshots in repository {repo.name}")
-            ui.spinner(
-                lambda: self.borg.prune(repo, dry_run=dry_run, progress=True),
-            )
-
-            if random.random() < repo.compact_probability:
-                ui.info(f"Compacting repository {repo.name}")
+                ui.info(f"Creating snapshot {snapshot.name} in repository {repo.name}")
                 ui.spinner(
-                    lambda: self.borg.compact(repo, dry_run=dry_run, progress=True),
+                    lambda: self.borg.create_snapshot(snapshot, self.backup_folders, dry_run=dry_run, progress=True),
                 )
 
-            ui.success("Backup completed")
-            index += 1
+                ui.info(f"Pruning old snapshots in repository {repo.name}")
+                ui.spinner(
+                    lambda: self.borg.prune(repo, dry_run=dry_run, progress=True),
+                )
 
-    def archive(self, folder: Path, dry_run: bool = False, comment: str | None = None) -> None:
+                if random.random() < repo.compact_probability:
+                    ui.info(f"Compacting repository {repo.name}")
+                    ui.spinner(
+                        lambda: self.borg.compact(repo, dry_run=dry_run, progress=True),
+                    )
+
+                ui.success("Backup completed")
+            except Exception as e:
+                if tenacious:
+                    ui.exception(e)  # don't throw, keep going
+                else:
+                    raise e
+            finally:
+                index += 1
+
+    def archive(self, folder: Path, *, dry_run: bool = False, comment: str | None = None) -> None:
         """
         Create snapshot of specified folder in each repository configured as 'archive'.
         """
@@ -156,7 +163,7 @@ class Core:
             ui.success("Archive completed")
             index += 1
 
-    def restore(self, dry_run: bool = False) -> None:
+    def restore(self, *, dry_run: bool = False) -> None:
         """
         Interactively restore entire snapshot.
         """
@@ -195,7 +202,7 @@ class Core:
         )
         ui.success("Restore completed")
 
-    def extract(self, dry_run: bool = False) -> None:
+    def extract(self, *, dry_run: bool = False) -> None:
         """
         Interactively extract selected files / folders from snapshot.
         """
@@ -245,32 +252,7 @@ class Core:
 
         ui.success("Extract completed")
 
-    def _select_repo(self) -> Repository | None:
-        repos = self.fzf.select_items(
-            self.repos.values(),
-            key=lambda r: r.name,
-            prompt="Select repository: ",
-        )
-        return repos[0] if repos else None
-
-    def _select_snapshot(self, snapshots: list[Snapshot], repo_name: str) -> Snapshot | None:
-        snapshot = self.fzf.select_items(
-            snapshots,
-            key=lambda s: f"{s.name} — {s.comment}" if s.comment else s.name,
-            prompt=f"Select snapshot from {repo_name}: ",
-            sort_order=SortOrder.DESCENDING,
-        )
-        return snapshot[0] if snapshot else None
-
-    def _select_paths(self, snapshot: Snapshot) -> list[Path]:
-        path_strings = self.fzf.select_strings(
-            map(str, self.borg.list_contents(snapshot)),
-            multi=True,
-            prompt="Select items to extract: ",
-        )
-        return [Path(s) for s in path_strings]
-
-    def delete(self, dry_run: bool = False) -> None:
+    def delete(self, *, dry_run: bool = False) -> None:
         """
         Interactively delete entire snapshot.
         """
@@ -316,6 +298,31 @@ class Core:
         )
 
         ui.success("Delete completed")
+
+    def _select_repo(self) -> Repository | None:
+        repos = self.fzf.select_items(
+            self.repos.values(),
+            key=lambda r: r.name,
+            prompt="Select repository: ",
+        )
+        return repos[0] if repos else None
+
+    def _select_snapshot(self, snapshots: list[Snapshot], repo_name: str) -> Snapshot | None:
+        snapshot = self.fzf.select_items(
+            snapshots,
+            key=lambda s: f"{s.name} — {s.comment}" if s.comment else s.name,
+            prompt=f"Select snapshot from {repo_name}: ",
+            sort_order=SortOrder.DESCENDING,
+        )
+        return snapshot[0] if snapshot else None
+
+    def _select_paths(self, snapshot: Snapshot) -> list[Path]:
+        path_strings = self.fzf.select_strings(
+            map(str, self.borg.list_contents(snapshot)),
+            multi=True,
+            prompt="Select items to extract: ",
+        )
+        return [Path(s) for s in path_strings]
 
 
 def _get_percent(value: float) -> int:
