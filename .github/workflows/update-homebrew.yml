@@ -1,38 +1,46 @@
 name: Update Homebrew Formula
 
 on:
-  release:
-    types: [ published ]
+  push:
+    tags:
+      - "v*"
   workflow_dispatch:
+
+env:
+  PYTHON_VERSION: "3.14"
 
 jobs:
   update-formula:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout easyborg
+      - name: Checkout Easyborg
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      # Determine version: tag or fallback to latest tag
       - name: Determine version
         id: version
         run: |
-          if [[ "$GITHUB_REF" == refs/tags/* ]]; then
+          if [[ "${{ github.event_name }}" == "push" ]]; then
+            # Use tag that triggered the push
             TAG="${GITHUB_REF#refs/tags/}"
             VERSION="${TAG#v}"
+            echo "Triggered by tag: $TAG"
           else
+            # Manual run: use latest tag found in repo
             TAG=$(git describe --tags --abbrev=0)
             VERSION="${TAG#v}"
+            echo "Manual run: using latest tag $TAG"
           fi
+
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "Using version: $VERSION"
 
       - name: Install Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.14"
+          python-version: ${{ env.PYTHON_VERSION }}
 
       - name: Create virtualenv
         run: |
@@ -64,5 +72,5 @@ jobs:
           git config user.name "github-actions"
           git config user.email "actions@github.com"
           git add Formula/easyborg.rb
-          git commit -m "Update easyborg to ${{ steps.version.outputs.version }}" || echo "No changes"
+          git commit -m "Update Formula for Easyborg ${{ steps.version.outputs.version }}" || echo "No changes"
           git push

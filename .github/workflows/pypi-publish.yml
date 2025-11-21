@@ -10,6 +10,9 @@ permissions:
   id-token: write
   contents: read
 
+env:
+  PYTHON_VERSION: "3.14"
+
 jobs:
   build-and-publish:
     name: Build and publish to PyPI
@@ -23,7 +26,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.14'
+          python-version: ${{ env.PYTHON_VERSION }}
 
       - name: Install build backend
         run: pip install build
