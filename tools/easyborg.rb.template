@@ -1,0 +1,21 @@
+class Easyborg < Formula
+  include Language::Python::Virtualenv
+
+  desc "Easyborg - Borg for Dummies"
+  homepage "https://github.com/sebastianhaberey/easyborg"
+  url "{{URL}}"
+  sha256 "{{SHA256}}"
+  license "MIT"
+
+  depends_on "python@{{PYTHON_VERSION}}"
+
+{{RESOURCES}}
+
+  def install
+    virtualenv_install_with_resources
+  end
+
+  test do
+    assert_match "easyborg", shell_output("#{bin}/easyborg --help")
+  end
+end

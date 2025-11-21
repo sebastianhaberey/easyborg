@@ -65,7 +65,7 @@ easyborg = ["resources/template-easyborg.toml"]
 [tool.ruff]
 line-length = 120
 target-version = "py311"
-src = ["easyborg"]
+src = ["easyborg", "tools"]
 
 [tool.ruff.lint]
 select = [

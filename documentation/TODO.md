@@ -2,6 +2,7 @@
 
 ## Soon
 
+- move easyborg to src/easyborg
 - install on own system and use
 - automatic brew tap update via Github workflow
 - add "secondary" text for all log outputs
