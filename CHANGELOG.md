@@ -10,11 +10,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Introduced "tenacious mode" for scheduled backups (keeps going even if one of the repositories fails)
-- Fixed UI (highlighting, newlines)
 
 ### Fixed
 
-- Terminal output during scheduled runs would lead to system mails
+- Fixed UI (highlighting, newlines)
 
 ## [0.9.5] - 2025-11-21
 
