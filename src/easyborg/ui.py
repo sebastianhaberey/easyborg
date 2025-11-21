@@ -9,13 +9,14 @@ from typing import TypeVar
 import click
 import cloup
 import rich
-from easyborg.model import ProgressEvent
 from rich import box
 from rich.console import Console
 from rich.progress import BarColumn, Progress, SpinnerColumn, TextColumn, TimeRemainingColumn
 from rich.style import StyleType
 from rich.table import Column, Table
 from rich.theme import Theme
+
+from easyborg.model import ProgressEvent
 
 INDENT_SIZE = 2
 
@@ -34,7 +35,7 @@ progress_bar_column = BarColumn(
     pulse_style="cyan",
     complete_style="cyan",
     finished_style="bold cyan",
-    table_column=Column(min_width=10)
+    table_column=Column(min_width=10),
 )
 
 console = Console(highlight=False, theme=theme)

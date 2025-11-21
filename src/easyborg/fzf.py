@@ -78,8 +78,9 @@ class Fzf:
             cmd.append("--multi")
         cmd.append(f"--prompt={prompt}")
         cmd.append("--cycle")
-        cmd.append("--color=prompt:-1,marker:bright-cyan,pointer:cyan,"
-                   "hl:cyan,hl+:bright-cyan,spinner:bright-cyan,info:-1")
+        cmd.append(
+            "--color=prompt:-1,marker:bright-cyan,pointer:cyan,hl:cyan,hl+:bright-cyan,spinner:bright-cyan,info:-1"
+        )
         cmd.append("--margin=1")
         cmd.append("--info=right")
         if multi:

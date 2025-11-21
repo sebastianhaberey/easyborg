@@ -3,9 +3,10 @@ import os
 from pathlib import Path
 
 import cloup
-import easyborg
 from click import help_option, pass_obj, version_option
 from cloup import HelpFormatter, HelpTheme, Style, argument, command, group, option, pass_context
+
+import easyborg
 from easyborg import config, log_utils
 from easyborg.borg import Borg
 from easyborg.core import Core

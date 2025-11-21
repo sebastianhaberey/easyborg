@@ -1,6 +1,7 @@
 from pathlib import Path
 
 import pytest
+
 from easyborg.model import Repository, RepositoryType, Snapshot
 from easyborg.util import compare_directories, to_relative_path
 

@@ -2,9 +2,10 @@ import os
 import sys
 from pathlib import Path
 
+from platformdirs import PlatformDirs
+
 from easyborg.model import Context
 from easyborg.process import get_full_executable_path
-from platformdirs import PlatformDirs
 
 APPNAME = "easyborg"
 

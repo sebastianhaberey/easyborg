@@ -2,10 +2,11 @@
 import os
 from pathlib import Path
 
+from tests.helpers.fakes import FakeFzf
+
 from easyborg.core import Core
 from easyborg.model import Config, RepositoryType, Snapshot
 from easyborg.util import to_relative_path
-from tests.helpers.fakes import FakeFzf
 
 
 def test_core_backup(tmp_path, testdata_dir, borg):
