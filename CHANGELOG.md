@@ -5,18 +5,38 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.9.2] - 2025-11-21
+## [0.9.4] - 2025-11-21
+
+### Added
+
+- Added Python executable path to info output
+
+### Changed
+
+- Trimmed progress messages to fit screen width
+
+### Fixed
+
+- Multiple paths on archive command did throw error
+- macOS file attributes were not stripped for restore / extract
+
+## [0.9.3] - 2025-11-21
 
 ### Added
 
 - Snapshot selection dialogs show repository name for safety
-- Github workflow to automatically publish to PyPi
-- Github workflow to update Homebrew Formula
-- Python script to generate Homebrew Formula from template
+- Added Github workflow to update Homebrew Formula
+- Added Python script to generate Homebrew Formula from template
 
 ### Fixed
 
 - Scheduled backup now runs under profile used during "easyborg enable"
+
+## [0.9.2] - 2025-11-20
+
+### Added
+
+- Added Github workflow to automatically publish to PyPi
 
 ## [0.9.1] - 2025-11-20
 
