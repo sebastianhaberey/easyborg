@@ -13,7 +13,7 @@ from rich import box
 from rich.console import Console
 from rich.progress import BarColumn, Progress, SpinnerColumn, TextColumn, TimeRemainingColumn
 from rich.style import StyleType
-from rich.table import Column, Table
+from rich.table import Table
 from rich.theme import Theme
 
 from easyborg.model import ProgressEvent
@@ -35,7 +35,6 @@ progress_bar_column = BarColumn(
     pulse_style="cyan",
     complete_style="cyan",
     finished_style="bold cyan",
-    table_column=Column(min_width=10),
 )
 
 console = Console(highlight=False, theme=theme, quiet=True)  # start out quiet, enable later
@@ -102,7 +101,7 @@ def progress(func: Callable[[], Iterator[ProgressEvent]]) -> None:
         progress_bar_column,
         # TextColumn("{task.percentage:>3.0f}%"),  # don't need it currently as Borg's messages contain percentage
         TimeRemainingColumn(),
-        TextColumn("{task.description}", style="white"),
+        TextColumn("{task.description}"),
         console=console,
         transient=True,
     ) as p:

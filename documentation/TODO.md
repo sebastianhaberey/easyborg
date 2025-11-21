@@ -4,20 +4,21 @@
 
 ## Later
 
-- add "secondary" text for all log outputs
 - error on repository password request / ssh password request
-- option for light mode (fzf)
 - install command
+- allow --headless for backup command only
+- add "secondary" text for log outputs (success, warn)
 - expert mode: prune options (--keep-xxx)
 - expert mode: cron options
 - expert mode: output directory
 - add status command (checks repository access and directory existence)
 - implement long path strategy (1024 macOS / 4096 Linux ext4 )
 - auto-completion (CLI)
-- streamline logger vs console vs UI class
 
 # DONE
 
+- option for light mode (fzf)
+- streamline logger vs console vs UI class
 - install on own system and use
 - automatic brew tap update via Github workflow
 - add tooling to generate brew formula

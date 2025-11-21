@@ -48,14 +48,12 @@ DEBUG_MODE: bool = False
 )
 @option(
     "--debug",
-    type=bool,
     is_flag=True,
     hidden=not EXPERT_MODE,
     help="Enable debug mode (expert)",
 )
 @option(
     "--headless",
-    type=bool,
     is_flag=True,
     hidden=not EXPERT_MODE,
     help="Activate headless mode (e.g. for scheduled runs) (expert)",
@@ -72,6 +70,11 @@ DEBUG_MODE: bool = False
     hidden=not EXPERT_MODE,
     help="Set BorgBackup executable (expert)",
 )
+@option(
+    "--light-mode",
+    is_flag=True,
+    help="Make colors light-friendly",
+)
 @pass_context
 def cli(
     ctx: cloup.Context,
@@ -80,6 +83,7 @@ def cli(
     headless: bool,
     borg_executable: Path | None,
     fzf_executable: Path | None,
+    light_mode: bool,
 ) -> None:
     global DEBUG_MODE
     DEBUG_MODE = debug
@@ -112,7 +116,7 @@ def cli(
     core = Core(
         configuration,
         Borg(executable=context.borg_executable),
-        Fzf(executable=context.fzf_executable),
+        Fzf(executable=context.fzf_executable, light_mode=light_mode),
     )
     ctx.obj["core"] = core
 

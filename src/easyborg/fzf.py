@@ -17,10 +17,11 @@ class SortOrder(str, Enum):
 
 
 class Fzf:
-    def __init__(self, executable: Path) -> None:
+    def __init__(self, executable: Path, *, light_mode: bool = False) -> None:
         """
         Initialize an Fzf instance.
         """
+        self.light_mode = light_mode
         logger.debug("Initializing fzf (executable: '%s')", executable)
         assert_executable_valid(executable)
         self.executable_path = executable
@@ -78,9 +79,7 @@ class Fzf:
             cmd.append("--multi")
         cmd.append(f"--prompt={prompt}")
         cmd.append("--cycle")
-        cmd.append(
-            "--color=prompt:-1,marker:bright-cyan,pointer:cyan,hl:cyan,hl+:bright-cyan,spinner:bright-cyan,info:-1"
-        )
+        cmd.append(_get_light_colors() if self.light_mode else _get_dark_colors())
         cmd.append("--margin=1")
         cmd.append("--info=right")
         if multi:
@@ -96,3 +95,41 @@ class Fzf:
             if e.return_code == 130:
                 return []
             raise
+
+
+def _get_light_colors() -> str:
+    return _color_options(
+        "light",
+        options={
+            "prompt": "-1",
+            "marker": "cyan",
+            "pointer": "cyan",
+            "hl": "cyan",
+            "hl+": "cyan",
+            "spinner": "cyan",
+            "info": "-1",
+        },
+    )
+
+
+def _get_dark_colors() -> str:
+    return _color_options(
+        "dark",
+        options={
+            "prompt": "-1",
+            "marker": "bright-cyan",
+            "pointer": "cyan",
+            "hl": "cyan",
+            "hl+": "bright-cyan",
+            "spinner": "bright-cyan",
+            "info": "-1",
+        },
+    )
+
+
+def _color_options(mode: str, *, options: dict[str, str] = ()) -> str:
+    out = f"--color={mode}"
+    if options:
+        items = ",".join(f"{k}:{v}" for k, v in options.items())
+        out += f",{items}"
+    return out
