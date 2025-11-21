@@ -38,8 +38,7 @@ progress_bar_column = BarColumn(
     table_column=Column(min_width=10),
 )
 
-console = Console(highlight=False, theme=theme)
-
+console = Console(quiet=True)  # start out quiet, enable later
 
 # CONSOLE PLUS LOGGING
 
@@ -196,3 +195,8 @@ def render_dict(value: dict[str, str], *, separator=", ") -> str:
 
 def trim(s: str, max_len: int) -> str:
     return s if len(s) <= max_len else s[: max_len - 1] + "…"
+
+
+def quiet(value: bool) -> None:
+    global console
+    console.quiet = value

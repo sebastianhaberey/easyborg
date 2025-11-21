@@ -7,7 +7,7 @@ from click import help_option, pass_obj, version_option
 from cloup import HelpFormatter, HelpTheme, Style, argument, command, group, option, pass_context
 
 import easyborg
-from easyborg import config, log_utils
+from easyborg import config, log_utils, ui
 from easyborg.borg import Borg
 from easyborg.core import Core
 from easyborg.cron import Cron
@@ -100,6 +100,8 @@ def cli(
 
     if scheduled:
         log_utils.enable_file_logging(context.log_file, context.debug)
+    else:
+        ui.quiet(False)
 
     configuration = config.load(context.config_file)
     os.environ.update(configuration.env)

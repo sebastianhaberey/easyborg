@@ -61,7 +61,7 @@ $ borg list /Volumes/STICK/backup
 
 ### Configuration
 
-Call _easyborg info_ to generate an empty config file and show its path:
+Call _easyborg info_ to generate a config file with some demo settings and show its path:
 
 ```
 $ easyborg info
@@ -79,7 +79,7 @@ Configuration:
 ```
 
 If you're on a modern terminal, you may be able to click on a path to open it (Ctrl + click on iTerm2).
-Open the config file, configure the folders you want to back up, and your backup and archive repositories.
+Open the config file, keep and change the settings you like, delete those that you don't need.
 
 ## Usage
 
