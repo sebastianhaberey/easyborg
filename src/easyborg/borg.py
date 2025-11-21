@@ -124,7 +124,7 @@ class Borg:
         if snap.comment:
             cmd.extend(["--comment", snap.comment])
         cmd.append(snap.location())
-        cmd.append(*map(str, folders))
+        cmd.extend(map(str, folders))
 
         if progress:
             return parse_progress(run_async(cmd, output=Output.STDERR, env=snap.repository.env))
@@ -158,6 +158,7 @@ class Borg:
             cmd.extend(["--progress", "--log-json"])
         if dry_run:
             cmd.append("--dry-run")
+        cmd.extend(["--noflags", "--noacls", "--noxattrs"])  # strip OS-specific flags
         cmd.extend([snap.location(), *map(str, folders)])
 
         if progress:

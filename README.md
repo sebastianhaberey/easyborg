@@ -162,15 +162,15 @@ This is a safety feature. If you _do_ want to overwrite the original folder, you
 | Snapshot           | immutable point-in-time view of data                            | Archive          |
 | Backup Repository  | storage of snapshots intended for recovery                      | Repository       |
 | Archive Repository | storage of snapshots intended for preservation                  | Repository       |
-| Backup (action)    | create snapshot in backup repository                            | `borg create`    |
-| Archive (action)   | create snapshot in archive repository                           | `borg create`    |
-| Extract (action)   | fetch selected items from snapshot                              | `borg extract`   | 
-| Restore (action)   | fetch entire snapshot                                           | `borg extract`   |
-| Repository URL     | Borg-style repository reference (local or remote)               | (same)           |
 | Snapshot Location  | Borg-style snapshot reference (`repository_url::snapshot_name`) | Archive Location |
+| Repository URL     | Borg-style repository reference (local or remote)               | (same)           |
+| backup (command)   | create snapshot in backup repository                            | `borg create`    |
+| archive (command)  | create snapshot in archive repository                           | `borg create`    |
+| extract (command)  | fetch selected items from snapshot                              | `borg extract`   | 
+| restore (command)  | fetch entire snapshot                                           | `borg extract`   |
 
 ## Disclaimer
 
-Even though I do my best, and there's an automatic test suite that covers the critical functionality on Linux and macOS,
-errors can happen. Use this application at your own risk. It is highly recommended to start with fresh repositories to
-avoid data loss.
+Even though I'm doing my best, and there's an automatic test suite that covers the critical functionality on Linux and
+macOS, errors can happen. Use this application at your own risk. It is highly recommended to start with fresh
+repositories to avoid data loss.

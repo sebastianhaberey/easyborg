@@ -52,6 +52,7 @@ class Context:
     borg_executable: Path
     fzf_executable: Path
     easyborg_executable: Path
+    python_executable: Path
 
 
 @dataclass(frozen=True, slots=True)

@@ -112,7 +112,7 @@ def progress(func: Callable[[], Iterator[ProgressEvent]]) -> None:
                 task_id,
                 total=event.total or None,
                 completed=event.current or None,
-                description=event.message or None,
+                description=trim(event.message, console.size.width - 20) if event.message else None,  # total length 120
             )
         # print("COMPLETED")
 
@@ -133,7 +133,7 @@ def spinner(func: Callable[[], Iterator[ProgressEvent]]) -> None:
     ) as p:
         task_id = p.add_task("Processing", total=None)
         for event in func():
-            p.update(task_id, description=event.message)
+            p.update(task_id, description=trim(event.message, console.size.width - 2))
 
 
 def is_tty() -> bool:
@@ -192,3 +192,7 @@ def link_path(path: Path) -> str:
 
 def render_dict(value: dict[str, str], *, separator=", ") -> str:
     return separator.join(f"{k}: [cyan][bold]{v}[/bold][/cyan]" for k, v in value.items())
+
+
+def trim(s: str, max_len: int) -> str:
+    return s if len(s) <= max_len else s[: max_len - 1] + "…"

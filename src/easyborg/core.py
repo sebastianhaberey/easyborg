@@ -38,6 +38,7 @@ class Core:
             ("Configuration file", link_path(context.config_file)),
             ("Log directory", link_path(context.log_dir) if context.log_dir else "not configured"),
             ("Log file", link_path(context.log_file) if context.log_file else "not configured"),
+            ("Python executable path", context.python_executable),
             ("Easyborg executable path", context.easyborg_executable),
             ("Borg executable path", context.borg_executable),
             ("fzf executable path", context.fzf_executable),

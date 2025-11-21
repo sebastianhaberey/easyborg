@@ -43,6 +43,7 @@ def create(
         borg_executable=borg_executable or _get_borg_executable(),
         fzf_executable=fzf_executable or _get_fzf_executable(),
         easyborg_executable=easyborg_executable,
+        python_executable=_get_python_executable(),
     )
 
 
@@ -81,3 +82,7 @@ def _is_tty() -> bool:
 def _is_expert_mode() -> bool:
     expert_mode = os.getenv(f"{APPNAME.upper()}_EXPERT_MODE")
     return expert_mode is not None and expert_mode.lower() in ["1", "true", "yes"]
+
+
+def _get_python_executable() -> Path:
+    return Path(os.path.realpath(sys.executable))
