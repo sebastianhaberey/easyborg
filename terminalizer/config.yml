@@ -6,7 +6,7 @@ command: zsh
 
 # Specify the current working directory path
 # the default is the current working directory path
-cwd: /Users/user/Projects/easyborg
+#cwd:
 
 # Export additional ENV variables
 env:
@@ -48,7 +48,7 @@ maxIdleTime: 500
 frameBox:
   type: solid
   title: null
-  style: []
+  style: [ ]
 
 # Add a watermark image to the rendered gif
 # You need to specify an absolute path for
@@ -56,7 +56,7 @@ frameBox:
 # add your own CSS styles
 watermark:
   imagePath: null
-  style: []
+  style: [ ]
 
 # Cursor style can be one of
 # `block`, `underline`, or `bar`

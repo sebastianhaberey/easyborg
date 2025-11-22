@@ -41,6 +41,7 @@ DEBUG_MODE: bool = False
 @help_option(help="Show this page and exit")
 @option(
     "--profile",
+    envvar="EASYBORG_PROFILE",
     type=str,
     hidden=not EXPERT_MODE,
     help="Select configuration profile (expert)",
@@ -48,6 +49,7 @@ DEBUG_MODE: bool = False
 )
 @option(
     "--debug",
+    envvar="EASYBORG_DEBUG",
     is_flag=True,
     hidden=not EXPERT_MODE,
     help="Enable debug mode (expert)",
@@ -72,6 +74,7 @@ DEBUG_MODE: bool = False
 )
 @option(
     "--light-mode",
+    envvar="EASYBORG_LIGHT_MODE",
     is_flag=True,
     help="Make colors light-friendly",
 )
@@ -102,7 +105,9 @@ def cli(
     )
     ctx.obj["context"] = context
 
-    if headless:
+    # TODO SH currently headless only makes sense with backup command;
+    #   find a way to have the option bound to the command like usual
+    if headless and ctx.invoked_subcommand in ["backup"]:
         log_utils.enable_file_logging(context.log_file, context.debug)
         logger.info("--------------------------------------------------------------------------------")
     else:
