@@ -6,17 +6,20 @@
 
 - error on repository password request / ssh password request
 - install command
-- allow --headless for backup command only
-- add "secondary" text for log outputs (success, warn)
 - expert mode: prune options (--keep-xxx)
 - expert mode: cron options
-- expert mode: output directory
+
+## On Ice
+
 - add status command (checks repository access and directory existence)
-- implement long path strategy (1024 macOS / 4096 Linux ext4 )
+- implement long path strategy (1024 macOS / 4096 Linux ext4)
 - auto-completion (CLI)
+- expert mode: output directory
 
 # DONE
 
+- allow --headless for backup command only
+- add "secondary" text for log outputs (success, warn)
 - option for light mode (fzf)
 - streamline logger vs console vs UI class
 - install on own system and use

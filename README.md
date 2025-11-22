@@ -61,7 +61,20 @@ $ borg list /Volumes/STICK/backup
 
 ### Configuration
 
-Call _easyborg info_ to generate a config file with some demo settings and show its path:
+Minimal configuration example:
+
+```
+backup_folders = [
+    "/Users/example/Documents",
+]
+
+[repositories.BACKUP]
+type = "backup"
+url = "/Volumes/HD/backup"
+```
+
+Call _easyborg info_ to generate a quickstart configuration file with a bunch of settings for demonstration. Its
+path will be listed in the output:
 
 ```
 $ easyborg info
@@ -75,11 +88,11 @@ Configuration:
   Log level     INFO
   
 ...
-
 ```
 
 If you're on a modern terminal, you may be able to click on a path to open it (Ctrl + click on iTerm2).
-Open the config file, keep and change the settings you like, delete those that you don't need.
+Open the configuration file, keep and change the settings you like, delete those that you don't need. Verify your
+settings by calling _easyborg info_ again.
 
 ## Usage
 
