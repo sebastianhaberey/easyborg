@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.10.0] - 2025-11-22
+
+### Added
+
+- Option for light mode (looks better on light terminals)
+- Terminalizer config file for screen recordings
+- Added environment variables EASYBORG_LIGHT_MODE, EASYBORG_PROFILE (expert), EASYBORG_DEBUG (expert)
+
+### Changed
+
+- BREAKING: "--scheduled" flag is now named "--headless" for clarity
+
 ## [0.9.6] - 2025-11-21
 
 ### Added
