@@ -48,7 +48,7 @@ class Cron:
         )
         updated = _add_entry(existing, entry, self.marker)
         _write_crontab(updated)
-        ui.success(f"Added easyborg cron entry: '{entry}'")
+        ui.success("Added easyborg cron entry", f'"{entry}"')
 
     def disable(self):
         """
@@ -61,7 +61,7 @@ class Cron:
 
         updated = [line for line in existing if self.marker not in line]
         _write_crontab(updated)
-        ui.success("Removed easyborg cron entry")
+        ui.success("Removed easyborg cron entry", f'profile "{self.profile}"')
 
 
 def _get_crontab() -> list[str]:

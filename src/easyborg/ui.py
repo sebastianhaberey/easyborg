@@ -47,26 +47,35 @@ def info(msg: str) -> None:
     logger.info(msg)
 
 
-def success(msg: str) -> None:
-    console.print(msg, style="green bold")
-    logger.info("✅ " + msg)
+def success(msg: str, secondary: str = None) -> None:
+    if secondary:
+        console.print(f"[green][bold]{msg}:[/bold][/green] {secondary}")
+        logger.info(f"✅ {msg}: {secondary}")
+    else:
+        console.print(f"[green][bold]{msg}[/bold][/green]")
+        logger.info(f"✅ {msg}")
 
 
-def warn(msg: str) -> None:
-    console.print(msg, style="yellow bold")
-    logger.warning("⚠️ " + msg)
+def warn(msg: str, secondary: str = None) -> None:
+    if secondary:
+        console.print(f"[yellow][bold]{msg}:[/bold][/yellow] {secondary}")
+        logger.info(f"⚠️ {msg}: {secondary}")
+    else:
+        console.print(f"[yellow][bold]{msg}[/bold][/yellow]")
+        logger.info(f"⚠️ {msg}")
+
+
+def error(msg: str, secondary: str = None) -> None:
+    if secondary:
+        console.print(f"[red][bold]{msg}:[/bold][/red] {secondary}")
+        logger.info(f"❌ {msg}: {secondary}")
+    else:
+        console.print(f"[red][bold]{msg}[/bold][/red]")
+        logger.info(f"❌ {msg}")
 
 
 def exception(e: Exception) -> None:
-    exception_name = e.__class__.__name__
-    console_msg = f"[red][bold]{exception_name}[/bold][/red]"
-    log_msg = "❌ " + exception_name
-    message = str(e)
-    if message:
-        console_msg += ": " + message
-        log_msg += ": " + message
-    console.print(console_msg)
-    logger.error(log_msg)
+    error(e.__class__.__name__, str(e))
 
 
 def stacktrace(message: str) -> None:
