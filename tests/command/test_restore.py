@@ -1,11 +1,10 @@
 import os
 from pathlib import Path
 
-from tests.helpers.fakes import FakeFzf
-
 from easyborg.command.restore import RestoreCommand
 from easyborg.model import Config, Snapshot
 from easyborg.util import to_relative_path
+from tests.helpers.fakes import FakeFzf
 
 
 def test_core_restore(tmp_path, borg, repo, testdata_dir):

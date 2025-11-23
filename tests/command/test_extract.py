@@ -1,11 +1,10 @@
 import os
 from pathlib import Path
 
-from tests.helpers.fakes import FakeFzf
-
 from easyborg.command.extract import ExtractCommand
 from easyborg.model import Config, Snapshot
 from easyborg.util import to_relative_path
+from tests.helpers.fakes import FakeFzf
 
 
 def test_core_extract(tmp_path, borg, repo, testdata_dir):

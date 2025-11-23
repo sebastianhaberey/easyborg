@@ -1,7 +1,6 @@
-from tests.helpers.fakes import FakeFzf
-
 from easyborg.command.delete import DeleteCommand
 from easyborg.model import Config, Snapshot
+from tests.helpers.fakes import FakeFzf
 
 
 def test_core_backup(tmp_path, borg, repo, testdata_dir):
