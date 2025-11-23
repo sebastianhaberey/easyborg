@@ -66,3 +66,33 @@ jobs:
           git add Formula/easyborg.rb
           git commit -m "Update Formula for Easyborg ${{ steps.version.outputs.version }}" || echo "No changes"
           git push
+
+      # VERIFICATION
+
+      - name: Install Homebrew (Linuxbrew)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential curl file git
+
+          /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+
+          echo 'eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"' >> ~/.profile
+          eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+
+      - name: Update & tap your formula
+        run: |
+          eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+          brew update
+          brew tap sebastianhaberey/easyborg
+
+      - name: Install easyborg from Homebrew
+        run: |
+          eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+          brew install easyborg
+
+      - name: Verify installation
+        run: |
+          eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+          which easyborg
+          easyborg --version
+          easyborg info
