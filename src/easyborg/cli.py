@@ -9,7 +9,12 @@ from cloup import HelpFormatter, HelpTheme, Style, argument, command, group, opt
 import easyborg
 from easyborg import config, log_utils, ui
 from easyborg.borg import Borg
-from easyborg.core import Core
+from easyborg.command.archive import ArchiveCommand
+from easyborg.command.backup import BackupCommand
+from easyborg.command.delete import DeleteCommand
+from easyborg.command.extract import ExtractCommand
+from easyborg.command.info import InfoCommand
+from easyborg.command.restore import RestoreCommand
 from easyborg.cron import Cron
 from easyborg.fzf import Fzf
 from easyborg.model import Context
@@ -109,7 +114,7 @@ def cli(
 
     ctx.ensure_object(dict)
 
-    easyborg_executable = ctx.obj.pop("easyborg_executable", None)  # move from Click context to Easyborg context
+    easyborg_executable = ctx.obj.pop("easyborg_executable", None)  # move info from Click context to Easyborg context
 
     context = easyborg.context.create(
         profile=profile,
@@ -125,17 +130,13 @@ def cli(
 
     configuration = config.load(context.config_file)
     os.environ.update(configuration.env)
-    ctx.obj["configuration"] = configuration
+    ctx.obj["config"] = configuration
 
-    core = Core(
-        configuration,
-        Borg(executable=context.borg_executable),
-        Fzf(executable=context.fzf_executable, light_mode=light_mode),
-    )
-    ctx.obj["core"] = core
+    borg = Borg(executable=context.borg_executable)
+    ctx.obj["borg"] = borg
 
-    cron = Cron(profile)
-    ctx.obj["cron"] = cron
+    fzf = Fzf(executable=context.fzf_executable, light_mode=light_mode)
+    ctx.obj["fzf"] = fzf
 
 
 @command()
@@ -150,7 +151,8 @@ def cli(
 @pass_obj
 def backup(obj, dry_run: bool, tenacious: bool):
     """Create snapshot of configured folders in backup repositories"""
-    obj["core"].backup(dry_run=dry_run, tenacious=tenacious)
+    command = BackupCommand(config=obj["config"], borg=obj["borg"])
+    command.run(dry_run=dry_run, tenacious=tenacious)
 
 
 @command()
@@ -161,7 +163,8 @@ def backup(obj, dry_run: bool, tenacious: bool):
 @pass_obj
 def archive(obj, folder: Path, comment: str | None, dry_run: bool):
     """Create snapshot of specified folder in archive repositories (interactive)"""
-    obj["core"].archive(folder, dry_run=dry_run, comment=comment)
+    command = ArchiveCommand(config=obj["config"], borg=obj["borg"])
+    command.run(folder, dry_run=dry_run, comment=comment)
 
 
 @command()
@@ -170,7 +173,8 @@ def archive(obj, folder: Path, comment: str | None, dry_run: bool):
 @pass_obj
 def restore(obj, dry_run: bool):
     """Restore snapshot to current working directory (interactive)"""
-    obj["core"].restore(dry_run=dry_run)
+    command = RestoreCommand(config=obj["config"], borg=obj["borg"], fzf=obj["fzf"])
+    command.run(dry_run=dry_run)
 
 
 @command()
@@ -179,7 +183,8 @@ def restore(obj, dry_run: bool):
 @pass_obj
 def extract(obj, dry_run: bool):
     """Extract files / folders from snapshot (interactive)"""
-    obj["core"].extract(dry_run=dry_run)
+    command = ExtractCommand(config=obj["config"], borg=obj["borg"], fzf=obj["fzf"])
+    command.run(dry_run=dry_run)
 
 
 @command()
@@ -188,7 +193,8 @@ def extract(obj, dry_run: bool):
 @pass_obj
 def delete(obj, dry_run: bool):
     """Delete snapshot from repository (interactive)"""
-    obj["core"].delete(dry_run=dry_run)
+    command = DeleteCommand(config=obj["config"], borg=obj["borg"], fzf=obj["fzf"])
+    command.run(dry_run=dry_run)
 
 
 @command()
@@ -196,7 +202,8 @@ def delete(obj, dry_run: bool):
 @pass_obj
 def info(obj):
     """Show info about current configuration"""
-    obj["core"].info(obj["context"])
+    command = InfoCommand(config=obj["config"])
+    command.run(obj["context"])
 
 
 @command()
@@ -205,7 +212,7 @@ def info(obj):
 def enable(obj):
     """Enable scheduled backups"""
     context: Context = obj["context"]
-    obj["cron"].enable(
+    Cron(context.profile).enable(
         "backup",
         context.easyborg_executable,
         context.borg_executable,
@@ -219,7 +226,8 @@ def enable(obj):
 @pass_obj
 def disable(obj):
     """Disable scheduled backups"""
-    obj["cron"].disable()
+    context: Context = obj["context"]
+    Cron(context.profile).disable()
 
 
 cli.section(

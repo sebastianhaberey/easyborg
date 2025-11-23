@@ -16,9 +16,10 @@ class FakeFzf:
         self._responses = iter(responses)
 
     def select_items(self, *_args, **_kwargs):
-        result = next(self._responses)
-        return result if isinstance(result, list) else [result]
+        return next(self._responses)
 
     def select_strings(self, *_args, **_kwargs):
-        result = next(self._responses)
-        return result if isinstance(result, list) else [result]
+        return next(self._responses)
+
+    def confirm(self, *_args, **_kwargs):
+        return next(self._responses)

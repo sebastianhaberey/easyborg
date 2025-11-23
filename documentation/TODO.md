@@ -2,6 +2,9 @@
 
 ## Soon
 
+- move commands to their own classes
+- more tests (especially for "delete")
+
 ## Later
 
 - error on repository password request / ssh password request

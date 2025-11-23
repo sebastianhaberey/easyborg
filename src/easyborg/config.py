@@ -24,10 +24,10 @@ def load(path: Path) -> Config:
             cfg = tomllib.load(f)
     except FileNotFoundError:
         raise RuntimeError(f"Configuration file not found at: {path}")
-    return _parse(cfg, source=path)
+    return _parse(cfg)
 
 
-def _parse(cfg: dict[str, Any], source: Path) -> Config:
+def _parse(cfg: dict[str, Any]) -> Config:
     repos = {
         name: Repository(
             name=name,
@@ -40,7 +40,6 @@ def _parse(cfg: dict[str, Any], source: Path) -> Config:
     }
 
     return Config(
-        source=source,
         backup_folders=[Path(p) for p in cfg.get("backup_folders", [])],
         repos=repos,
         env=cfg.get("environment", {}),
