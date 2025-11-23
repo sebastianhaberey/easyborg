@@ -3,7 +3,7 @@ from pathlib import Path
 
 from easyborg.command.restore import RestoreCommand
 from easyborg.model import Config, Snapshot
-from easyborg.util import to_relative_path
+from easyborg.util import relativize
 from tests.helpers.fakes import FakeFzf
 
 
@@ -35,7 +35,7 @@ def test_core_restore(tmp_path, borg, repo, testdata_dir):
         os.chdir(cwd)
 
     # Verify restore result
-    restored = target_dir / to_relative_path(testdata_dir)
+    restored = target_dir / relativize(testdata_dir)
     assert (restored / "file 1.txt").exists()
     assert (restored / "file 2.txt").exists()
     assert (restored / "some folder" / "nested.txt").exists()

@@ -22,7 +22,7 @@ def compare_directories(dir1: Path, dir2: Path):
         compare_directories(dir1 / common_dir, dir2 / common_dir)
 
 
-def to_relative_path(p: Path) -> Path:
+def relativize(p: Path) -> Path:
     """
     Convert a path to a relative path.
     Leading slashes are removed; relative paths are returned as-is.

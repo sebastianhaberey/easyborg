@@ -19,6 +19,12 @@ class Snapshot:
     def location(self) -> str:
         return f"{self.repository.url}::{self.name}"
 
+    def full_name(self) -> str:
+        if self.comment:
+            return f"{self.name} - {self.comment}"
+        else:
+            return f"{self.name}"
+
 
 @dataclass(frozen=True, slots=True)
 class Repository:

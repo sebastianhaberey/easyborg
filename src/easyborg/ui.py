@@ -4,7 +4,7 @@ import logging
 import sys
 from collections.abc import Callable, Iterable, Iterator, Sequence
 from pathlib import Path
-from typing import TypeVar
+from typing import Any, TypeVar
 
 import click
 import cloup
@@ -83,6 +83,10 @@ def stacktrace(message: str) -> None:
     logger.exception("❌ " + message)
 
 
+def selected(value: Any) -> None:
+    info(f"[cyan]➜[/cyan] {str(value)}")
+
+
 # CONSOLE ONLY
 
 
@@ -98,7 +102,7 @@ def header(msg: str) -> None:
     console.print(f"{msg}:", style="yellow bold")
 
 
-def progress(func: Callable[[], Iterator[ProgressEvent]]) -> None:
+def progress(func: Callable[[], Iterator[ProgressEvent]], *, message: str = "Processing") -> None:
     """
     Display live Rich progress for a function that returns progress events.
     """
@@ -114,7 +118,7 @@ def progress(func: Callable[[], Iterator[ProgressEvent]]) -> None:
         console=console,
         transient=True,
     ) as p:
-        task_id = p.add_task("Processing", total=None)
+        task_id = p.add_task(message, total=None)
         for event in func():
             # print(f"EVENT: {event}")
             p.update(
@@ -126,7 +130,7 @@ def progress(func: Callable[[], Iterator[ProgressEvent]]) -> None:
         # print("COMPLETED")
 
 
-def spinner(func: Callable[[], Iterator[ProgressEvent]]) -> None:
+def spinner(func: Callable[[], Iterator[ProgressEvent]], *, message: str = "Processing") -> None:
     """
     Display Rich spinner (indeterminate) for any operation.
     """
@@ -140,7 +144,7 @@ def spinner(func: Callable[[], Iterator[ProgressEvent]]) -> None:
         console=console,
         transient=True,
     ) as p:
-        task_id = p.add_task("Processing", total=None)
+        task_id = p.add_task(message, total=None)
         for event in func():
             p.update(task_id, description=trim(event.message, console.size.width - 2))
 

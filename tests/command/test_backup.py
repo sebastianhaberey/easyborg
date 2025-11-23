@@ -3,7 +3,7 @@ from unittest.mock import Mock
 
 from easyborg.command.backup import BackupCommand
 from easyborg.model import Config, Repository, RepositoryType
-from easyborg.util import to_relative_path
+from easyborg.util import relativize
 
 
 def test_core_backup(tmp_path, testdata_dir, borg):
@@ -36,7 +36,7 @@ def test_core_backup(tmp_path, testdata_dir, borg):
 
     contents = list(borg.list_contents(snapshot))
 
-    relative_testdata_dir = to_relative_path(testdata_dir)
+    relative_testdata_dir = relativize(testdata_dir)
 
     assert relative_testdata_dir in contents
     assert relative_testdata_dir / "file 1.txt" in contents

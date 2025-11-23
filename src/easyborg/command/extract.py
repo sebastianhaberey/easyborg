@@ -21,10 +21,12 @@ class ExtractCommand:
         Interactively extract selected files / folders from snapshot.
         """
 
+        ui.info("Select repository")
         repo = select_repo(self.fzf, self.config)
         if not repo:
             ui.warn("Aborted")
             return
+        ui.selected(repo.name)
 
         snapshots: list[Snapshot] | None = None
 
@@ -33,27 +35,31 @@ class ExtractCommand:
             snapshots = self.borg.list_snapshots(repo)
             return iter([])
 
-        ui.info(f"Listing snapshots in repository {repo.name}")
         ui.spinner(
             lambda: list_snapshots(repo),
+            message="Listing snapshots",
         )
 
-        snapshot = select_snapshot(self.fzf, snapshots, repo.name)
+        ui.info("Select snapshot")
+        snapshot = select_snapshot(self.fzf, snapshots)
         if not snapshot:
             ui.warn("Aborted")
             return
+        ui.selected(snapshot.full_name())
 
+        ui.info("Select items")
         selected_paths = select_paths(self.borg, self.fzf, snapshot)
         if not selected_paths:
             ui.warn("Aborted")
             return
-
         selected_paths = remove_redundant_paths(selected_paths)
-        target_dir = Path.cwd()
         item_count = len(selected_paths)
-        item_str = "one item" if item_count == 1 else f"{item_count} items"
+        ui.selected(item_count)
+        ui.newline()
 
-        ui.info(f"Extracting {item_str} from snapshot {snapshot.name} in repository {repo.name}")
+        target_dir = Path.cwd()
+
+        ui.info(f"Extracting {item_count} item(s) from snapshot {snapshot.name} in repository {repo.name}")
         ui.progress(
             lambda: self.borg.restore(
                 snapshot,
@@ -62,6 +68,7 @@ class ExtractCommand:
                 dry_run=dry_run,
                 progress=True,
             ),
+            message="Extracting",
         )
 
         ui.success("Extract completed")

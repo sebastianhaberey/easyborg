@@ -33,12 +33,14 @@ class ArchiveCommand:
             ui.info(f"Creating snapshot {snapshot.name} in repository {repo.name}")
             ui.spinner(
                 lambda: self.borg.create_snapshot(snapshot, [folder], dry_run=dry_run, progress=True),
+                message="Creating snapshot",
             )
 
             ui.info(f"Compacting repository {repo.name}")
             if random.random() < repo.compact_probability:
                 ui.spinner(
                     lambda: self.borg.compact(repo, dry_run=dry_run, progress=True),
+                    message="Compacting",
                 )
 
             ui.success("Archive completed")

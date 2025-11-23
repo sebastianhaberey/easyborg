@@ -3,7 +3,7 @@ from pathlib import Path
 import pytest
 
 from easyborg.model import Repository, RepositoryType, Snapshot
-from easyborg.util import compare_directories, to_relative_path
+from easyborg.util import compare_directories, relativize
 
 
 def test_create_repository(tmp_path, borg):
@@ -43,10 +43,10 @@ def test_create_snapshot_and_restore_single(tmp_path, borg, repo, testdata_dir):
 
     borg.restore(snap, target_dir, folders=[testdata_dir / "file 1.txt"])
 
-    file_1 = target_dir / to_relative_path(testdata_dir) / "file 1.txt"
+    file_1 = target_dir / relativize(testdata_dir) / "file 1.txt"
     assert file_1.exists()
 
-    file_2 = target_dir / to_relative_path(testdata_dir) / "file 2.txt"
+    file_2 = target_dir / relativize(testdata_dir) / "file 2.txt"
     assert not file_2.exists()
 
 
@@ -59,7 +59,7 @@ def test_create_snapshot_and_restore_all(tmp_path, borg, repo, testdata_dir):
 
     borg.restore(snap, target_dir)
 
-    compare_directories(testdata_dir, target_dir / to_relative_path(testdata_dir))
+    compare_directories(testdata_dir, target_dir / relativize(testdata_dir))
 
 
 def test_create_snapshot_with_comment(borg, repo, testdata_dir):
@@ -99,9 +99,9 @@ def test_list_contents_of_snapshot_with_testdata(borg, repo, testdata_dir):
 
     paths = list(borg.list_contents(snap))
 
-    assert to_relative_path(testdata_dir) in paths
-    assert to_relative_path(testdata_dir / "some folder") in paths
-    assert to_relative_path(testdata_dir / "file 1.txt") in paths
+    assert relativize(testdata_dir) in paths
+    assert relativize(testdata_dir / "some folder") in paths
+    assert relativize(testdata_dir / "file 1.txt") in paths
 
 
 def test_list_contents_fails_if_repository_not_found(borg):

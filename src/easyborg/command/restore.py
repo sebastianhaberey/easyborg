@@ -20,10 +20,12 @@ class RestoreCommand:
         Interactively restore entire snapshot.
         """
 
+        ui.info("Select repository")
         repo = select_repo(self.fzf, self.config)
         if not repo:
             ui.warn("Aborted")
             return
+        ui.selected(repo.name)
 
         snapshots: list[Snapshot] | None = None
 
@@ -32,14 +34,18 @@ class RestoreCommand:
             snapshots = self.borg.list_snapshots(repo)
             return iter([])
 
-        ui.info(f"Listing snapshots in repository {repo.name}")
         ui.spinner(
             lambda: list_snapshots(repo),
+            message="Listing snapshots",
         )
-        snapshot = select_snapshot(self.fzf, snapshots, repo.name)
+
+        ui.info("Select snapshot")
+        snapshot = select_snapshot(self.fzf, snapshots)
         if not snapshot:
             ui.warn("Aborted")
             return
+        ui.selected(snapshot.full_name())
+        ui.newline()
 
         target_dir = Path.cwd()
 
@@ -51,5 +57,7 @@ class RestoreCommand:
                 dry_run=dry_run,
                 progress=True,
             ),
+            message="Restoring snapshot",
         )
+
         ui.success("Restore completed")

@@ -1,6 +1,6 @@
 from easyborg.command.archive import ArchiveCommand
 from easyborg.model import Config, RepositoryType
-from easyborg.util import to_relative_path
+from easyborg.util import relativize
 
 
 def test_core_archive(tmp_path, testdata_dir, borg):
@@ -39,7 +39,7 @@ def test_core_archive(tmp_path, testdata_dir, borg):
     # assert to_relative_path(some_folder)
     # assert to_relative_path(some_folder) / "nested.txt" in contents
 
-    relative_testdata_dir = to_relative_path(testdata_dir)
+    relative_testdata_dir = relativize(testdata_dir)
 
     assert relative_testdata_dir / "some folder" in contents
     assert relative_testdata_dir / "some folder" / "nested.txt" in contents

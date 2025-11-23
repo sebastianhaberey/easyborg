@@ -2,13 +2,10 @@
 
 ## Soon
 
-- move commands to their own classes
-- more tests (especially for "delete")
+- error on repository password request / ssh password request
 
 ## Later
 
-- error on repository password request / ssh password request
-- install command
 - expert mode: prune options (--keep-xxx)
 - expert mode: cron options
 
@@ -21,6 +18,9 @@
 
 # DONE
 
+- install command
+- move commands to their own classes
+- more tests (especially for "delete")
 - allow --headless for backup command only
 - add "secondary" text for log outputs (success, warn)
 - option for light mode (fzf)

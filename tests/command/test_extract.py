@@ -3,7 +3,7 @@ from pathlib import Path
 
 from easyborg.command.extract import ExtractCommand
 from easyborg.model import Config, Snapshot
-from easyborg.util import to_relative_path
+from easyborg.util import relativize
 from tests.helpers.fakes import FakeFzf
 
 
@@ -20,7 +20,7 @@ def test_core_extract(tmp_path, borg, repo, testdata_dir):
     # 1. Select the repo "repo"
     # 2. Select the snapshot "snap1"
     # 3. Select a subdirectory or file to extract
-    selected_path = to_relative_path(testdata_dir) / "some folder"
+    selected_path = relativize(testdata_dir) / "some folder"
     fzf = FakeFzf([[repo], [snap], [selected_path]])
 
     config = Config(
@@ -42,4 +42,4 @@ def test_core_extract(tmp_path, borg, repo, testdata_dir):
     assert extracted_folder.exists()
     assert (extracted_folder / "nested.txt").exists()
 
-    assert not (target_dir / to_relative_path(testdata_dir) / "file 1.txt").exists()
+    assert not (target_dir / relativize(testdata_dir) / "file 1.txt").exists()

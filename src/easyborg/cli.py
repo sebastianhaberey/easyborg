@@ -14,6 +14,7 @@ from easyborg.command.backup import BackupCommand
 from easyborg.command.delete import DeleteCommand
 from easyborg.command.extract import ExtractCommand
 from easyborg.command.info import InfoCommand
+from easyborg.command.replace import ReplaceCommand
 from easyborg.command.restore import RestoreCommand
 from easyborg.cron import Cron
 from easyborg.fzf import Fzf
@@ -101,9 +102,9 @@ def cli(
     log_dir = log_utils.get_log_dir(profile)
     log_file = log_utils.get_log_file(log_dir)
 
-    if headless and ctx.invoked_subcommand in ["backup"]:
-        # TODO SH currently headless only makes sense with backup command;
-        #   find a way to have the option bound to the command like usual
+    if headless and ctx.invoked_subcommand in ["backup", "archive"]:
+        # TODO SH currently headless only makes sense with non-interactive commands;
+        #   find a way to have the option bound to the actual commands
         log_utils.enable_file_logging(log_file, debug)
         ui.disable()
         logger.info("--------------------------------------------------------------------------------")
@@ -162,7 +163,7 @@ def backup(obj, dry_run: bool, tenacious: bool):
 @help_option(help="Show this message and exit")
 @pass_obj
 def archive(obj, folder: Path, comment: str | None, dry_run: bool):
-    """Create snapshot of specified folder in archive repositories (interactive)"""
+    """Create snapshot of specified folder in archive repositories"""
     command = ArchiveCommand(config=obj["config"], borg=obj["borg"])
     command.run(folder, dry_run=dry_run, comment=comment)
 
@@ -194,6 +195,16 @@ def extract(obj, dry_run: bool):
 def delete(obj, dry_run: bool):
     """Delete snapshot from repository (interactive)"""
     command = DeleteCommand(config=obj["config"], borg=obj["borg"], fzf=obj["fzf"])
+    command.run(dry_run=dry_run)
+
+
+@command()
+@option("--dry-run", is_flag=True, help="Do not modify data")
+@help_option(help="Show this message and exit")
+@pass_obj
+def replace(obj, dry_run: bool):
+    """Replace existing folders with folders located in the current working directory (interactive) (DANGEROUS)"""
+    command = ReplaceCommand(config=obj["config"], fzf=obj["fzf"])
     command.run(dry_run=dry_run)
 
 
@@ -237,6 +248,7 @@ cli.section(
     restore,
     extract,
     delete,
+    replace,
 )
 
 cli.section(

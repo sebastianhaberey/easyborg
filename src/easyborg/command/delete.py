@@ -1,9 +1,9 @@
 from collections.abc import Iterator
-from pathlib import Path
 
 from easyborg import ui
 from easyborg.borg import Borg
-from easyborg.fzf import Fzf, SortOrder
+from easyborg.fzf import Fzf
+from easyborg.interaction import select_repo, select_snapshot
 from easyborg.model import Config, ProgressEvent, Repository, Snapshot
 
 
@@ -19,10 +19,12 @@ class DeleteCommand:
         Interactively delete entire snapshot.
         """
 
-        repo = self._select_repo()
+        ui.info("Select repository")
+        repo = select_repo(self.fzf, self.config)
         if not repo:
             ui.warn("Aborted")
             return
+        ui.selected(repo.name)
 
         snapshots: list[Snapshot] | None = None
 
@@ -31,19 +33,24 @@ class DeleteCommand:
             snapshots = self.borg.list_snapshots(repo)
             return iter([])
 
-        ui.info(f"Listing snapshots in repository {repo.name}")
+        ui.info("Select snapshot")
         ui.spinner(
             lambda: list_snapshots(repo),
+            message="Listing snapshots",
         )
-        snapshot = self._select_snapshot(snapshots, repo.name)
+        snapshot = select_snapshot(self.fzf, snapshots)
         if not snapshot:
             ui.warn("Aborted")
             return
+        ui.selected(snapshot.full_name())
 
-        response = self.fzf.confirm(f"Delete snaphshot {snapshot.name} from repository {repo.name}: ")
-        if not response:
+        ui.info("Delete snapshot?")
+        confirm = self.fzf.confirm()
+        if not confirm:
             ui.warn("Aborted")
             return
+        ui.selected("YES")
+        ui.newline()
 
         ui.info(f"Deleting snapshot {snapshot.name} from repository {repo.name}")
         ui.progress(
@@ -52,36 +59,13 @@ class DeleteCommand:
                 dry_run=dry_run,
                 progress=True,
             ),
+            message="Deleting",
         )
 
         ui.info(f"Compacting repository {repo.name}")
         ui.spinner(
             lambda: self.borg.compact(repo, dry_run=dry_run, progress=True),
+            message="Compacting",
         )
 
         ui.success("Delete completed")
-
-    def _select_repo(self) -> Repository | None:
-        repos = self.fzf.select_items(
-            self.config.repos.values(),
-            key=lambda r: r.name,
-            prompt="Select repository: ",
-        )
-        return repos[0] if repos else None
-
-    def _select_snapshot(self, snapshots: list[Snapshot], repo_name: str) -> Snapshot | None:
-        snapshot = self.fzf.select_items(
-            snapshots,
-            key=lambda s: f"{s.name} — {s.comment}" if s.comment else s.name,
-            prompt=f"Select snapshot from {repo_name}: ",
-            sort_order=SortOrder.DESCENDING,
-        )
-        return snapshot[0] if snapshot else None
-
-    def _select_paths(self, snapshot: Snapshot) -> list[Path]:
-        path_strings = self.fzf.select_strings(
-            map(str, self.borg.list_contents(snapshot)),
-            multi=True,
-            prompt="Select items to extract: ",
-        )
-        return [Path(s) for s in path_strings]

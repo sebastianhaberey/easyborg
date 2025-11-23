@@ -36,17 +36,20 @@ class BackupCommand:
                         dry_run=dry_run,
                         progress=True,
                     ),
+                    message="Creating snapshot",
                 )
 
                 ui.info(f"Pruning old snapshots in repository {repo.name}")
                 ui.spinner(
                     lambda: self.borg.prune(repo, dry_run=dry_run, progress=True),
+                    message="Pruning",
                 )
 
                 if random.random() < repo.compact_probability:
                     ui.info(f"Compacting repository {repo.name}")
                     ui.spinner(
                         lambda: self.borg.compact(repo, dry_run=dry_run, progress=True),
+                        message="Compacting",
                     )
 
                 ui.success("Backup completed")

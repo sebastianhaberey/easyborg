@@ -1,19 +1,19 @@
 from datetime import datetime
 from pathlib import Path
 
-from easyborg.util import create_snapshot_name, to_relative_path
+from easyborg.util import create_snapshot_name, relativize
 
 
-def test_to_relative_path_strips_leading_slash():
+def test_relativize_strips_leading_slash():
     p = Path("/Users/alice/Documents/file.txt")
-    result = to_relative_path(p)
+    result = relativize(p)
     assert result == Path("Users/alice/Documents/file.txt")
     assert not result.is_absolute()
 
 
-def test_to_relative_path_keeps_relative_paths_unchanged():
+def test_relativize_keeps_relative_paths_unchanged():
     p = Path("relative/path/to/thing")
-    result = to_relative_path(p)
+    result = relativize(p)
     assert result == Path("relative/path/to/thing")
     assert not result.is_absolute()
 

@@ -26,8 +26,8 @@ class Fzf:
         assert_executable_valid(executable)
         self.executable_path = executable
 
-    def confirm(self, prompt: str) -> bool | None:
-        response = self.select_strings(["MAYBE", "NO", "YES"], prompt=prompt)
+    def confirm(self) -> bool | None:
+        response = self.select_strings(["MAYBE", "NO", "YES"])
         if len(response) == 0:
             return None
         return response[0] == "YES"
@@ -38,8 +38,8 @@ class Fzf:
         key: Callable[[T], str],
         *,
         multi: bool = False,
-        prompt: str | None = None,
         sort_order: SortOrder | None = None,
+        show_info: bool = False,
     ) -> list[T]:
         """
         Select objects using fzf based on a string key function.
@@ -56,7 +56,7 @@ class Fzf:
         if sort_order is not None:
             keys.sort(reverse=True if sort_order == SortOrder.DESCENDING else False)
 
-        selected_keys = self.select_strings(keys, multi=multi, prompt=prompt)
+        selected_keys = self.select_strings(keys, multi=multi, show_info=show_info)
 
         return [lookup[k] for k in selected_keys]
 
@@ -65,7 +65,7 @@ class Fzf:
         items: Iterable[str],
         *,
         multi: bool = False,
-        prompt: str = "Select: ",
+        show_info: bool = False,
     ) -> list[str]:
         """
         Run fzf on a stream of items and return the selected items.
@@ -77,14 +77,19 @@ class Fzf:
         cmd = [str(self.executable_path)]
         if multi:
             cmd.append("--multi")
-        cmd.append(f"--prompt={prompt}")
+        cmd.append("--prompt=➜ ")
+        cmd.append("--height=~90%")  # grow according to content, but max. 90% of terminal height
         cmd.append("--cycle")
-        cmd.append(_get_light_colors() if self.light_mode else _get_dark_colors())
-        cmd.append("--margin=1")
+        cmd.append(f"--color={_get_colors(self.light_mode)}")
+        cmd.append("--margin=1,0,0,0")
         cmd.append("--info=right")
+        cmd.append("--no-separator")
+        cmd.append("--separator= ")  # one line as separator
+        if show_info:
+            cmd.append("--info=inline-right")
+        else:
+            cmd.append("--no-info")
         if multi:
-            # cmd.append("--marker=■ ")
-            # cmd.append("--marker=▌")
             cmd.append("--marker=█ ")
         else:
             cmd.append("--marker=")
@@ -95,6 +100,10 @@ class Fzf:
             if e.return_code == 130:
                 return []
             raise
+
+
+def _get_colors(light_mode: bool = False) -> str:
+    return _get_light_colors() if light_mode else _get_dark_colors()
 
 
 def _get_light_colors() -> str:
@@ -116,19 +125,19 @@ def _get_dark_colors() -> str:
     return _color_options(
         "dark",
         options={
-            "prompt": "-1",
+            "prompt": "cyan:regular",
             "marker": "bright-cyan",
             "pointer": "cyan",
             "hl": "cyan",
             "hl+": "bright-cyan",
             "spinner": "bright-cyan",
-            "info": "-1",
+            "info": "-1:bold",
         },
     )
 
 
 def _color_options(mode: str, *, options: dict[str, str] = ()) -> str:
-    out = f"--color={mode}"
+    out = f"{mode}"
     if options:
         items = ",".join(f"{k}:{v}" for k, v in options.items())
         out += f",{items}"
