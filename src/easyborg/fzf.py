@@ -81,10 +81,9 @@ class Fzf:
         cmd.append("--height=~90%")  # grow according to content, but max. 90% of terminal height
         cmd.append("--cycle")
         cmd.append(f"--color={_get_colors(self.light_mode)}")
-        cmd.append("--margin=1,0,0,0")
+        cmd.append("--margin=0,0,0,0")
         cmd.append("--info=right")
         cmd.append("--no-separator")
-        cmd.append("--separator= ")  # one line as separator
         if show_info:
             cmd.append("--info=inline-right")
         else:
