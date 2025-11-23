@@ -84,6 +84,7 @@ class Fzf:
         cmd.append("--margin=0,0,0,0")
         cmd.append("--info=right")
         cmd.append("--no-separator")
+        cmd.append("--reverse")
         if show_info:
             cmd.append("--info=inline-right")
         else:
