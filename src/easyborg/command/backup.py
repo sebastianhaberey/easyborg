@@ -1,9 +1,9 @@
 import random
 
-from .. import ui
-from ..borg import Borg
-from ..model import Config, RepositoryType, Snapshot
-from ..util import create_snapshot_name
+from easyborg import ui
+from easyborg.borg import Borg
+from easyborg.model import Config, RepositoryType, Snapshot
+from easyborg.util import create_snapshot_name
 
 
 class BackupCommand:
