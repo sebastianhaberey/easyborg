@@ -5,6 +5,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.10.1] - 2025-11-23
+
+### Added
+
+- Command "info" now also outputs REAL python executable and directory (useful for macOS system settings)
+- UI status messages (success, warn, error) can now have a secondary text
+
+### Changed
+
+- Better error messages on missing dependencies
+
+### Fixed
+
+- Extremely early error output was swallowed
+- Fixed missing dependencies (BorgBackup, fzf) on Homebrew package
+- Hardened macOS GH workflow
+
 ## [0.10.0] - 2025-11-22
 
 ### Added
