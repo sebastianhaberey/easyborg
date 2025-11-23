@@ -2,10 +2,8 @@ import sys
 from pathlib import Path
 
 import easyborg.cli
-from easyborg import log_utils, ui
+from easyborg import ui
 from easyborg.cli import cli
-
-log_utils.disable_all_logging()  # disable logging until proper initialization (prevents duplicate UI output)
 
 
 def main():

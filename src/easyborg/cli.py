@@ -88,31 +88,40 @@ def cli(
     fzf_executable: Path | None,
     light_mode: bool,
 ) -> None:
+    # first, set DEBUG_MODE flag to enable stacktraces
     global DEBUG_MODE
     DEBUG_MODE = debug
+
+    # next, initialize logging as soon as possible to prevent unwanted output
+    log_dir = log_utils.get_log_dir(profile)
+    log_file = log_utils.get_log_file(log_dir)
+
+    if headless and ctx.invoked_subcommand in ["backup"]:
+        # TODO SH currently headless only makes sense with backup command;
+        #   find a way to have the option bound to the command like usual
+        log_utils.enable_file_logging(log_file, debug)
+        ui.disable()
+        logger.info("--------------------------------------------------------------------------------")
+    else:
+        log_utils.disable_logging()
+        ui.enable()
+        ui.newline()
 
     ctx.ensure_object(dict)
 
     easyborg_executable = ctx.obj.pop("easyborg_executable", None)  # move from Click context to Easyborg context
 
     context = easyborg.context.create(
-        profile,
-        debug,
-        headless,
+        profile=profile,
+        log_dir=log_dir,
+        log_file=log_file,
+        debug=debug,
+        headless=headless,
+        easyborg_executable=easyborg_executable,
         borg_executable=borg_executable,
         fzf_executable=fzf_executable,
-        easyborg_executable=easyborg_executable,
     )
     ctx.obj["context"] = context
-
-    # TODO SH currently headless only makes sense with backup command;
-    #   find a way to have the option bound to the command like usual
-    if headless and ctx.invoked_subcommand in ["backup"]:
-        log_utils.enable_file_logging(context.log_file, context.debug)
-        logger.info("--------------------------------------------------------------------------------")
-    else:
-        ui.quiet(False)
-        ui.newline()
 
     configuration = config.load(context.config_file)
     os.environ.update(configuration.env)

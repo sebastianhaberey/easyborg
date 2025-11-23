@@ -49,10 +49,11 @@ class Context:
     test: bool
     tty: bool
     expert: bool
+    easyborg_executable: Path
     borg_executable: Path
     fzf_executable: Path
-    easyborg_executable: Path
     python_executable: Path
+    real_python_executable: Path
 
 
 @dataclass(frozen=True, slots=True)

@@ -37,7 +37,7 @@ progress_bar_column = BarColumn(
     finished_style="bold cyan",
 )
 
-console = Console(highlight=False, theme=theme, quiet=True)  # start out quiet, enable later
+console = Console(highlight=False, theme=theme)
 
 # CONSOLE PLUS LOGGING
 
@@ -207,6 +207,11 @@ def trim(s: str, max_len: int) -> str:
     return s if len(s) <= max_len else s[: max_len - 1] + "…"
 
 
-def quiet(value: bool) -> None:
+def disable() -> None:
     global console
-    console.quiet = value
+    console.quiet = True
+
+
+def enable() -> None:
+    global console
+    console.quiet = False

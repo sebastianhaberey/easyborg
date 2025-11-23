@@ -28,7 +28,7 @@ def get_full_executable_path(executable_name: str) -> Path:
     try:
         return Path(shutil.which(executable_name))
     except Exception as e:
-        raise RuntimeError(f"Could not locate executable {executable_name}: {str(e)}") from e
+        raise RuntimeError(f"Could not locate executable {executable_name}") from e
 
 
 def assert_executable_valid(executable_path: Path):

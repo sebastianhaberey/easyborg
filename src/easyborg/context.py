@@ -13,18 +13,16 @@ platform_dirs = PlatformDirs(APPNAME)
 
 
 def create(
+    *,
     profile: str,
+    log_dir: Path,
+    log_file: Path,
     debug: bool,
     headless: bool,
-    *,
+    easyborg_executable: Path,
     borg_executable: Path | None = None,
     fzf_executable: Path | None = None,
-    easyborg_executable: Path | None = None,
 ) -> Context:
-    # macOS: ~/Library/Logs/easyborg
-    # Linux: $XDG_STATE_HOME/easyborg or ~/.local/state/easyborg
-    log_dir = _get_log_dir(profile)
-
     # macOS: ~/Library/Application Support/easyborg
     # Linux: $XDG_CONFIG_HOME/easyborg or ~/.config/easyborg
     config_dir = _get_config_dir(profile)
@@ -32,7 +30,7 @@ def create(
     return Context(
         profile=profile,
         log_dir=log_dir,
-        log_file=_get_log_file(log_dir),
+        log_file=log_file,
         debug=debug,
         headless=headless,
         config_dir=config_dir,
@@ -40,19 +38,26 @@ def create(
         test=_is_test(),
         tty=_is_tty(),
         expert=_is_expert_mode(),
+        easyborg_executable=easyborg_executable,
         borg_executable=borg_executable or _get_borg_executable(),
         fzf_executable=fzf_executable or _get_fzf_executable(),
-        easyborg_executable=easyborg_executable,
         python_executable=_get_python_executable(),
+        real_python_executable=_get_real_python_executable(),
     )
 
 
 def _get_borg_executable() -> Path:
-    return get_full_executable_path("borg")
+    try:
+        return get_full_executable_path("borg")
+    except Exception:
+        raise RuntimeError("Could could not locate Borg executable. Please make sure Borg is installed.")
 
 
 def _get_fzf_executable() -> Path:
-    return get_full_executable_path("fzf")
+    try:
+        return get_full_executable_path("fzf")
+    except Exception:
+        raise RuntimeError("Could could not locate fzf executable. Please make sure fzf is installed.")
 
 
 def _get_config_file(config_dir: Path) -> Path:
@@ -61,14 +66,6 @@ def _get_config_file(config_dir: Path) -> Path:
 
 def _get_config_dir(profile: str) -> Path:
     return Path(platform_dirs.user_config_dir) / profile
-
-
-def _get_log_file(log_dir: Path) -> Path:
-    return log_dir / f"{APPNAME}.log"
-
-
-def _get_log_dir(profile: str) -> Path:
-    return Path(platform_dirs.user_log_dir) / profile
 
 
 def _is_test() -> bool:
@@ -85,4 +82,8 @@ def _is_expert_mode() -> bool:
 
 
 def _get_python_executable() -> Path:
+    return Path(sys.executable)
+
+
+def _get_real_python_executable() -> Path:
     return Path(os.path.realpath(sys.executable))
