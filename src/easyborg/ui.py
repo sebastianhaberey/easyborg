@@ -148,7 +148,7 @@ def spinner(func: Callable[[], Iterator[ProgressEvent]], *, message: str = "Proc
 
     with Progress(
         SpinnerColumn(style="bold cyan"),
-        TextColumn("{task.description}", style="white"),
+        TextColumn("{task.description}"),
         console=console,
         transient=True,
     ) as p:
