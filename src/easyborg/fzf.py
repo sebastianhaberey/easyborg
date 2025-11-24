@@ -10,6 +10,26 @@ logger = logging.getLogger(__name__)
 
 T = TypeVar("T")
 
+DEFAULT_LIGHT_COLORS = {
+    "prompt": "-1",
+    "marker": "cyan",
+    "pointer": "cyan",
+    "hl": "cyan",
+    "hl+": "cyan",
+    "spinner": "cyan",
+    "info": "-1",
+}
+
+DEFAULT_DARK_COLORS = {
+    "prompt": "cyan:regular",
+    "marker": "bright-cyan",
+    "pointer": "cyan",
+    "hl": "cyan",
+    "hl+": "bright-cyan",
+    "spinner": "bright-cyan",
+    "info": "-1:bold",
+}
+
 
 class SortOrder(str, Enum):
     ASCENDING = "ascending"
@@ -34,6 +54,7 @@ class Fzf:
         multi: bool = False,
         sort_order: SortOrder | None = None,
         show_info: bool = False,
+        colors: dict[str, str] = (),
     ) -> list[T]:
         """
         Select objects using fzf based on a string key function.
@@ -60,6 +81,7 @@ class Fzf:
         *,
         multi: bool = False,
         show_info: bool = False,
+        colors: dict[str, str] = (),
     ) -> list[str]:
         """
         Run fzf on a stream of items and return the selected items.
@@ -74,7 +96,7 @@ class Fzf:
         cmd.append("--prompt=➜ ")
         cmd.append("--height=~90%")  # grow according to content, but max. 90% of terminal height
         cmd.append("--cycle")
-        cmd.append(f"--color={_get_colors(self.light_mode)}")
+        cmd.append(f"--color={_color_options(self.light_mode, colors)}")
         cmd.append("--margin=0,0,0,0")
         cmd.append("--info=right")
         cmd.append("--no-separator")
@@ -96,43 +118,12 @@ class Fzf:
             raise
 
 
-def _get_colors(light_mode: bool = False) -> str:
-    return _get_light_colors() if light_mode else _get_dark_colors()
+def _color_options(light_mode: bool, colors: dict[str, str] = ()) -> str:
+    if light_mode:
+        mode = "light"
+        colors = DEFAULT_LIGHT_COLORS | dict(colors)
+    else:
+        mode = "dark"
+        colors = DEFAULT_DARK_COLORS | dict(colors)
 
-
-def _get_light_colors() -> str:
-    return _color_options(
-        "light",
-        options={
-            "prompt": "-1",
-            "marker": "cyan",
-            "pointer": "cyan",
-            "hl": "cyan",
-            "hl+": "cyan",
-            "spinner": "cyan",
-            "info": "-1",
-        },
-    )
-
-
-def _get_dark_colors() -> str:
-    return _color_options(
-        "dark",
-        options={
-            "prompt": "cyan:regular",
-            "marker": "bright-cyan",
-            "pointer": "cyan",
-            "hl": "cyan",
-            "hl+": "bright-cyan",
-            "spinner": "bright-cyan",
-            "info": "-1:bold",
-        },
-    )
-
-
-def _color_options(mode: str, *, options: dict[str, str] = ()) -> str:
-    out = f"{mode}"
-    if options:
-        items = ",".join(f"{k}:{v}" for k, v in options.items())
-        out += f",{items}"
-    return out
+    return f"{mode}," + ",".join(f"{k}:{v}" for k, v in colors.items())

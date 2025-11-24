@@ -80,10 +80,12 @@ def select_items(borg: Borg, fzf: Fzf, snapshot: Snapshot) -> list[Path] | None:
 def confirm(fzf: Fzf, message: str, *, dangerous: bool = False) -> bool | None:
     if dangerous:
         ui.info(f"[red][bold]DANGEROUS[/red][/bold] {message}")
+        colors = {"pointer": "red", "prompt": "red"}
     else:
+        colors = ()
         ui.info(message)
 
-    response = fzf.select_strings(["NO", "MAYBE", "YES"])
+    response = fzf.select_strings(["NO", "MAYBE", "YES"], colors=colors)
 
     if len(response) == 0:
         ui.selected(None)
