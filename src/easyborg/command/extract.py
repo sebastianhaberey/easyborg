@@ -1,12 +1,10 @@
-from collections.abc import Iterator
 from pathlib import Path
 
 from easyborg import ui
 from easyborg.borg import Borg
 from easyborg.fzf import Fzf
-from easyborg.interaction import select_paths, select_repo, select_snapshot
-from easyborg.model import Config, ProgressEvent, Repository, Snapshot
-from easyborg.util import remove_redundant_paths
+from easyborg.interaction import select_items, select_repo, select_snapshot
+from easyborg.model import Config
 
 
 class ExtractCommand:
@@ -21,45 +19,26 @@ class ExtractCommand:
         Interactively extract selected files / folders from snapshot.
         """
 
-        ui.info("Select repository")
         repo = select_repo(self.fzf, self.config)
         if not repo:
-            ui.warn("Aborted")
+            ui.abort()
             return
-        ui.selected(repo.name)
 
-        snapshots: list[Snapshot] | None = None
-
-        def list_snapshots(repo: Repository) -> Iterator[ProgressEvent]:
-            nonlocal snapshots
-            snapshots = self.borg.list_snapshots(repo)
-            return iter([])
-
-        ui.spinner(
-            lambda: list_snapshots(repo),
-            message="Listing snapshots",
-        )
-
-        ui.info("Select snapshot")
-        snapshot = select_snapshot(self.fzf, snapshots)
+        snapshot = select_snapshot(self.borg, self.fzf, repo)
         if not snapshot:
-            ui.warn("Aborted")
+            ui.abort()
             return
-        ui.selected(snapshot.full_name())
 
-        ui.info("Select items")
-        selected_paths = select_paths(self.borg, self.fzf, snapshot)
+        selected_paths = select_items(self.borg, self.fzf, snapshot)
         if not selected_paths:
-            ui.warn("Aborted")
+            ui.abort()
             return
-        selected_paths = remove_redundant_paths(selected_paths)
-        item_count = len(selected_paths)
-        ui.selected(item_count)
+
         ui.newline()
 
         target_dir = Path.cwd()
 
-        ui.info(f"Extracting {item_count} item(s) from snapshot {snapshot.name} in repository {repo.name}")
+        ui.info(f"Extracting {len(selected_paths)} item(s) from snapshot {snapshot.name} in repository {repo.name}")
         ui.progress(
             lambda: self.borg.restore(
                 snapshot,

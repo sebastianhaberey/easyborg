@@ -3,6 +3,7 @@ from pathlib import Path
 
 from easyborg import ui
 from easyborg.fzf import Fzf
+from easyborg.interaction import confirm, select_folders
 from easyborg.model import Config
 from easyborg.util import relativize
 
@@ -21,7 +22,7 @@ class ReplaceCommand:
         backup_folders = self.config.backup_folders
         cwd = Path.cwd()
 
-        matching_folders = []
+        matching_folders: list[Path] = []
         for backup_folder in backup_folders:
             if (cwd / relativize(backup_folder)).exists():
                 matching_folders.append(backup_folder)
@@ -30,30 +31,17 @@ class ReplaceCommand:
             ui.error("No folders in the current directory match the configured backup folders.")
             return
 
-        ui.selected("Select folders to replace")
-        selected_folders = self.fzf.select_items(
-            matching_folders,
-            str,
-            multi=True,
-        )
+        selected_folders = select_folders(self.fzf, matching_folders)
         if not selected_folders:
-            ui.warn("Aborted")
+            ui.abort()
+            return
+
+        response = confirm(self.fzf, "Replace? ", dangerous=True)
+        if not response:
+            ui.abort()
             return
 
         ui.newline()
-        for folder in selected_folders:
-            dst = folder
-            ui.info(f"[cyan]{dst}[/cyan]")
-        ui.newline()
-
-        if len(selected_folders) > 1:
-            ui.info("Replace these folders?")
-        else:
-            ui.info("Replace this folder?")
-        confirm = self.fzf.confirm()
-        if not confirm:
-            ui.warn("Aborted")
-            return
 
         for folder in selected_folders:
             dst = folder
@@ -65,5 +53,4 @@ class ReplaceCommand:
                 shutil.rmtree(dst)
                 shutil.move(src, dst)
 
-        ui.newline()
         ui.success("Replace complete")

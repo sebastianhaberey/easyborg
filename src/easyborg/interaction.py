@@ -1,31 +1,109 @@
+from collections.abc import Iterator
 from pathlib import Path
 
+from easyborg import ui
 from easyborg.borg import Borg
 from easyborg.fzf import Fzf, SortOrder
-from easyborg.model import Config, Repository, Snapshot
+from easyborg.model import Config, ProgressEvent, Repository, Snapshot
+from easyborg.util import remove_redundant_paths
 
 
 def select_repo(fzf: Fzf, config: Config) -> Repository | None:
-    repos = fzf.select_items(
+    ui.info("Select repository")
+
+    selected = fzf.select_items(
         config.repos.values(),
         key=lambda r: r.name,
     )
-    return repos[0] if repos else None
+
+    if not selected:
+        ui.selected(None)
+        return None
+
+    repo = selected[0]
+    ui.selected(repo.name)
+
+    return repo
 
 
-def select_snapshot(fzf: Fzf, snapshots: list[Snapshot]) -> Snapshot | None:
-    snapshot = fzf.select_items(
+def select_snapshot(borg: Borg, fzf: Fzf, repo: Repository) -> Snapshot | None:
+    ui.info("Select snapshot")
+
+    snapshots: list[Snapshot] | None = None
+
+    def list_snapshots(repo: Repository) -> Iterator[ProgressEvent]:
+        nonlocal snapshots
+        snapshots = borg.list_snapshots(repo)
+        return iter([])
+
+    ui.spinner(
+        lambda: list_snapshots(repo),
+        message="Listing snapshots",
+    )
+
+    selected = fzf.select_items(
         snapshots,
         key=lambda s: f"{s.name} — {s.comment}" if s.comment else s.name,
         sort_order=SortOrder.DESCENDING,
     )
-    return snapshot[0] if snapshot else None
+
+    if not selected:
+        ui.selected(None)
+        return None
+
+    snapshot = selected[0]
+    ui.selected(snapshot.full_name())
+
+    return snapshot
 
 
-def select_paths(borg: Borg, fzf: Fzf, snapshot: Snapshot) -> list[Path]:
-    path_strings = fzf.select_strings(
+def select_items(borg: Borg, fzf: Fzf, snapshot: Snapshot) -> list[Path] | None:
+    ui.info("Select items")
+
+    selected = fzf.select_strings(
         map(str, borg.list_contents(snapshot)),
         multi=True,
         show_info=True,
     )
-    return [Path(s) for s in path_strings]
+
+    if not selected:
+        ui.selected(None)
+        return None
+
+    selected_paths = [Path(s) for s in selected]
+    selected_paths = remove_redundant_paths(selected_paths)
+    ui.selected(selected_paths)
+
+    return selected_paths
+
+
+def confirm(fzf: Fzf, message: str, *, dangerous: bool = False) -> bool | None:
+    if dangerous:
+        ui.info(f"[red][bold]DANGEROUS[/red][/bold] {message}")
+    else:
+        ui.info(message)
+
+    response = fzf.select_strings(["MAYBE", "NO", "YES"])
+
+    if len(response) == 0:
+        ui.selected(None)
+        return None
+
+    ui.selected(response[0])
+    return response[0] == "YES"
+
+
+def select_folders(fzf: Fzf, folders: list[Path]) -> list[Path] | None:
+    ui.info("Select folders")
+    selected_folders = fzf.select_items(
+        folders,
+        str,
+        multi=True,
+    )
+
+    if not selected_folders:
+        ui.selected(None)
+        return None
+
+    ui.selected(selected_folders)
+    return selected_folders

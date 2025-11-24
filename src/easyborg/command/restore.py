@@ -1,11 +1,10 @@
-from collections.abc import Iterator
 from pathlib import Path
 
 from easyborg import ui
 from easyborg.borg import Borg
 from easyborg.fzf import Fzf
 from easyborg.interaction import select_repo, select_snapshot
-from easyborg.model import Config, ProgressEvent, Repository, Snapshot
+from easyborg.model import Config
 
 
 class RestoreCommand:
@@ -20,31 +19,16 @@ class RestoreCommand:
         Interactively restore entire snapshot.
         """
 
-        ui.info("Select repository")
         repo = select_repo(self.fzf, self.config)
         if not repo:
-            ui.warn("Aborted")
+            ui.abort()
             return
-        ui.selected(repo.name)
 
-        snapshots: list[Snapshot] | None = None
-
-        def list_snapshots(repo: Repository) -> Iterator[ProgressEvent]:
-            nonlocal snapshots
-            snapshots = self.borg.list_snapshots(repo)
-            return iter([])
-
-        ui.spinner(
-            lambda: list_snapshots(repo),
-            message="Listing snapshots",
-        )
-
-        ui.info("Select snapshot")
-        snapshot = select_snapshot(self.fzf, snapshots)
+        snapshot = select_snapshot(self.borg, self.fzf, repo)
         if not snapshot:
-            ui.warn("Aborted")
+            ui.abort()
             return
-        ui.selected(snapshot.full_name())
+
         ui.newline()
 
         target_dir = Path.cwd()

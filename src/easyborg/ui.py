@@ -84,7 +84,15 @@ def stacktrace(message: str) -> None:
 
 
 def selected(value: Any) -> None:
-    info(f"[cyan]➜[/cyan] {str(value)}")
+    if not isinstance(value, list):
+        value = [value]
+    for item in value:
+        info(f"[cyan]➜[/cyan] {str(item)}")
+
+
+def abort() -> None:
+    newline()
+    warn("Aborted")
 
 
 # CONSOLE ONLY

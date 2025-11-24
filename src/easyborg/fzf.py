@@ -26,12 +26,6 @@ class Fzf:
         assert_executable_valid(executable)
         self.executable_path = executable
 
-    def confirm(self) -> bool | None:
-        response = self.select_strings(["MAYBE", "NO", "YES"])
-        if len(response) == 0:
-            return None
-        return response[0] == "YES"
-
     def select_items(
         self,
         items: Iterable[T],
