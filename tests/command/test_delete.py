@@ -18,7 +18,8 @@ def test_core_backup(tmp_path, borg, repo, testdata_dir):
     # Simulate interactive user selections:
     # 1. Select the repo "repo"
     # 2. Select the snapshot "snap1"
-    fzf = FakeFzf([[repo], [snap], True])
+    # 3. Confirm "YES"
+    fzf = FakeFzf([[repo], [snap], ["YES"]])
 
     config = Config(
         repos={"repo": repo},
