@@ -3,18 +3,12 @@
 ## Soon
 
 - error on repository password request / ssh password request
+- auto-completion (CLI)
 
 ## Later
 
 - expert mode: prune options (--keep-xxx)
 - expert mode: cron options
-
-## On Ice
-
-- add status command (checks repository access and directory existence)
-- implement long path strategy (1024 macOS / 4096 Linux ext4)
-- auto-completion (CLI)
-- expert mode: output directory
 
 # DONE
 
@@ -64,3 +58,9 @@
 - add comment to extract
 - E2E tests
 - logging (file)
+
+# ABANDONED
+
+- add status command (checks repository access and directory existence)
+- implement long path strategy (1024 macOS / 4096 Linux ext4)
+- expert mode: output directory

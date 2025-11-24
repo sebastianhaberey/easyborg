@@ -1,11 +1,11 @@
 # Release Cheat Sheet
 
-## Preparation
+## Flow
 
 1. Update [CHANGELOG.md](../CHANGELOG.md)
 2. Set version in [pyproject.toml](../pyproject.toml)
 3. Tag the version (e.g. v1.2.3) -> push tag -> PyPi release will be published by GH action
-4. Run GH action "Update Homebrew Formula"
+4. Run GH action "Update Homebrew Formula" -> updates formula, installs and runs easyborg for verification
 
 ## Build and test (manual)
 
