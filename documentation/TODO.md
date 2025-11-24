@@ -4,6 +4,7 @@
 
 - error on repository password request / ssh password request
 - auto-completion (CLI)
+- notifications
 
 ## Later
 

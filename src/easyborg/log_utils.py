@@ -5,8 +5,6 @@ from pathlib import Path
 
 from easyborg.context import platform_dirs
 
-APPNAME = "easyborg"
-
 
 def disable_logging():
     logger = logging.getLogger()
@@ -32,7 +30,7 @@ def get_log_file(log_dir: Path) -> Path:
     """
     Return platform-specific log file.
     """
-    return log_dir / f"{APPNAME}.log"
+    return log_dir / "easyborg.log"
 
 
 def get_log_dir(profile: str) -> Path:

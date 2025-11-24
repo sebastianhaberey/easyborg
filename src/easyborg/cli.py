@@ -4,7 +4,7 @@ from pathlib import Path
 
 import cloup
 from click import help_option, pass_obj, version_option
-from cloup import HelpFormatter, HelpTheme, Style, argument, command, group, option, pass_context
+from cloup import HelpFormatter, HelpTheme, Section, Style, argument, group, option, pass_context
 
 import easyborg
 from easyborg import config, log_utils, ui
@@ -30,9 +30,11 @@ CONTEXT_SETTINGS = cloup.Context.settings(
             col1=Style(fg="cyan", bold=True),
         ),
         width=None,
-        max_width=120,
     ),
 )
+
+SECTION_MAIN = Section("Main commands")
+SECTION_UTILITY = Section("Utility commands")
 
 # TODO SH eliminate this constant and remove protected method access
 # noinspection PyProtectedMember
@@ -140,7 +142,7 @@ def cli(
     ctx.obj["fzf"] = fzf
 
 
-@command()
+@cli.command(section=SECTION_MAIN)
 @option("--dry-run", is_flag=True, help="Do not modify data")
 @option(
     "--tenacious",
@@ -156,7 +158,7 @@ def backup(obj, dry_run: bool, tenacious: bool):
     command.run(dry_run=dry_run, tenacious=tenacious)
 
 
-@command()
+@cli.command(section=SECTION_MAIN)
 @argument("folder", type=cloup.Path(path_type=Path, exists=True), help="Folder to backup")
 @option("--comment", help="Add comment to the created snapshot")
 @option("--dry-run", is_flag=True, help="Do not modify data")
@@ -168,7 +170,7 @@ def archive(obj, folder: Path, comment: str | None, dry_run: bool):
     command.run(folder, dry_run=dry_run, comment=comment)
 
 
-@command()
+@cli.command(section=SECTION_MAIN)
 @option("--dry-run", is_flag=True, help="Do not modify data")
 @help_option(help="Show this message and exit")
 @pass_obj
@@ -178,7 +180,7 @@ def restore(obj, dry_run: bool):
     command.run(dry_run=dry_run)
 
 
-@command()
+@cli.command(section=SECTION_MAIN)
 @option("--dry-run", is_flag=True, help="Do not modify data")
 @help_option(help="Show this message and exit")
 @pass_obj
@@ -188,7 +190,7 @@ def extract(obj, dry_run: bool):
     command.run(dry_run=dry_run)
 
 
-@command()
+@cli.command(section=SECTION_MAIN)
 @option("--dry-run", is_flag=True, help="Do not modify data")
 @help_option(help="Show this message and exit")
 @pass_obj
@@ -198,7 +200,7 @@ def delete(obj, dry_run: bool):
     command.run(dry_run=dry_run)
 
 
-@command()
+@cli.command(section=SECTION_MAIN)
 @option("--dry-run", is_flag=True, help="Do not modify data")
 @help_option(help="Show this message and exit")
 @pass_obj
@@ -208,7 +210,7 @@ def replace(obj, dry_run: bool):
     command.run(dry_run=dry_run)
 
 
-@command()
+@cli.command(section=SECTION_UTILITY)
 @help_option(help="Show this message and exit")
 @pass_obj
 def info(obj):
@@ -217,7 +219,7 @@ def info(obj):
     command.run(obj["context"])
 
 
-@command()
+@cli.command(section=SECTION_UTILITY)
 @help_option(help="Show this message and exit")
 @pass_obj
 def enable(obj):
@@ -232,28 +234,10 @@ def enable(obj):
     )
 
 
-@command()
+@cli.command(section=SECTION_UTILITY)
 @help_option(help="Show this message and exit")
 @pass_obj
 def disable(obj):
     """Disable scheduled backups"""
     context: Context = obj["context"]
     Cron(context.profile).disable()
-
-
-cli.section(
-    "Main Commands",
-    backup,
-    archive,
-    restore,
-    extract,
-    delete,
-    replace,
-)
-
-cli.section(
-    "Utility Commands",
-    info,
-    enable,
-    disable,
-)

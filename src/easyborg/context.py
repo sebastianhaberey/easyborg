@@ -7,9 +7,7 @@ from platformdirs import PlatformDirs
 from easyborg.model import Context
 from easyborg.process import get_full_executable_path
 
-APPNAME = "easyborg"
-
-platform_dirs = PlatformDirs(APPNAME)
+platform_dirs = PlatformDirs("easyborg")
 
 
 def create(
@@ -61,7 +59,7 @@ def _get_fzf_executable() -> Path:
 
 
 def _get_config_file(config_dir: Path) -> Path:
-    return config_dir / f"{APPNAME}.toml"
+    return config_dir / "easyborg.toml"
 
 
 def _get_config_dir(profile: str) -> Path:
@@ -77,7 +75,7 @@ def _is_tty() -> bool:
 
 
 def _is_expert_mode() -> bool:
-    expert_mode = os.getenv(f"{APPNAME.upper()}_EXPERT_MODE")
+    expert_mode = os.getenv("EASYBORG_EXPERT_MODE")
     return expert_mode is not None and expert_mode.lower() in ["1", "true", "yes"]
 
 
