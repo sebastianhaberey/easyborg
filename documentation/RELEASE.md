@@ -4,9 +4,8 @@
 
 1. Update [CHANGELOG.md](../CHANGELOG.md)
 2. Set version in [pyproject.toml](../pyproject.toml)
-3. Tag the version (e.g. v1.2.3) and push the tag
-
-The PyPi release will be published automatically by a Github action.
+3. Tag the version (e.g. v1.2.3) -> push tag -> PyPi release will be published by GH action
+4. Run GH action "Update Homebrew Formula"
 
 ## Build and test (manual)
 
