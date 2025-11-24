@@ -28,3 +28,7 @@ __pycache__/
 Thumbs.db
 /run/
 /config/
+
+# --- Terminalizer ---
+/terminalizer/output.yml
+/terminalizer/render*.gif
