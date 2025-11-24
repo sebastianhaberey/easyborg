@@ -1,21 +1,21 @@
-# BACKUP FOLDERS
+# COMMON
 
 backup_folders = [
     "/Users/example/Documents", # use absolute paths here, not ~/Documents
 ]
 
 [environment]
-BORG_PASSCOMMAND = "cat /Users/example/passphrase.txt" # file must be accessible by owner ONLY (via file permissions)
+BORG_PASSCOMMAND = "cat /Users/example/passphrase.txt" # remember chmod 600
 
 # REPOSITORIES
 
 [repositories.BACKUP-HD]
 type = "backup"
-url = "/Volumes/EXTERNAL/backup"
+url = "/Volumes/HD/backup"
 
 [repositories.ARCHIVE-HD]
 type = "archive"
-url = "/Volumes/EXTERNAL/archive"
+url = "/Volumes/HD/archive"
 
 [repositories.BACKUP-SERVER]
 type = "backup"

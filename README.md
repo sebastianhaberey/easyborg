@@ -44,20 +44,23 @@ pipx install easyborg
 ### Repositories
 
 Easyborg doesn't provide any commands for creating repositories. It's easy to do with Borg, and you only have to do
-it once. For Easyborg to access a repository, Borg commands must work on it **without** having to enter a password:
+it once. For Easyborg to access a repository, you must set up **BORG_PASSCOMMAND** or any other of the environment
+variables Borg supports. If you succeed, you can access your repository without password prompt:
 
 ```
-$ borg list /Volumes/STICK/backup
+$ export BORG_PASSCOMMAND = "cat /Users/example/passphrase.txt"
+$ borg list /Volumes/HD/backup
 2025-11-13T17:46:47-F1AC35F6         Thu, 2025-11-13 17:46:47 [7b9fd68dd8e991ea9fd598ca015e10266498afc156969ccdfe67149124fd27cc]
 2025-11-14T20:20:25-2965DCFB         Fri, 2025-11-14 20:20:25 [33539a1e5f2b83852cf5396ed442531d6b5d4cb2137522280285725c3ea5df48]
 ```
 
 - If you're asked for a SSH password, set up access to your server via SSH key.
-- If you're asked for a Borg repository password,
-  [set up BORG_PASSCOMMAND](https://borgbackup.readthedocs.io/en/stable/usage/general.html#environment-variables).
+- If you're asked for a Borg repository
+  password, [set up BORG_PASSCOMMAND](https://borgbackup.readthedocs.io/en/stable/usage/general.html#environment-variables).
 
-> **NOTE** Any repository you want to use with Easyborg should be accessible on your terminal **without** password
-> request.
+> **NOTE** Be sure to _chmod 600_ your passcommand file to prevent others from accessing it.
+
+Once that works, you can add the environment variable to Easyborg's configuration file (see below).
 
 ### Configuration
 
@@ -68,13 +71,16 @@ backup_folders = [
     "/Users/example/Documents",
 ]
 
+[environment]
+BORG_PASSCOMMAND = "cat /Users/example/passphrase.txt"
+
 [repositories.BACKUP]
 type = "backup"
 url = "/Volumes/HD/backup"
 ```
 
-Call _easyborg info_ to generate a quickstart configuration file with a bunch of settings for demonstration. Its
-path will be listed in the output:
+Call _easyborg info_ to generate a quickstart configuration file with a bunch of other settings for demonstration.
+The path to the new configuration file will be listed in the output:
 
 ```
 $ easyborg info
@@ -96,28 +102,28 @@ settings by calling _easyborg info_ again.
 
 ## Usage
 
-Easyborg currently supports five main commands: _backup_, _archive_, _restore_, _extract_ and _delete_. Use
+Easyborg currently supports six main commands: _backup_, _archive_, _restore_, _extract_, _delete_ and _replace_. Use
 
 ```
 $ easyborg --help
 ```
 
-for details.
+for details on these and some utility commands.
 
 ## Concept
 
 Easyborg makes a distinction between _backup_ and _archive_.
 
-|             | Purpose                                    | Data Type         | Retention        |
-|-------------|--------------------------------------------|-------------------|------------------|
-| **Backup**  | Recovery in case of emergency (short-term) | Current, changing | Days to months   |
-| **Archive** | Preservation for reference (long-term)     | Old, stable       | Years or forever |
+|             | Purpose      | Data Type  | Data State | Trigger   | Retention        | Example             |
+|-------------|--------------|------------|------------|-----------|------------------|---------------------|
+| **Backup**  | recovery     | current    | changing   | automatic | days to months   | Thunderbird profile |
+| **Archive** | preservation | historical | stable     | manual    | years to forever | Documents folder    | 
 
 ### Backup
 
 If you enable automatic backups, Easyborg will create a snapshot of all configured folders in each configured
 **backup repository** every full hour. Meaning at 12:00, 13:00 and so on. Then, snapshots are pruned to save space.
-So after the 13:00 snapshot is written, the 12:00 snapshot will be deleted. Here's how snapshots are retained:
+So after the 13:00 snapshot is written, the 12:00 snapshot will be deleted. A selection of snapshots will be retained:
 
 - the last snapshot of the day for the past seven days
 - one snapshot per week for the past three months
