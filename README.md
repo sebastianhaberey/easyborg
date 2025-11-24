@@ -12,11 +12,11 @@ This project is currently in beta phase.
 
 ### Extract
 
-<img src="https://raw.githubusercontent.com/sebastianhaberey/easyborg/main/terminalizer/extract.gif" width="1024"  alt="Extract command in terminal"/>
+<img src="https://raw.githubusercontent.com/sebastianhaberey/easyborg/main/terminalizer/extract.gif" width="1024"  alt="Demonstration of extract command"/>
 
-### Backup
+### Delete
 
-<img src="https://raw.githubusercontent.com/sebastianhaberey/easyborg/main/terminalizer/images/backup.gif" width="1024"  alt="Backup command in terminal"/>
+<img src="https://raw.githubusercontent.com/sebastianhaberey/easyborg/main/terminalizer/delete.gif" width="1024"  alt="Demonstration of delete command"/>
 
 ## Setup
 
