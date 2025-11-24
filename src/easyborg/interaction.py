@@ -83,7 +83,7 @@ def confirm(fzf: Fzf, message: str, *, dangerous: bool = False) -> bool | None:
     else:
         ui.info(message)
 
-    response = fzf.select_strings(["MAYBE", "NO", "YES"])
+    response = fzf.select_strings(["NO", "MAYBE", "YES"])
 
     if len(response) == 0:
         ui.selected(None)
