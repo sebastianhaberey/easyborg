@@ -11,6 +11,7 @@ import cloup
 import rich
 from rich import box
 from rich.console import Console
+from rich.padding import Padding
 from rich.progress import BarColumn, Progress, SpinnerColumn, TextColumn, TimeRemainingColumn
 from rich.style import StyleType
 from rich.table import Table
@@ -106,8 +107,11 @@ def display(msg: str, *, indent: int = 0, style: StyleType = None) -> None:
     console.print((" " * indent * INDENT_SIZE) + msg, style=style)
 
 
-def header(msg: str) -> None:
+def header(msg: str, *, leading_newline=False) -> None:
+    if not leading_newline:
+        newline()
     console.print(f"{msg}:", style="yellow bold")
+    newline()
 
 
 def progress(func: Callable[[], Iterator[ProgressEvent]], *, message: str = "Processing") -> None:
@@ -164,7 +168,6 @@ def is_tty() -> bool:
 def table(
     rows: Iterable[Sequence[str | object]] = (),
     *,
-    title: str | None = None,
     headers: Sequence[str] | None = None,
     column_colors: Sequence[str | None] = (),
     box=box.SIMPLE_HEAD,
@@ -179,11 +182,9 @@ def table(
     column_colors = list(column_colors) + [None] * (num_columns - len(column_colors))
 
     table = Table(
-        title=title + ":" if title else None,
-        title_style="yellow bold",
-        title_justify="left",
         show_header=bool(headers),
         box=box,
+        show_edge=False,
     )
 
     # Add headers (unstyled)
@@ -204,7 +205,7 @@ def table(
             formatted_row.append(cell_str)
         table.add_row(*formatted_row)
 
-    console.print(table)
+    console.print(Padding(table, (0, 1, 0, 1)))
 
 
 def link_path(path: Path) -> str:
@@ -222,8 +223,3 @@ def trim(s: str, max_len: int) -> str:
 def disable() -> None:
     global console
     console.quiet = True
-
-
-def enable() -> None:
-    global console
-    console.quiet = False

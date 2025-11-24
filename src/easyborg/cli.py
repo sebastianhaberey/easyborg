@@ -112,8 +112,6 @@ def cli(
         logger.info("--------------------------------------------------------------------------------")
     else:
         log_utils.disable_logging()
-        ui.enable()
-        ui.newline()
 
     ctx.ensure_object(dict)
 

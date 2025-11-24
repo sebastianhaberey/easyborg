@@ -12,6 +12,7 @@ class InfoCommand:
         """
         Display configuration details.
         """
+
         rows = [
             ("Configuration directory", link_path(context.config_dir)),
             ("Configuration file", link_path(context.config_file)),
@@ -32,7 +33,7 @@ class InfoCommand:
                     ("Profile", context.profile),
                 ]
             )
-        ui.header("Configuration")
+        ui.header("Configuration", leading_newline=True)
         ui.table(rows, column_colors=(None, "bold cyan"))
 
         config = self.config
@@ -47,9 +48,7 @@ class InfoCommand:
             rows = [(link_path(folder),) for folder in config.backup_folders]
             ui.table(rows, column_colors=("bold cyan",))
         else:
-            ui.newline()
             ui.display("(no backup folders configured)", indent=1)
-            ui.newline()
 
         repos = config.repos
 
@@ -62,9 +61,7 @@ class InfoCommand:
                 headers=("Name", "URL", "Type"),
             )
         else:
-            ui.newline()
             ui.display("(no repositories configured)", indent=1)
-            ui.newline()
 
         if repos and context.expert:
             ui.header("Repository Environments")

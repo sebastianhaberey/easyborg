@@ -7,6 +7,8 @@ from easyborg.cli import cli
 
 
 def main():
+    if "--headless" not in sys.argv:  # quick and dirty check to avoid system mails in headless mode
+        ui.newline()  # needs to be here to appear BEFORE the help texts
     try:
         args = sys.argv[1:]
         easyborg_executable = Path(sys.argv[0])

@@ -17,6 +17,7 @@ class ArchiveCommand:
         """
         Create snapshot of specified folder in each repository configured as 'archive'.
         """
+
         if not folder.is_dir():
             raise RuntimeError(f"Folder does not exist: {folder}")
 
