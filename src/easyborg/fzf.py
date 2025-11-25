@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 T = TypeVar("T")
 
 DEFAULT_LIGHT_COLORS = {
-    "prompt": "cyan",
+    "prompt": "cyan:bold",
     "marker": "cyan",
     "pointer": "cyan",
     "hl": "cyan",
@@ -29,7 +29,7 @@ DANGER_LIGHT_COLORS = {
 }
 
 DEFAULT_DARK_COLORS = {
-    "prompt": "cyan:regular",
+    "prompt": "cyan:bold",
     "marker": "bright-cyan",
     "pointer": "cyan",
     "hl": "cyan",

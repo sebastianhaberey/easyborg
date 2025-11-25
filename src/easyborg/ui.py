@@ -90,7 +90,7 @@ def selected(value: Any, danger: bool = False) -> None:
         if danger:
             info(f"[red][bold]➜[/bold][/red] {str(item)}")
         else:
-            info(f"[cyan]➜[/cyan] {str(item)}")
+            info(f"[cyan][bold]➜[/bold][/cyan] {str(item)}")
 
 
 def abort() -> None:
@@ -109,11 +109,10 @@ def display(msg: str, *, indent: int = 0, style: StyleType = None) -> None:
     console.print((" " * indent * INDENT_SIZE) + msg, style=style)
 
 
-def header(msg: str, *, leading_newline=False) -> None:
-    if not leading_newline:
+def header(msg: str, *, first=False) -> None:
+    if not first:
         newline()
     console.print(f"{msg}:", style="yellow bold")
-    newline()
 
 
 def progress(func: Callable[[], Iterator[ProgressEvent]], *, message: str = "Processing") -> None:
@@ -210,7 +209,7 @@ def table(
 
 
 def link_path(path: Path) -> str:
-    return f"[link={path.as_uri()}]{path}[/link]"
+    return f"{path}"
 
 
 def render_dict(value: dict[str, str], *, separator=", ") -> str:

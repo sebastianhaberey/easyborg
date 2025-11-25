@@ -14,13 +14,13 @@ class InfoCommand:
         """
 
         rows = [
-            ("Configuration directory", link_path(context.config_dir)),
+            ("Configuration dir", link_path(context.config_dir)),
             ("Configuration file", link_path(context.config_file)),
-            ("Log directory", link_path(context.log_dir) if context.log_dir else "not configured"),
+            ("Log dir", link_path(context.log_dir) if context.log_dir else "not configured"),
             ("Log file", link_path(context.log_file) if context.log_file else "not configured"),
             ("Python executable", context.python_executable),
-            ("Real python executable", context.real_python_executable),
-            ("Real python directory", link_path(context.real_python_executable.parent)),
+            ("Real Python executable", context.real_python_executable),
+            ("Real Python dir", link_path(context.real_python_executable.parent)),
             ("Easyborg executable", context.easyborg_executable),
             ("Borg executable", context.borg_executable),
             ("fzf executable", context.fzf_executable),
@@ -33,20 +33,29 @@ class InfoCommand:
                     ("Profile", context.profile),
                 ]
             )
-        ui.header("Configuration", leading_newline=True)
-        ui.table(rows, column_colors=(None, "bold cyan"))
+        ui.header("Configuration", first=True)
+        ui.table(
+            rows,
+            column_colors=("cyan bold", None),
+        )
 
         config = self.config
 
         if context.expert:
             ui.header("Environment")
             rows = [(key, value) for key, value in config.env.items()]
-            ui.table(rows, headers=("Variable", "Value"), column_colors=(None, "bold cyan"))
+            ui.table(
+                rows,
+                column_colors=("cyan bold", None),
+            )
 
         ui.header("Backup Paths")
         if config.backup_paths:
             rows = [(link_path(path),) for path in config.backup_paths]
-            ui.table(rows, column_colors=("bold cyan",))
+            ui.table(
+                rows,
+                column_colors=("cyan bold",),
+            )
         else:
             ui.display("(no backup paths configured)", indent=1)
 
@@ -57,8 +66,7 @@ class InfoCommand:
             rows = [(repo.name, repo.url, repo.type.value) for repo in repos.values()]
             ui.table(
                 rows,
-                column_colors=(None, "bold cyan", "bold magenta"),
-                headers=("Name", "URL", "Type"),
+                column_colors=("cyan bold", None, "magenta bold"),
             )
         else:
             ui.display("(no repositories configured)", indent=1)
@@ -68,6 +76,5 @@ class InfoCommand:
             rows = [(repo.name, render_dict(repo.env, separator="\n")) for repo in repos.values()]
             ui.table(
                 rows,
-                headers=("Repository", "Environment"),
-                column_colors=(None, None),
+                column_colors=("cyan bold", None),
             )
