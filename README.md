@@ -163,7 +163,7 @@ it will be stored in the snapshot as:
 Users/user/Documents
 ```
 
-When you _restore_ or _extract_ the item, it will be written relative to the current working directory:
+When you _restore_ or _extract_ the item, it will be written into the current working directory:
 
 ```
 <CWD>/Users/user/Documents
@@ -171,7 +171,7 @@ When you _restore_ or _extract_ the item, it will be written relative to the cur
 
 This is a safety feature. If you _do_ want to overwrite the original item, you can:
 
-a] Go to the parent folder (/ in the example) and run the restore action there (not recommended) OR
+a] Go to its parent folder (/ in the example) and run the restore action there (not recommended) OR
 b] Delete the original item and move the restored item in its place OR
 c] Use _easyborg replace_ which does b] for you
 

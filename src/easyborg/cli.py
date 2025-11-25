@@ -228,7 +228,7 @@ def delete(obj, dry_run: bool):
 @pass_obj
 def replace(obj, dry_run: bool):
     """
-    Replace existing paths (interactive) (DANGER)
+    Replace existing items (interactive) (DANGER)
 
     This command will DELETE the configured backup paths (!) and replace them
     with their counterparts in the current working directory. Please refer to the
