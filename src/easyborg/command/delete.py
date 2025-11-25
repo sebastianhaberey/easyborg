@@ -27,7 +27,7 @@ class DeleteCommand:
             ui.abort()
             return
 
-        response = confirm(self.fzf, "Delete snapshot? ", dangerous=True)
+        response = confirm(self.fzf, "Delete snapshot? ", danger=True)
         if not response:
             ui.abort()
             return

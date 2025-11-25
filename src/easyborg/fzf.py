@@ -11,13 +11,18 @@ logger = logging.getLogger(__name__)
 T = TypeVar("T")
 
 DEFAULT_LIGHT_COLORS = {
-    "prompt": "-1",
+    "prompt": "cyan",
     "marker": "cyan",
     "pointer": "cyan",
     "hl": "cyan",
     "hl+": "cyan",
     "spinner": "cyan",
     "info": "-1",
+}
+
+DANGER_LIGHT_COLORS = {
+    "pointer": "red",
+    "prompt": "red",
 }
 
 DEFAULT_DARK_COLORS = {
@@ -28,6 +33,11 @@ DEFAULT_DARK_COLORS = {
     "hl+": "bright-cyan",
     "spinner": "bright-cyan",
     "info": "-1:bold",
+}
+
+DANGER_DARK_COLORS = {
+    "pointer": "red",
+    "prompt": "red",
 }
 
 
@@ -54,7 +64,7 @@ class Fzf:
         multi: bool = False,
         sort_order: SortOrder | None = None,
         show_info: bool = False,
-        colors: dict[str, str] = (),
+        danger: bool = False,
     ) -> list[T]:
         """
         Select objects using fzf based on a string key function.
@@ -71,7 +81,7 @@ class Fzf:
         if sort_order is not None:
             keys.sort(reverse=True if sort_order == SortOrder.DESCENDING else False)
 
-        selected_keys = self.select_strings(keys, multi=multi, show_info=show_info)
+        selected_keys = self.select_strings(keys, multi=multi, show_info=show_info, danger=danger)
 
         return [lookup[k] for k in selected_keys]
 
@@ -81,7 +91,7 @@ class Fzf:
         *,
         multi: bool = False,
         show_info: bool = False,
-        colors: dict[str, str] = (),
+        danger: bool = False,
     ) -> list[str]:
         """
         Run fzf on a stream of items and return the selected items.
@@ -96,7 +106,7 @@ class Fzf:
         cmd.append("--prompt=➜ ")
         cmd.append("--height=~90%")  # grow according to content, but max. 90% of terminal height
         cmd.append("--cycle")
-        cmd.append(f"--color={_color_options(self.light_mode, colors)}")
+        cmd.append(f"--color={_colors(self.light_mode, danger)}")
         cmd.append("--margin=0,0,0,0")
         cmd.append("--info=right")
         cmd.append("--no-separator")
@@ -118,12 +128,16 @@ class Fzf:
             raise
 
 
-def _color_options(light_mode: bool, colors: dict[str, str] = ()) -> str:
+def _colors(light_mode: bool, danger: bool) -> str:
     if light_mode:
         mode = "light"
-        colors = DEFAULT_LIGHT_COLORS | dict(colors)
+        colors = DEFAULT_LIGHT_COLORS
+        if danger:
+            colors |= DANGER_LIGHT_COLORS
     else:
         mode = "dark"
-        colors = DEFAULT_DARK_COLORS | dict(colors)
+        colors = DEFAULT_DARK_COLORS
+        if danger:
+            colors |= DANGER_DARK_COLORS
 
     return f"{mode}," + ",".join(f"{k}:{v}" for k, v in colors.items())

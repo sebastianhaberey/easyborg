@@ -36,7 +36,7 @@ class ReplaceCommand:
             ui.abort()
             return
 
-        response = confirm(self.fzf, "Replace? ", dangerous=True)
+        response = confirm(self.fzf, "Replace? ", danger=True)
         if not response:
             ui.abort()
             return

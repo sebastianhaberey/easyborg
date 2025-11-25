@@ -77,15 +77,14 @@ def select_items(borg: Borg, fzf: Fzf, snapshot: Snapshot) -> list[Path] | None:
     return selected_paths
 
 
-def confirm(fzf: Fzf, message: str, *, dangerous: bool = False) -> bool | None:
-    if dangerous:
-        ui.info(f"[red][bold]DANGEROUS[/red][/bold] {message}")
-        colors = {"pointer": "red", "prompt": "red"}
+def confirm(fzf: Fzf, message: str, *, danger: bool = False) -> bool | None:
+    if danger:
+        ui.info(f"[red][bold]DANGER[/red][/bold] {message}")
     else:
         colors = ()
         ui.info(message)
 
-    response = fzf.select_strings(["NO", "MAYBE", "YES"], colors=colors)
+    response = fzf.select_strings(["NO", "MAYBE", "YES"], danger=danger)
 
     if len(response) == 0:
         ui.selected(None)
