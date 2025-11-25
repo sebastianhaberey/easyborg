@@ -28,14 +28,10 @@ theme = Theme(
     {
         "progress.remaining": Style(),
         "progress.elapsed": Style(),
+        "bar.pulse": "cyan",
+        "bar.complete": "cyan",
+        "bar.finished": "bold cyan",
     }
-)
-
-progress_bar_column = BarColumn(
-    bar_width=10,
-    pulse_style="cyan",
-    complete_style="cyan",
-    finished_style="bold cyan",
 )
 
 console = Console(highlight=False, theme=theme)
@@ -129,21 +125,20 @@ def progress(func: Callable[[], Iterator[ProgressEvent]], *, message: str = "Pro
         return
 
     with Progress(
-        progress_bar_column,
-        # TextColumn("{task.percentage:>3.0f}%"),  # don't need it currently as Borg's messages contain percentage
+        BarColumn(bar_width=10),
         TimeRemainingColumn(),
         TextColumn("{task.description}"),
         console=console,
         transient=True,
     ) as p:
-        task_id = p.add_task(message, total=None)
+        task_id = p.add_task(message, start=True)
         for event in func():
             # print(f"EVENT: {event}")
             p.update(
                 task_id,
                 total=event.total or None,
                 completed=event.current or None,
-                description=trim(event.message, console.size.width - 20) if event.message else None,  # total length 120
+                description=trim(event.message, console.size.width - 20) if event.message else None,
             )
         # print("COMPLETED")
 
