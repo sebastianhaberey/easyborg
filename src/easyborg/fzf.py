@@ -21,8 +21,11 @@ DEFAULT_LIGHT_COLORS = {
 }
 
 DANGER_LIGHT_COLORS = {
-    "pointer": "red",
     "prompt": "red",
+    "marker": "red",
+    "pointer": "red",
+    "hl": "red",
+    "hl+": "red",
 }
 
 DEFAULT_DARK_COLORS = {
@@ -36,8 +39,11 @@ DEFAULT_DARK_COLORS = {
 }
 
 DANGER_DARK_COLORS = {
-    "pointer": "red",
     "prompt": "red",
+    "marker": "red",
+    "pointer": "red",
+    "hl": "red",
+    "hl+": "red",
 }
 
 

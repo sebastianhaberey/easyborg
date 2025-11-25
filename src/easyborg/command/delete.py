@@ -35,7 +35,7 @@ class DeleteCommand:
         ui.newline()
 
         ui.info(f"Deleting snapshot {snapshot.name} from repository {repo.name}")
-        ui.progress(
+        ui.spinner(
             lambda: self.borg.delete(
                 snapshot,
                 dry_run=dry_run,

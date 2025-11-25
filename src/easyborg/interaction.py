@@ -89,7 +89,7 @@ def confirm(fzf: Fzf, message: str, *, danger: bool = False) -> bool | None:
         ui.selected(None)
         return None
 
-    ui.selected(response[0])
+    ui.selected(response[0], danger=danger)
     return response[0] == "YES"
 
 

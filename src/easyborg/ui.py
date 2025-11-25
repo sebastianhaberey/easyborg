@@ -13,7 +13,7 @@ from rich import box
 from rich.console import Console
 from rich.padding import Padding
 from rich.progress import BarColumn, Progress, SpinnerColumn, TextColumn, TimeRemainingColumn
-from rich.style import StyleType
+from rich.style import Style, StyleType
 from rich.table import Table
 from rich.theme import Theme
 
@@ -26,8 +26,8 @@ logger = logging.getLogger(__name__)
 
 theme = Theme(
     {
-        "progress.remaining": "bold cyan",
-        "progress.elapsed": "bold cyan",
+        "progress.remaining": Style(),
+        "progress.elapsed": Style(),
     }
 )
 
@@ -43,8 +43,11 @@ console = Console(highlight=False, theme=theme)
 # CONSOLE PLUS LOGGING
 
 
-def info(msg: str) -> None:
-    console.print(msg)
+def info(msg: str, danger: bool = False) -> None:
+    if danger:
+        console.print(f"[red][bold]DANGER[/red][/bold] {msg}")
+    else:
+        console.print(msg)
     logger.info(msg)
 
 
@@ -84,11 +87,14 @@ def stacktrace(message: str) -> None:
     logger.exception("❌ " + message)
 
 
-def selected(value: Any) -> None:
+def selected(value: Any, danger: bool = False) -> None:
     if not isinstance(value, list):
         value = [value]
     for item in value:
-        info(f"[cyan]➜[/cyan] {str(item)}")
+        if danger:
+            info(f"[red][bold]➜[/bold][/red] {str(item)}")
+        else:
+            info(f"[cyan]➜[/cyan] {str(item)}")
 
 
 def abort() -> None:

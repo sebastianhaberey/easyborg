@@ -48,17 +48,23 @@ DEBUG_MODE: bool = False
 
 @group(help="Easyborg – Borg for Dummies", context_settings=CONTEXT_SETTINGS)
 @version_option(prog_name="Easyborg", help="Show version information", message="%(prog)s version %(version)s")
-@help_option(help="Show this page and exit")
+@help_option(
+    "--help",
+    help="Show this page and exit",
+)
 @option(
     "--light-mode",
     envvar="EASYBORG_LIGHT_MODE",
+    show_envvar=True,
     is_flag=True,
-    help="Make colors light-friendly",
+    help="Light-friendly colors",
 )
 @option(
     "--profile",
+    "-p",
     envvar="EASYBORG_PROFILE",
     type=str,
+    show_envvar=True,
     help="Select configuration profile",
     default="default",
 )
@@ -66,7 +72,6 @@ DEBUG_MODE: bool = False
     "--debug",
     envvar="EASYBORG_DEBUG",
     is_flag=True,
-    hidden=not EXPERT_MODE,
     help="Enable debug mode (expert)",
 )
 @option(
