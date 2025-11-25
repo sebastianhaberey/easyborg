@@ -31,7 +31,7 @@ CONTEXT_SETTINGS = cloup.Context.settings(
             col1=Style(fg="cyan", bold=True),
         ),
         width=None,
-        max_width=999,  # default is too low (80) and Click will ellipsis long texts anyways
+        max_width=100,  # default is too low (80), but too high will yield really long help text lines
     ),
 )
 
@@ -50,11 +50,16 @@ DEBUG_MODE: bool = False
 @version_option(prog_name="Easyborg", help="Show version information", message="%(prog)s version %(version)s")
 @help_option(help="Show this page and exit")
 @option(
+    "--light-mode",
+    envvar="EASYBORG_LIGHT_MODE",
+    is_flag=True,
+    help="Make colors light-friendly",
+)
+@option(
     "--profile",
     envvar="EASYBORG_PROFILE",
     type=str,
-    hidden=not EXPERT_MODE,
-    help="Select configuration profile (expert)",
+    help="Select configuration profile",
     default="default",
 )
 @option(
@@ -81,12 +86,6 @@ DEBUG_MODE: bool = False
     type=cloup.Path(path_type=Path, exists=True, executable=True, file_okay=True, dir_okay=False),
     hidden=not EXPERT_MODE,
     help="Set BorgBackup executable (expert)",
-)
-@option(
-    "--light-mode",
-    envvar="EASYBORG_LIGHT_MODE",
-    is_flag=True,
-    help="Make colors light-friendly",
 )
 @pass_context
 def cli(
@@ -195,7 +194,7 @@ def extract(obj, dry_run: bool):
 @help_option(help="Show this message and exit")
 @pass_obj
 def delete(obj, dry_run: bool):
-    """Delete snapshot from repository (interactive)"""
+    """Delete snapshot from repository (interactive) (DANGER)"""
     command = DeleteCommand(config=obj["config"], borg=obj["borg"], fzf=obj["fzf"])
     command.run(dry_run=dry_run)
 
@@ -205,7 +204,13 @@ def delete(obj, dry_run: bool):
 @help_option(help="Show this message and exit")
 @pass_obj
 def replace(obj, dry_run: bool):
-    """Replace existing folders with folders located in the current working directory (interactive) (DANGEROUS)"""
+    """
+    Replace existing backup folders with restored ones (interactive) (DANGER)
+
+    This command will delete the configured backup folders (!) and replace them
+    with their counterparts in the current working directory. Please refer to the
+    "Relativization" section in the README for details.
+    """
     command = ReplaceCommand(config=obj["config"], fzf=obj["fzf"])
     command.run(dry_run=dry_run)
 

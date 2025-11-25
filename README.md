@@ -110,30 +110,14 @@ easyborg --help
 
 for details on these and some utility commands.
 
-## Shell completion
-
-Generate completion file (zsh):
-
-```
-_EASYBORG_COMPLETE=zsh_source easyborg > ~/.easyborg-complete.zsh
-```
-
-Add to ~/.zshrc:
-
-```
-source ~/.easyborg-complete.zsh
-```
-
-See [Click documentation](click.palletsprojects.com/en/stable/shell-completion/) for bash, fish.
-
 ## Concept
 
 Easyborg makes a distinction between _backup_ and _archive_.
 
-|             | Purpose      | Data Type  | Data State | Trigger   | Retention        | Example             |
-|-------------|--------------|------------|------------|-----------|------------------|---------------------|
-| **Backup**  | recovery     | current    | changing   | automatic | days to months   | Thunderbird profile |
-| **Archive** | preservation | historical | stable     | manual    | years to forever | Documents folder    | 
+|             | Purpose      | Data Type             | Data State | Trigger   | Retention        | 
+|-------------|--------------|-----------------------|------------|-----------|------------------|
+| **Backup**  | recovery     | needed for daily work | changing   | automatic | days to months   |
+| **Archive** | preservation | needed for reference  | stable     | manual    | years to forever |
 
 ### Backup
 
@@ -165,7 +149,21 @@ and when.
 > **NOTE** Archive snapshots are never pruned automatically. If you want to delete an archive snapshot, use _easyborg
 delete_.
 
-### Relativization
+### Glossary
+
+| Easyborg           | Meaning                                                         | Borg             |
+|--------------------|-----------------------------------------------------------------|------------------|
+| Snapshot           | immutable point-in-time view of data                            | Archive          |
+| Backup Repository  | storage of snapshots intended for recovery                      | Repository       |
+| Archive Repository | storage of snapshots intended for preservation                  | Repository       |
+| Snapshot Location  | Borg-style snapshot reference (`repository_url::snapshot_name`) | Archive Location |
+| Repository URL     | Borg-style repository reference (local or remote)               | (same)           |
+| backup (command)   | create snapshot in backup repository                            | `borg create`    |
+| archive (command)  | create snapshot in archive repository                           | `borg create`    |
+| extract (command)  | fetch selected items from snapshot                              | `borg extract`   | 
+| restore (command)  | fetch entire snapshot                                           | `borg extract`   |
+
+## Relativization
 
 If you _backup_ or _archive_ a folder, e.g.:
 
@@ -187,25 +185,16 @@ When you _restore_ or _extract_ the folder, it will be written to the current wo
 
 This is a safety feature. If you _do_ want to overwrite the original folder, you can
 
-- go to its parent folder (/ in the example) and run the restore action there, or
-- remove the original folder and move the restored one (recommended)
-
-### Glossary
-
-| Easyborg           | Meaning                                                         | Borg             |
-|--------------------|-----------------------------------------------------------------|------------------|
-| Snapshot           | immutable point-in-time view of data                            | Archive          |
-| Backup Repository  | storage of snapshots intended for recovery                      | Repository       |
-| Archive Repository | storage of snapshots intended for preservation                  | Repository       |
-| Snapshot Location  | Borg-style snapshot reference (`repository_url::snapshot_name`) | Archive Location |
-| Repository URL     | Borg-style repository reference (local or remote)               | (same)           |
-| backup (command)   | create snapshot in backup repository                            | `borg create`    |
-| archive (command)  | create snapshot in archive repository                           | `borg create`    |
-| extract (command)  | fetch selected items from snapshot                              | `borg extract`   | 
-| restore (command)  | fetch entire snapshot                                           | `borg extract`   |
+a] go to its parent folder (/ in the example) and run the restore action there (not recommended), or
+b] delete the original folder and move the restored one in its place, or
+c] use _easyborg replace_ which does b] for you
 
 ## Disclaimer
 
 Even though I'm doing my best, and there's an automatic test suite that covers the critical functionality on Linux and
 macOS, errors can happen. Use this application at your own risk. It is highly recommended to start with fresh
 repositories to avoid data loss.
+
+## Expert topics
+
+If you're still here, have a look at the [expert topics](EXPERT.md)
