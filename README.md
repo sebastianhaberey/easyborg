@@ -149,21 +149,7 @@ and when.
 > **NOTE** Archive snapshots are never pruned automatically. If you want to delete an archive snapshot, use _easyborg
 delete_.
 
-### Glossary
-
-| Easyborg           | Meaning                                                         | Borg             |
-|--------------------|-----------------------------------------------------------------|------------------|
-| Snapshot           | immutable point-in-time view of data                            | Archive          |
-| Backup Repository  | storage of snapshots intended for recovery                      | Repository       |
-| Archive Repository | storage of snapshots intended for preservation                  | Repository       |
-| Snapshot Location  | Borg-style snapshot reference (`repository_url::snapshot_name`) | Archive Location |
-| Repository URL     | Borg-style repository reference (local or remote)               | (same)           |
-| backup (command)   | create snapshot in backup repository                            | `borg create`    |
-| archive (command)  | create snapshot in archive repository                           | `borg create`    |
-| extract (command)  | fetch selected items from snapshot                              | `borg extract`   | 
-| restore (command)  | fetch entire snapshot                                           | `borg extract`   |
-
-## Relativization
+## Restore / Replace
 
 If you _backup_ or _archive_ a folder, e.g.:
 
@@ -183,11 +169,25 @@ When you _restore_ or _extract_ the folder, it will be written to the current wo
 <CWD>/Users/user/Documents
 ```
 
-This is a safety feature. If you _do_ want to overwrite the original folder, you can
+This is a safety feature. If you _do_ want to overwrite the original folder, you can:
 
-a] go to its parent folder (/ in the example) and run the restore action there (not recommended), or
-b] delete the original folder and move the restored one in its place, or
-c] use _easyborg replace_ which does b] for you
+a] Go to the parent folder (/ in the example) and run the restore action there (not recommended) OR
+b] Delete the original folder and move the restored one in its place OR
+c] Use _easyborg replace_ which does b] for you
+
+### Glossary
+
+| Easyborg           | Meaning                                                         | Borg             |
+|--------------------|-----------------------------------------------------------------|------------------|
+| Snapshot           | immutable point-in-time view of data                            | Archive          |
+| Backup Repository  | storage of snapshots intended for recovery                      | Repository       |
+| Archive Repository | storage of snapshots intended for preservation                  | Repository       |
+| Snapshot Location  | Borg-style snapshot reference (`repository_url::snapshot_name`) | Archive Location |
+| Repository URL     | Borg-style repository reference (local or remote)               | (same)           |
+| backup (command)   | create snapshot in backup repository                            | `borg create`    |
+| archive (command)  | create snapshot in archive repository                           | `borg create`    |
+| extract (command)  | fetch selected items from snapshot                              | `borg extract`   | 
+| restore (command)  | fetch entire snapshot                                           | `borg extract`   |
 
 ## Disclaimer
 

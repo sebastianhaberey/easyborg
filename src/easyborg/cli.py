@@ -47,11 +47,11 @@ DEBUG_MODE: bool = False
 
 
 @group(help="Easyborg – Borg for Dummies", context_settings=CONTEXT_SETTINGS)
-@version_option(prog_name="Easyborg", help="Show version information", message="%(prog)s version %(version)s")
 @help_option(
     "--help",
-    help="Show this page and exit",
+    help="Show this page",
 )
+@version_option(prog_name="Easyborg", help="Show version information", message="%(prog)s version %(version)s")
 @option(
     "--light-mode",
     envvar="EASYBORG_LIGHT_MODE",
@@ -65,14 +65,14 @@ DEBUG_MODE: bool = False
     envvar="EASYBORG_PROFILE",
     type=str,
     show_envvar=True,
-    help="Select configuration profile",
+    help="Select profile",
     default="default",
 )
 @option(
     "--debug",
     envvar="EASYBORG_DEBUG",
     is_flag=True,
-    help="Enable debug mode (expert)",
+    help="Enable debug mode",
 )
 @option(
     "--headless",
@@ -154,10 +154,14 @@ def cli(
     hidden=not EXPERT_MODE,
     help="If snapshot creation fails, log error and continue with next repository (expert)",
 )
-@help_option(help="Show this message and exit")
+@help_option(help="Show this message")
 @pass_obj
 def backup(obj, dry_run: bool, tenacious: bool):
-    """Create snapshot of configured folders in backup repositories"""
+    """
+    Create backup snapshot
+
+    Create a snapshot of all configured folders in each of the configured backup repositories.
+    """
     command = BackupCommand(config=obj["config"], borg=obj["borg"])
     command.run(dry_run=dry_run, tenacious=tenacious)
 
@@ -166,74 +170,92 @@ def backup(obj, dry_run: bool, tenacious: bool):
 @argument("folder", type=cloup.Path(path_type=Path, exists=True), help="Folder to backup")
 @option("--comment", help="Add comment to the created snapshot")
 @option("--dry-run", is_flag=True, help="Do not modify data")
-@help_option(help="Show this message and exit")
+@help_option(help="Show this message")
 @pass_obj
 def archive(obj, folder: Path, comment: str | None, dry_run: bool):
-    """Create snapshot of specified folder in archive repositories"""
+    """
+    Create archive snapshot
+
+    Create a snapshot of the specified folder in each of the configured archive repositories.
+    """
     command = ArchiveCommand(config=obj["config"], borg=obj["borg"])
     command.run(folder, dry_run=dry_run, comment=comment)
 
 
 @cli.command(section=SECTION_MAIN)
 @option("--dry-run", is_flag=True, help="Do not modify data")
-@help_option(help="Show this message and exit")
+@help_option(help="Show this message")
 @pass_obj
 def restore(obj, dry_run: bool):
-    """Restore snapshot to current working directory (interactive)"""
+    """Restore snapshot (interactive)
+
+    Restore a snapshot of your choice to the current working directory.
+    """
     command = RestoreCommand(config=obj["config"], borg=obj["borg"], fzf=obj["fzf"])
     command.run(dry_run=dry_run)
 
 
 @cli.command(section=SECTION_MAIN)
 @option("--dry-run", is_flag=True, help="Do not modify data")
-@help_option(help="Show this message and exit")
+@help_option(help="Show this message")
 @pass_obj
 def extract(obj, dry_run: bool):
-    """Extract files / folders from snapshot (interactive)"""
+    """
+    Extract items (interactive)
+
+    Extract files / folders of your choice to the current working directory.
+    """
     command = ExtractCommand(config=obj["config"], borg=obj["borg"], fzf=obj["fzf"])
     command.run(dry_run=dry_run)
 
 
 @cli.command(section=SECTION_MAIN)
 @option("--dry-run", is_flag=True, help="Do not modify data")
-@help_option(help="Show this message and exit")
+@help_option(help="Show this message")
 @pass_obj
 def delete(obj, dry_run: bool):
-    """Delete snapshot from repository (interactive) (DANGER)"""
+    """Delete snapshot (interactive) (DANGER)
+
+    Delete a snapshot of your choice.
+    """
     command = DeleteCommand(config=obj["config"], borg=obj["borg"], fzf=obj["fzf"])
     command.run(dry_run=dry_run)
 
 
 @cli.command(section=SECTION_MAIN)
 @option("--dry-run", is_flag=True, help="Do not modify data")
-@help_option(help="Show this message and exit")
+@help_option(help="Show this message")
 @pass_obj
 def replace(obj, dry_run: bool):
     """
-    Replace existing backup folders with restored ones (interactive) (DANGER)
+    Replace existing folders (interactive) (DANGER)
 
-    This command will delete the configured backup folders (!) and replace them
+    This command will DELETE the configured backup folders (!) and replace them
     with their counterparts in the current working directory. Please refer to the
-    "Relativization" section in the README for details.
+    Restore / Replace section in the README for details.
     """
     command = ReplaceCommand(config=obj["config"], fzf=obj["fzf"])
     command.run(dry_run=dry_run)
 
 
 @cli.command(section=SECTION_UTILITY)
-@help_option(help="Show this message and exit")
+@help_option(help="Show this message")
 @pass_obj
 def info(obj):
-    """Show info about current configuration"""
+    """
+    Show current configuration
+    """
     command = InfoCommand(config=obj["config"])
     command.run(obj["context"])
 
 
 @cli.command(section=SECTION_UTILITY)
-@help_option(help="Show this message and exit")
+@help_option(help="Show this message")
 @pass_obj
 def enable(obj):
-    """Enable scheduled backups"""
+    """
+    Enable scheduled backups
+    """
     context: Context = obj["context"]
     Cron(context.profile).enable(
         "backup",
@@ -245,22 +267,28 @@ def enable(obj):
 
 
 @cli.command(section=SECTION_UTILITY)
-@help_option(help="Show this message and exit")
+@help_option(help="Show this message")
 @pass_obj
 def disable(obj):
-    """Disable scheduled backups"""
+    """
+    Disable scheduled backups
+    """
     context: Context = obj["context"]
     Cron(context.profile).disable()
 
 
 @cli.command(section=SECTION_UTILITY)
-@help_option(help="Show this message and exit")
+@help_option(help="Show this message")
 @argument(
     "target",
     type=Choice(["log_file", "log_dir", "config_file", "config_dir"], case_sensitive=False),
 )
 @pass_obj
 def open(obj, target: str):
-    """Open easyborg file or folder"""
+    """
+    Open easyborg file or folder
+
+    Open easyborg file or folder using your system's default application.
+    """
     command = OpenCommand(context=obj["context"])
     command.run(target)
