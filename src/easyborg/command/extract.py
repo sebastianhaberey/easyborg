@@ -16,7 +16,7 @@ class ExtractCommand:
 
     def run(self, *, dry_run: bool = False) -> None:
         """
-        Interactively extract selected files / folders from snapshot.
+        Interactively extract selected items from snapshot.
         """
 
         repo = select_repo(self.fzf, self.config)
@@ -43,7 +43,7 @@ class ExtractCommand:
             lambda: self.borg.restore(
                 snapshot,
                 target_dir=target_dir,
-                folders=selected_paths,
+                paths=selected_paths,
                 dry_run=dry_run,
                 progress=True,
             ),

@@ -67,7 +67,7 @@ Once that works, you can add the environment variable to Easyborg's configuratio
 Minimal configuration example:
 
 ```
-backup_folders = [
+backup_paths = [
     "/Users/example/Documents",
 ]
 
@@ -121,7 +121,7 @@ Easyborg makes a distinction between _backup_ and _archive_.
 
 ### Backup
 
-If you enable automatic backups, Easyborg will create a snapshot of all configured folders in each configured
+If you enable automatic backups, Easyborg will create a snapshot of all configured paths in each configured
 **backup repository** every full hour. Meaning at 12:00, 13:00 and so on. Then, snapshots are pruned to save space.
 So after the 13:00 snapshot is written, the 12:00 snapshot will be deleted. A selection of snapshots will be retained:
 
@@ -151,7 +151,7 @@ delete_.
 
 ## Restore / Replace
 
-If you _backup_ or _archive_ a folder, e.g.:
+If you _backup_ or _archive_ an item, e.g.:
 
 ```
 /Users/user/Documents
@@ -163,16 +163,16 @@ it will be stored in the snapshot as:
 Users/user/Documents
 ```
 
-When you _restore_ or _extract_ the folder, it will be written to the current working directory:
+When you _restore_ or _extract_ the item, it will be written relative to the current working directory:
 
 ```
 <CWD>/Users/user/Documents
 ```
 
-This is a safety feature. If you _do_ want to overwrite the original folder, you can:
+This is a safety feature. If you _do_ want to overwrite the original item, you can:
 
 a] Go to the parent folder (/ in the example) and run the restore action there (not recommended) OR
-b] Delete the original folder and move the restored one in its place OR
+b] Delete the original item and move the restored item in its place OR
 c] Use _easyborg replace_ which does b] for you
 
 ### Glossary

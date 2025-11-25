@@ -1,6 +1,6 @@
 # COMMON
 
-backup_folders = [
+backup_paths = [
     "/Users/example/Documents", # use absolute paths here, not ~/Documents
 ]
 

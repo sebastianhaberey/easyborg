@@ -40,7 +40,7 @@ def _parse(cfg: dict[str, Any]) -> Config:
     }
 
     return Config(
-        backup_folders=[Path(p) for p in cfg.get("backup_folders", [])],
+        backup_paths=[Path(p) for p in cfg.get("backup_paths", [])],
         repos=repos,
         env=cfg.get("environment", {}),
     )

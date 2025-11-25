@@ -18,7 +18,7 @@ def test_core_backup(tmp_path, testdata_dir, borg):
     archive_repo = borg.create_repository(repo_parent, "archive", RepositoryType.ARCHIVE)
 
     config = Config(
-        backup_folders=[testdata_dir],
+        backup_paths=[testdata_dir],
         repos={"backup": backup_repo, "archive": archive_repo},
     )
 
@@ -56,7 +56,7 @@ def test_core_backup_multiple_repos(tmp_path, testdata_dir, borg):
     backup2_repo = borg.create_repository(repo_parent, "backup2", RepositoryType.BACKUP)
 
     config = Config(
-        backup_folders=[testdata_dir],
+        backup_paths=[testdata_dir],
         repos={"backup1": backup1_repo, "backup2": backup2_repo},
     )
 
@@ -81,7 +81,7 @@ def test_core_backup_tenacious_mode(tmp_path, testdata_dir):
     backup2_repo = Repository(url="bar", name="bar", type=RepositoryType.BACKUP)
 
     config = Config(
-        backup_folders=[testdata_dir],
+        backup_paths=[testdata_dir],
         repos={"backup1": backup1_repo, "backup2": backup2_repo},
     )
 

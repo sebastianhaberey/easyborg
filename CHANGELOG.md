@@ -40,7 +40,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- New command "replace": replaces existing folders with restored folders
+- New command "replace": replaces existing paths with restored paths
 
 ### Changed
 
@@ -137,10 +137,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Main command "backup": create snapshot of configured folders in backup repositories
-- Main command "archive": create snapshot of specified folder in archive repositories (interactive)
+- Main command "backup": create snapshot of configured paths in backup repositories
+- Main command "archive": create snapshot of specified path in archive repositories (interactive)
 - Main command "restore": restore snapshot to current working directory (interactive)
-- Main command "extract": extract files / folders from snapshot (interactive)
+- Main command "extract": extract items from snapshot (interactive)
 - Main command "delete": delete snapshot from repository (interactive)
 - Utility command "info": show info about the current configuration
 - Utility command "enable": enable scheduled backups

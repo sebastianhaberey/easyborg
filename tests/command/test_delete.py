@@ -23,7 +23,7 @@ def test_core_backup(tmp_path, borg, repo, testdata_dir):
 
     config = Config(
         repos={"repo": repo},
-        backup_folders=[],  # not needed for delete
+        backup_paths=[],  # not needed for delete
     )
 
     DeleteCommand(config=config, borg=borg, fzf=fzf).run()

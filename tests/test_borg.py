@@ -27,10 +27,10 @@ def test_create_snapshot_fails_if_repository_not_found(borg, testdata_dir):
         borg.create_snapshot(snap, [testdata_dir])
 
 
-def test_create_snapshot_fails_if_folder_not_found(borg, repo):
+def test_create_snapshot_fails_if_path_not_found(borg, repo):
     snap = Snapshot(repo, "ignored")
 
-    with pytest.raises(RuntimeError, match=r"Folder does not exist"):
+    with pytest.raises(RuntimeError, match=r"Path does not exist"):
         borg.create_snapshot(snap, [Path("foo")])
 
 
@@ -41,7 +41,7 @@ def test_create_snapshot_and_restore_single(tmp_path, borg, repo, testdata_dir):
     target_dir = tmp_path / "target"
     target_dir.mkdir()
 
-    borg.restore(snap, target_dir, folders=[testdata_dir / "file 1.txt"])
+    borg.restore(snap, target_dir, paths=[testdata_dir / "file 1.txt"])
 
     file_1 = target_dir / relativize(testdata_dir) / "file 1.txt"
     assert file_1.exists()
@@ -82,7 +82,7 @@ def test_restore_fails_if_target_directory_not_found(borg, repo, testdata_dir):
         borg.restore(snap, Path("foo"))
 
 
-def test_restore_fails_if_folder_not_found(tmp_path, borg, repo, testdata_dir):
+def test_restore_fails_if_path_not_found(tmp_path, borg, repo, testdata_dir):
     snap = Snapshot(repo, "snapshot")
     borg.create_snapshot(snap, [testdata_dir])
 
@@ -90,7 +90,7 @@ def test_restore_fails_if_folder_not_found(tmp_path, borg, repo, testdata_dir):
     target_dir.mkdir()
 
     with pytest.raises(RuntimeError, match=r"(?i)never matched"):
-        borg.restore(snap, target_dir, folders=[Path("foo")])
+        borg.restore(snap, target_dir, paths=[Path("foo")])
 
 
 def test_list_contents_of_snapshot_with_testdata(borg, repo, testdata_dir):

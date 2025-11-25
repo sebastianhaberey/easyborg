@@ -1,5 +1,4 @@
 import logging
-import os
 from collections.abc import Iterator
 from pathlib import Path
 
@@ -62,7 +61,7 @@ class Borg:
 
     def list_contents(self, snap: Snapshot) -> Iterator[Path]:
         """
-        Yield all files and folders contained in a snapshot.
+        Yield all paths contained in a snapshot.
         Paths are always relative (no leading slash).
         """
         logger.debug("Listing contents of %s", snap.location())
@@ -102,7 +101,7 @@ class Borg:
     def create_snapshot(
         self,
         snap: Snapshot,
-        folders: list[Path],
+        paths: list[Path],
         *,
         dry_run: bool = False,
         progress: bool = False,
@@ -112,9 +111,9 @@ class Borg:
         """
         logger.debug("Creating snapshot %s", snap.location())
 
-        for folder in folders:
-            if not os.path.isdir(folder):
-                raise RuntimeError(f"Folder does not exist: {folder}")
+        for path in paths:
+            if not path.exists():
+                raise RuntimeError(f"Path does not exist: {path}")
 
         cmd = [str(self.executable), "create"]
         if progress:
@@ -124,7 +123,7 @@ class Borg:
         if snap.comment:
             cmd.extend(["--comment", snap.comment])
         cmd.append(snap.location())
-        cmd.extend(map(str, folders))
+        cmd.extend(map(str, paths))
 
         if progress:
             return parse_progress(run_async(cmd, output=Output.STDERR, env=snap.repository.env))
@@ -136,17 +135,17 @@ class Borg:
         self,
         snap: Snapshot,
         target_dir: Path,
-        folders: list[Path] | None = None,
+        paths: list[Path] | None = None,
         *,
         dry_run: bool = False,
         progress: bool = False,
     ) -> Iterator[ProgressEvent] | None:
         """
-        Restore folders (or the entire snapshot if folders=None) into target_dir.
+        Restore paths (or the entire snapshot if paths=None) into target_dir.
         Returns progress events if progress=True (slows down performance).
         """
-        if folders is None:
-            folders = []
+        if paths is None:
+            paths = []
 
         logger.debug("Restoring %s into %s", snap.location(), target_dir)
 
@@ -159,7 +158,7 @@ class Borg:
         if dry_run:
             cmd.append("--dry-run")
         cmd.extend(["--noflags", "--noacls", "--noxattrs"])  # strip OS-specific flags
-        cmd.extend([snap.location(), *map(str, folders)])
+        cmd.extend([snap.location(), *map(str, paths)])
 
         if progress:
             return parse_progress(run_async(cmd, cwd=str(target_dir), output=Output.STDERR))

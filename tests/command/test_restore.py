@@ -21,7 +21,7 @@ def test_core_restore(tmp_path, borg, repo, testdata_dir):
 
     config = Config(
         repos={"repo": repo},
-        backup_folders=[testdata_dir],
+        backup_paths=[testdata_dir],
     )
 
     target_dir = tmp_path / "restore-target"

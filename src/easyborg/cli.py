@@ -160,26 +160,26 @@ def backup(obj, dry_run: bool, tenacious: bool):
     """
     Create backup snapshot
 
-    Create a snapshot of all configured folders in each of the configured backup repositories.
+    Create a snapshot of all configured paths in each of the configured backup repositories.
     """
     command = BackupCommand(config=obj["config"], borg=obj["borg"])
     command.run(dry_run=dry_run, tenacious=tenacious)
 
 
 @cli.command(section=SECTION_MAIN)
-@argument("folder", type=cloup.Path(path_type=Path, exists=True), help="Folder to backup")
+@argument("path", type=cloup.Path(path_type=Path, exists=True), help="Path to backup")
 @option("--comment", help="Add comment to the created snapshot")
 @option("--dry-run", is_flag=True, help="Do not modify data")
 @help_option(help="Show this message")
 @pass_obj
-def archive(obj, folder: Path, comment: str | None, dry_run: bool):
+def archive(obj, path: Path, comment: str | None, dry_run: bool):
     """
     Create archive snapshot
 
-    Create a snapshot of the specified folder in each of the configured archive repositories.
+    Create a snapshot of the specified path in each of the configured archive repositories.
     """
     command = ArchiveCommand(config=obj["config"], borg=obj["borg"])
-    command.run(folder, dry_run=dry_run, comment=comment)
+    command.run(path, dry_run=dry_run, comment=comment)
 
 
 @cli.command(section=SECTION_MAIN)
@@ -203,7 +203,7 @@ def extract(obj, dry_run: bool):
     """
     Extract items (interactive)
 
-    Extract files / folders of your choice to the current working directory.
+    Extract items of your choice to the current working directory.
     """
     command = ExtractCommand(config=obj["config"], borg=obj["borg"], fzf=obj["fzf"])
     command.run(dry_run=dry_run)
@@ -228,9 +228,9 @@ def delete(obj, dry_run: bool):
 @pass_obj
 def replace(obj, dry_run: bool):
     """
-    Replace existing folders (interactive) (DANGER)
+    Replace existing paths (interactive) (DANGER)
 
-    This command will DELETE the configured backup folders (!) and replace them
+    This command will DELETE the configured backup paths (!) and replace them
     with their counterparts in the current working directory. Please refer to the
     Restore / Replace section in the README for details.
     """

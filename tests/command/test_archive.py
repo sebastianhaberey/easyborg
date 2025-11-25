@@ -15,7 +15,7 @@ def test_core_archive(tmp_path, testdata_dir, borg):
     archive_repo = borg.create_repository(repo_parent, "archive", RepositoryType.ARCHIVE)
 
     config = Config(
-        backup_folders=[testdata_dir],
+        backup_paths=[testdata_dir],
         repos={"backup": backup_repo, "archive": archive_repo},
     )
 
@@ -33,11 +33,8 @@ def test_core_archive(tmp_path, testdata_dir, borg):
     assert snapshot.repository.name == "archive"
     assert snapshot.name
 
-    # Verify that the archived snapshot contains the expected files/folders
+    # Verify that the archived snapshot contains the expected paths
     contents = list(borg.list_contents(snapshot))
-
-    # assert to_relative_path(some_folder)
-    # assert to_relative_path(some_folder) / "nested.txt" in contents
 
     relative_testdata_dir = relativize(testdata_dir)
 
@@ -59,7 +56,7 @@ def test_core_archive_multiple_repos(tmp_path, testdata_dir, borg):
     archive2_repo = borg.create_repository(repo_parent, "archive2", RepositoryType.ARCHIVE)
 
     config = Config(
-        backup_folders=[testdata_dir],
+        backup_paths=[testdata_dir],
         repos={"archive1": archive1_repo, "archive2": archive2_repo},
     )
 

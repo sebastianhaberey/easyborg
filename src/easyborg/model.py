@@ -37,7 +37,7 @@ class Repository:
 
 @dataclass(frozen=True, slots=True)
 class Config:
-    backup_folders: list[Path]
+    backup_paths: list[Path]
     repos: dict[str, Repository]
     env: dict[str, str] = ()
 

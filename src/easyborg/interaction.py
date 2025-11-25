@@ -93,17 +93,17 @@ def confirm(fzf: Fzf, message: str, *, danger: bool = False) -> bool | None:
     return response[0] == "YES"
 
 
-def select_folders(fzf: Fzf, folders: list[Path]) -> list[Path] | None:
-    ui.info("Select folders")
-    selected_folders = fzf.select_items(
-        folders,
+def select_paths(fzf: Fzf, paths: list[Path]) -> list[Path] | None:
+    ui.info("Select paths")
+    selected_paths = fzf.select_items(
+        paths,
         str,
         multi=True,
     )
 
-    if not selected_folders:
+    if not selected_paths:
         ui.selected(None)
         return None
 
-    ui.selected(selected_folders)
-    return selected_folders
+    ui.selected(selected_paths)
+    return selected_paths

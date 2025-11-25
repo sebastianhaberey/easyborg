@@ -14,7 +14,7 @@ class BackupCommand:
 
     def run(self, *, dry_run: bool = False, tenacious=False) -> None:
         """
-        Create snapshot of all configured folders in each repository configured as 'backup'.
+        Create snapshot of all configured paths in each repository configured as 'backup'.
         """
 
         index = 0
@@ -32,7 +32,7 @@ class BackupCommand:
                 ui.spinner(
                     lambda: self.borg.create_snapshot(
                         snapshot,
-                        self.config.backup_folders,
+                        self.config.backup_paths,
                         dry_run=dry_run,
                         progress=True,
                     ),

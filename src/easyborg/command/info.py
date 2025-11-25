@@ -43,12 +43,12 @@ class InfoCommand:
             rows = [(key, value) for key, value in config.env.items()]
             ui.table(rows, headers=("Variable", "Value"), column_colors=(None, "bold cyan"))
 
-        ui.header("Backup Folders")
-        if config.backup_folders:
-            rows = [(link_path(folder),) for folder in config.backup_folders]
+        ui.header("Backup Paths")
+        if config.backup_paths:
+            rows = [(link_path(path),) for path in config.backup_paths]
             ui.table(rows, column_colors=("bold cyan",))
         else:
-            ui.display("(no backup folders configured)", indent=1)
+            ui.display("(no backup paths configured)", indent=1)
 
         repos = config.repos
 

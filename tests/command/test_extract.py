@@ -25,7 +25,7 @@ def test_core_extract(tmp_path, borg, repo, testdata_dir):
 
     config = Config(
         repos={"repo": repo},
-        backup_folders=[testdata_dir],
+        backup_paths=[testdata_dir],
     )
 
     target_dir = tmp_path / "extract-target"
@@ -38,8 +38,8 @@ def test_core_extract(tmp_path, borg, repo, testdata_dir):
     finally:
         os.chdir(cwd)
 
-    extracted_folder = target_dir / selected_path
-    assert extracted_folder.exists()
-    assert (extracted_folder / "nested.txt").exists()
+    extracted_path = target_dir / selected_path
+    assert extracted_path.exists()
+    assert (extracted_path / "nested.txt").exists()
 
     assert not (target_dir / relativize(testdata_dir) / "file 1.txt").exists()

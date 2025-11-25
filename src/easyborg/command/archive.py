@@ -13,13 +13,13 @@ class ArchiveCommand:
         self.config = config
         self.borg = borg
 
-    def run(self, folder: Path, *, dry_run: bool = False, comment: str | None = None) -> None:
+    def run(self, path: Path, *, dry_run: bool = False, comment: str | None = None) -> None:
         """
-        Create snapshot of specified folder in each repository configured as 'archive'.
+        Create snapshot of specified path in each repository configured as 'archive'.
         """
 
-        if not folder.is_dir():
-            raise RuntimeError(f"Folder does not exist: {folder}")
+        if not path.exists():
+            raise RuntimeError(f"Path does not exist: {path}")
 
         index = 0
         for repo in self.config.repos.values():
@@ -33,7 +33,7 @@ class ArchiveCommand:
 
             ui.info(f"Creating snapshot {snapshot.name} in repository {repo.name}")
             ui.spinner(
-                lambda: self.borg.create_snapshot(snapshot, [folder], dry_run=dry_run, progress=True),
+                lambda: self.borg.create_snapshot(snapshot, [path], dry_run=dry_run, progress=True),
                 message="Creating snapshot",
             )
 
