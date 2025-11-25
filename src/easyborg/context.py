@@ -63,7 +63,7 @@ def _get_config_file(config_dir: Path) -> Path:
 
 
 def _get_config_dir(profile: str) -> Path:
-    return Path(platform_dirs.user_config_dir) / profile
+    return Path(platform_dirs.user_config_dir) / "profiles" / profile
 
 
 def _is_test() -> bool:

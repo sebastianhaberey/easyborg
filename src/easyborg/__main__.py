@@ -7,10 +7,10 @@ from easyborg.cli import cli
 
 
 def main():
-    if "--headless" not in sys.argv:  # quick and dirty check to avoid system mails in headless mode
-        ui.newline()  # needs to be here to appear BEFORE the help texts
+    args = sys.argv[1:]
+    if render_newlines(args):
+        ui.newline()
     try:
-        args = sys.argv[1:]
         easyborg_executable = Path(sys.argv[0])
         cli.main(args, obj={"easyborg_executable": easyborg_executable})
     except Exception as e:
@@ -19,8 +19,18 @@ def main():
         else:
             ui.exception(e)
     finally:
-        ui.newline()
+        if render_newlines(args):
+            ui.newline()
 
 
 if __name__ == "__main__":
     main()
+
+
+def render_newlines(args: list[str]) -> bool:
+    """Quick and dirty hack to evaluate if the two framing newlines should be rendered"""
+    if "--headless" in sys.argv:
+        return False  # don't output anything in headless mode to avoid system mails
+    if "open" in sys.argv and "--help" not in sys.argv:
+        return False  # open command doesn't need newlines (except when it's help)
+    return True
