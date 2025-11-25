@@ -5,6 +5,7 @@
 - error on repository password request / ssh password request
 - auto-completion (CLI)
 - notifications
+- move profiles to dedicated folder
 
 ## Later
 
@@ -13,7 +14,8 @@
 
 # DONE
 
-- install command
+- open command 
+- replace command
 - move commands to their own classes
 - more tests (especially for "delete")
 - allow --headless for backup command only

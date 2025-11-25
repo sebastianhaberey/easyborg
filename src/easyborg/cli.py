@@ -3,7 +3,7 @@ import os
 from pathlib import Path
 
 import cloup
-from click import help_option, pass_obj, version_option
+from click import Choice, help_option, pass_obj, version_option
 from cloup import HelpFormatter, HelpTheme, Section, Style, argument, group, option, pass_context
 
 import easyborg
@@ -14,6 +14,7 @@ from easyborg.command.backup import BackupCommand
 from easyborg.command.delete import DeleteCommand
 from easyborg.command.extract import ExtractCommand
 from easyborg.command.info import InfoCommand
+from easyborg.command.open import OpenCommand
 from easyborg.command.replace import ReplaceCommand
 from easyborg.command.restore import RestoreCommand
 from easyborg.cron import Cron
@@ -30,6 +31,7 @@ CONTEXT_SETTINGS = cloup.Context.settings(
             col1=Style(fg="cyan", bold=True),
         ),
         width=None,
+        max_width=999,  # default is too low (80) and Click will ellipsis long texts anyways
     ),
 )
 
@@ -239,3 +241,16 @@ def disable(obj):
     """Disable scheduled backups"""
     context: Context = obj["context"]
     Cron(context.profile).disable()
+
+
+@cli.command(section=SECTION_UTILITY)
+@help_option(help="Show this message and exit")
+@argument(
+    "target",
+    type=Choice(["log_file", "log_dir", "config_file", "config_dir"], case_sensitive=False),
+)
+@pass_obj
+def open(obj, target: str):
+    """Open easyborg file or folder"""
+    command = OpenCommand(context=obj["context"])
+    command.run(target)

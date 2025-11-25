@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 import filecmp
+import platform
 import secrets
+import subprocess
 from datetime import datetime
 from pathlib import Path
 
@@ -79,3 +81,21 @@ def remove_redundant_paths(paths: list[Path]) -> list[Path]:
         result.append(p)
 
     return result
+
+
+def open_path(target: str | Path) -> None:
+    """Open a file, folder, or URL using the system's default application."""
+    target_str = str(target)
+
+    system = platform.system()
+    if system == "Darwin":
+        cmd = ["open", target_str]
+    elif system == "Linux":
+        cmd = ["xdg-open", target_str]
+    else:
+        raise RuntimeError(f"Unsupported OS: {system}")
+
+    try:
+        subprocess.run(cmd, check=True)
+    except subprocess.CalledProcessError as e:
+        raise FileNotFoundError(f"Failed to open {target_str!r}: {e}") from e
