@@ -18,6 +18,12 @@ class BackupCommand:
         """
 
         index = 0
+
+        backup_paths = self.config.backup_paths
+        if not backup_paths:
+            ui.warn("No backup paths configured")
+            return
+
         for repo in self.config.repos.values():
             if repo.type is not RepositoryType.BACKUP:
                 continue
@@ -32,7 +38,7 @@ class BackupCommand:
                 ui.spinner(
                     lambda: self.borg.create_snapshot(
                         snapshot,
-                        self.config.backup_paths,
+                        backup_paths,
                         dry_run=dry_run,
                         progress=True,
                     ),

@@ -20,6 +20,10 @@ class ReplaceCommand:
         """
 
         backup_paths = self.config.backup_paths
+        if not backup_paths:
+            ui.warn("No backup paths configured")
+            return
+
         cwd = Path.cwd()
 
         matching_paths: list[Path] = []
