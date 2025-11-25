@@ -81,7 +81,6 @@ def confirm(fzf: Fzf, message: str, *, danger: bool = False) -> bool | None:
     if danger:
         ui.info(f"[red][bold]DANGER[/red][/bold] {message}")
     else:
-        colors = ()
         ui.info(message)
 
     response = fzf.select_strings(["NO", "MAYBE", "YES"], danger=danger)
