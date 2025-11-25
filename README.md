@@ -105,10 +105,26 @@ settings by calling _easyborg info_ again.
 Easyborg currently supports six main commands: _backup_, _archive_, _restore_, _extract_, _delete_ and _replace_. Use
 
 ```
-$ easyborg --help
+easyborg --help
 ```
 
 for details on these and some utility commands.
+
+## Shell completion
+
+Generate completion file (zsh):
+
+```
+_EASYBORG_COMPLETE=zsh_source easyborg > ~/.easyborg-complete.zsh
+```
+
+Add to ~/.zshrc:
+
+```
+source ~/.easyborg-complete.zsh
+```
+
+See [Click documentation](click.palletsprojects.com/en/stable/shell-completion/) for bash, fish.
 
 ## Concept
 
