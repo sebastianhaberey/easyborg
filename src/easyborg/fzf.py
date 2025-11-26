@@ -20,7 +20,8 @@ DEFAULT_COLORS = {
     "hl": STYLES[StyleId.PRIMARY],
     "hl+": STYLES[StyleId.PRIMARY],
     "spinner": STYLES[StyleId.PRIMARY],
-    "info": "-1",
+    "info": "-1:regular",
+    "input-fg": "-1:regular",
 }
 
 DANGER_COLORS = {

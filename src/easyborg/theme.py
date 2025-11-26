@@ -140,7 +140,7 @@ class Theme:
 
     @staticmethod
     def ice_light() -> Theme:
-        styles = Theme.ice_light().styles
+        styles = Theme.ice_dark().styles
         styles[StyleId.GRAY] = RichStyle(color="white", bold=False)
         return Theme(styles, type=ThemeType.LIGHT)
 
