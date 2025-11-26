@@ -171,9 +171,9 @@ When you _restore_ or _extract_ the item, it will be written into the current wo
 
 This is a safety feature. If you _do_ want to overwrite the original item, you can:
 
-a] Go to its parent folder (/ in the example) and run the restore action there (not recommended) OR
-b] Delete the original item and move the restored item in its place OR
-c] Use _easyborg replace_ which does b] for you
+* Go to its parent folder (/ in the example) and run the restore action there (not recommended) **OR**
+* Delete the original item and move the restored item in its place **OR**
+* Use _easyborg replace_ which does that for you
 
 ### Glossary
 

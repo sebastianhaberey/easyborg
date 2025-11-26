@@ -4,7 +4,7 @@ from pathlib import Path
 
 import cloup
 from click import Choice, help_option, pass_obj, version_option
-from cloup import HelpFormatter, HelpTheme, Section, Style, argument, group, option, pass_context
+from cloup import HelpFormatter, HelpTheme, Section, argument, group, option, pass_context
 
 import easyborg
 from easyborg import config, log_utils, ui
@@ -20,15 +20,19 @@ from easyborg.command.restore import RestoreCommand
 from easyborg.cron import Cron
 from easyborg.fzf import Fzf
 from easyborg.model import Context
+from easyborg.theme import StyleId, theme
 
 logger = logging.getLogger(__name__)
+
+STYLES = theme().styles_cloup
+
 
 CONTEXT_SETTINGS = cloup.Context.settings(
     formatter_settings=HelpFormatter.settings(
         theme=HelpTheme(
-            invoked_command=Style(fg="magenta", bold=True),
-            heading=Style(fg="yellow", bold=True),
-            col1=Style(fg="cyan", bold=True),
+            invoked_command=STYLES[StyleId.SECONDARY],
+            heading=STYLES[StyleId.HEADER],
+            col1=STYLES[StyleId.PRIMARY],
         ),
         width=None,
         max_width=100,  # default is too low (80), but too high will yield really long help text lines
@@ -47,18 +51,8 @@ DEBUG_MODE: bool = False
 
 
 @group(help="Easyborg – Borg for Dummies", context_settings=CONTEXT_SETTINGS)
-@help_option(
-    "--help",
-    help="Show this page",
-)
+@help_option(help="Show this page")
 @version_option(prog_name="Easyborg", help="Show version information", message="%(prog)s version %(version)s")
-@option(
-    "--light-mode",
-    envvar="EASYBORG_LIGHT_MODE",
-    show_envvar=True,
-    is_flag=True,
-    help="Light-friendly colors",
-)
 @option(
     "--profile",
     "-p",
@@ -100,7 +94,6 @@ def cli(
     headless: bool,
     borg_executable: Path | None,
     fzf_executable: Path | None,
-    light_mode: bool,
 ) -> None:
     # first, set DEBUG_MODE flag to enable stacktraces
     global DEBUG_MODE
@@ -142,7 +135,7 @@ def cli(
     borg = Borg(executable=context.borg_executable)
     ctx.obj["borg"] = borg
 
-    fzf = Fzf(executable=context.fzf_executable, light_mode=light_mode)
+    fzf = Fzf(executable=context.fzf_executable)
     ctx.obj["fzf"] = fzf
 
 
@@ -281,7 +274,7 @@ def disable(obj):
 @help_option(help="Show this message")
 @argument(
     "target",
-    type=Choice(["log_file", "log_dir", "config_file", "config_dir"], case_sensitive=False),
+    type=Choice(["logfile", "logdir", "configfile", "configdir"], case_sensitive=False),
 )
 @pass_obj
 def open(obj, target: str):

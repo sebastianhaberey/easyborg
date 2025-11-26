@@ -15,10 +15,6 @@ class ExtractCommand:
         self.fzf = fzf
 
     def run(self, *, dry_run: bool = False) -> None:
-        """
-        Interactively extract selected items from snapshot.
-        """
-
         repo = select_repo(self.fzf, self.config)
         if not repo:
             ui.abort()

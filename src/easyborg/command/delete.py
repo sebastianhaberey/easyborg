@@ -13,10 +13,6 @@ class DeleteCommand:
         self.fzf = fzf
 
     def run(self, *, dry_run: bool = False) -> None:
-        """
-        Interactively delete entire snapshot.
-        """
-
         repo = select_repo(self.fzf, self.config)
         if not repo:
             ui.abort()

@@ -13,10 +13,6 @@ class BackupCommand:
         self.borg = borg
 
     def run(self, *, dry_run: bool = False, tenacious=False) -> None:
-        """
-        Create snapshot of all configured paths in each repository configured as 'backup'.
-        """
-
         index = 0
 
         backup_paths = self.config.backup_paths

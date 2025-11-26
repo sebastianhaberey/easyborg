@@ -15,10 +15,6 @@ class RestoreCommand:
         self.fzf = fzf
 
     def run(self, *, dry_run: bool = False) -> None:
-        """
-        Interactively restore entire snapshot.
-        """
-
         repo = select_repo(self.fzf, self.config)
         if not repo:
             ui.abort()

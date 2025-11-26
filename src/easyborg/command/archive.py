@@ -14,10 +14,6 @@ class ArchiveCommand:
         self.borg = borg
 
     def run(self, path: Path, *, dry_run: bool = False, comment: str | None = None) -> None:
-        """
-        Create snapshot of specified path in each repository configured as 'archive'.
-        """
-
         if not path.exists():
             raise RuntimeError(f"Path does not exist: {path}")
 

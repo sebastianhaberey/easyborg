@@ -15,10 +15,6 @@ class ReplaceCommand:
         self.fzf = fzf
 
     def run(self, *, dry_run: bool = False) -> None:
-        """
-        Replace configured paths with the versions located in the current working directory.
-        """
-
         backup_paths = self.config.backup_paths
         if not backup_paths:
             ui.warn("No backup paths configured")

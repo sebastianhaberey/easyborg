@@ -78,10 +78,7 @@ def select_items(borg: Borg, fzf: Fzf, snapshot: Snapshot) -> list[Path] | None:
 
 
 def confirm(fzf: Fzf, message: str, *, danger: bool = False) -> bool | None:
-    if danger:
-        ui.info(f"[red][bold]DANGER[/red][/bold] {message}")
-    else:
-        ui.info(message)
+    ui.display(message, danger=danger)
 
     response = fzf.select_strings(["NO", "MAYBE", "YES"], danger=danger)
 

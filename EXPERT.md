@@ -25,3 +25,13 @@ As usual, running `easyborg info` with a profile will generate a configuration f
 easyborg --profile=production info
 ```
 
+## Themes
+
+Set a theme:
+
+```
+$ EASYBORG_THEME=ice_dark
+$ easyborg info
+```
+
+Available themes: default_dark, default_light, ice_dark, ice_light

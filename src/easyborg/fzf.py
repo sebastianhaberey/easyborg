@@ -5,45 +5,30 @@ from pathlib import Path
 from typing import TypeVar
 
 from easyborg.process import ProcessError, assert_executable_valid, run_async
+from easyborg.theme import StyleId, ThemeType, theme
+
+STYLES = theme().styles_fzf
 
 logger = logging.getLogger(__name__)
 
 T = TypeVar("T")
 
-DEFAULT_LIGHT_COLORS = {
-    "prompt": "cyan:bold",
-    "marker": "cyan",
-    "pointer": "cyan",
-    "hl": "cyan",
-    "hl+": "cyan",
-    "spinner": "cyan",
+DEFAULT_COLORS = {
+    "prompt": STYLES[StyleId.PRIMARY],
+    "marker": STYLES[StyleId.PRIMARY],
+    "pointer": STYLES[StyleId.PRIMARY],
+    "hl": STYLES[StyleId.PRIMARY],
+    "hl+": STYLES[StyleId.PRIMARY],
+    "spinner": STYLES[StyleId.PRIMARY],
     "info": "-1",
 }
 
-DANGER_LIGHT_COLORS = {
-    "prompt": "red",
-    "marker": "red",
-    "pointer": "red",
-    "hl": "red",
-    "hl+": "red",
-}
-
-DEFAULT_DARK_COLORS = {
-    "prompt": "cyan:bold",
-    "marker": "bright-cyan",
-    "pointer": "cyan",
-    "hl": "cyan",
-    "hl+": "bright-cyan",
-    "spinner": "bright-cyan",
-    "info": "-1:bold",
-}
-
-DANGER_DARK_COLORS = {
-    "prompt": "red",
-    "marker": "red",
-    "pointer": "red",
-    "hl": "red",
-    "hl+": "red",
+DANGER_COLORS = {
+    "prompt": STYLES[StyleId.DANGER],
+    "marker": STYLES[StyleId.DANGER],
+    "pointer": STYLES[StyleId.DANGER],
+    "hl": STYLES[StyleId.DANGER],
+    "hl+": STYLES[StyleId.DANGER],
 }
 
 
@@ -53,11 +38,10 @@ class SortOrder(str, Enum):
 
 
 class Fzf:
-    def __init__(self, executable: Path, *, light_mode: bool = False) -> None:
+    def __init__(self, executable: Path) -> None:
         """
         Initialize an Fzf instance.
         """
-        self.light_mode = light_mode
         logger.debug("Initializing fzf (executable: '%s')", executable)
         assert_executable_valid(executable)
         self.executable_path = executable
@@ -112,7 +96,7 @@ class Fzf:
         cmd.append("--prompt=➜ ")
         cmd.append("--height=~90%")  # grow according to content, but max. 90% of terminal height
         cmd.append("--cycle")
-        cmd.append(f"--color={_colors(self.light_mode, danger)}")
+        cmd.append(f"--color={_colors(theme().type, danger)}")
         cmd.append("--margin=0,0,0,0")
         cmd.append("--info=right")
         cmd.append("--no-separator")
@@ -134,16 +118,10 @@ class Fzf:
             raise
 
 
-def _colors(light_mode: bool, danger: bool) -> str:
-    if light_mode:
-        mode = "light"
-        colors = DEFAULT_LIGHT_COLORS
-        if danger:
-            colors |= DANGER_LIGHT_COLORS
-    else:
-        mode = "dark"
-        colors = DEFAULT_DARK_COLORS
-        if danger:
-            colors |= DANGER_DARK_COLORS
+def _colors(theme_type: ThemeType, danger: bool) -> str:
+    mode = "light" if theme_type == ThemeType.LIGHT else "dark"
+    colors = DEFAULT_COLORS
+    if danger:
+        colors |= DANGER_COLORS
 
     return f"{mode}," + ",".join(f"{k}:{v}" for k, v in colors.items())

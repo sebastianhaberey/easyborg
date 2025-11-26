@@ -1,6 +1,9 @@
 from easyborg import ui
 from easyborg.model import Config, Context
+from easyborg.theme import StyleId, theme
 from easyborg.ui import link_path, render_dict
+
+STYLES = theme().styles
 
 
 class InfoCommand:
@@ -9,10 +12,6 @@ class InfoCommand:
         self.config = config
 
     def run(self, context: Context) -> None:
-        """
-        Display configuration details.
-        """
-
         rows = [
             ("Configuration dir", link_path(context.config_dir)),
             ("Configuration file", link_path(context.config_file)),
@@ -36,7 +35,7 @@ class InfoCommand:
         ui.header("Configuration", first=True)
         ui.table(
             rows,
-            column_colors=("cyan bold", None),
+            column_colors=(STYLES[StyleId.PRIMARY], None),
         )
 
         config = self.config
@@ -46,7 +45,7 @@ class InfoCommand:
             rows = [(key, value) for key, value in config.env.items()]
             ui.table(
                 rows,
-                column_colors=("cyan bold", None),
+                column_colors=(STYLES[StyleId.PRIMARY], None),
             )
 
         ui.header("Backup Paths")
@@ -54,7 +53,7 @@ class InfoCommand:
             rows = [(link_path(path),) for path in config.backup_paths]
             ui.table(
                 rows,
-                column_colors=("cyan bold",),
+                column_colors=(STYLES[StyleId.PRIMARY], None),
             )
         else:
             ui.display("(no backup paths configured)", indent=1)
@@ -66,7 +65,7 @@ class InfoCommand:
             rows = [(repo.name, repo.url, repo.type.value) for repo in repos.values()]
             ui.table(
                 rows,
-                column_colors=("cyan bold", None, "magenta bold"),
+                column_colors=(STYLES[StyleId.PRIMARY], None, STYLES[StyleId.SECONDARY]),
             )
         else:
             ui.display("(no repositories configured)", indent=1)
@@ -76,5 +75,5 @@ class InfoCommand:
             rows = [(repo.name, render_dict(repo.env, separator="\n")) for repo in repos.values()]
             ui.table(
                 rows,
-                column_colors=("cyan bold", None),
+                column_colors=(STYLES[StyleId.PRIMARY], None),
             )
