@@ -27,11 +27,10 @@ easyborg --profile=production info
 
 ## Themes
 
-Set a theme:
+Set a theme via environment variable:
 
 ```
-$ EASYBORG_THEME=ice_dark
-$ easyborg info
+export EASYBORG_THEME=ice_dark
 ```
 
 Available themes: default_dark, default_light, ice_dark, ice_light
