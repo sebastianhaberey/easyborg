@@ -20,6 +20,13 @@ class StyleId(Enum):
     GRAY = "gray"
 
 
+class SymbolId(Enum):
+    PROMPT = "prompt"
+    POINTER = "pointer"
+    MARKER = "marker"
+    DANGER = "danger"
+
+
 class ThemeType(Enum):
     DARK = "dark"
     LIGHT = "light"
@@ -97,12 +104,14 @@ def rich_to_cloup(style: RichStyle) -> CloupStyle:
 class Theme:
     """Rich-based theme, with automatic export to cloup and fzf formats."""
 
-    styles: dict[StyleId, RichStyle]
     type: ThemeType
+    styles: dict[StyleId, RichStyle]
+    symbols: dict[SymbolId, str]
 
     @staticmethod
-    def default_dark() -> Theme:
+    def melody_dark() -> Theme:
         return Theme(
+            type=ThemeType.DARK,
             styles={
                 StyleId.PRIMARY: RichStyle(color="cyan", bold=True),
                 StyleId.SECONDARY: RichStyle(color="magenta", bold=True),
@@ -113,18 +122,27 @@ class Theme:
                 StyleId.HEADER: RichStyle(color="yellow", bold=True),
                 StyleId.GRAY: RichStyle(color="black", bold=True),
             },
-            type=ThemeType.DARK,
+            symbols={
+                SymbolId.PROMPT: "➜ ",
+                SymbolId.POINTER: "▌",
+                SymbolId.MARKER: "█ ",
+                SymbolId.DANGER: "DANGER ",
+            },
         )
 
     @staticmethod
-    def default_light() -> Theme:
-        styles = Theme.default_dark().styles
-        styles[StyleId.GRAY] = RichStyle(color="white", bold=False)
-        return Theme(styles, type=ThemeType.LIGHT)
+    def melody_light() -> Theme:
+        dark = Theme.melody_dark()
+        return Theme(
+            type=ThemeType.LIGHT,
+            styles=dark.styles | {StyleId.GRAY: RichStyle(color="white", bold=False)},
+            symbols=dark.symbols,
+        )
 
     @staticmethod
     def ice_dark() -> Theme:
         return Theme(
+            type=ThemeType.DARK,
             styles={
                 StyleId.PRIMARY: RichStyle(color="cyan", bold=True),
                 StyleId.SECONDARY: RichStyle(color="cyan", bold=False),
@@ -135,22 +153,30 @@ class Theme:
                 StyleId.HEADER: RichStyle(color="white", bold=True),
                 StyleId.GRAY: RichStyle(color="black", bold=True),
             },
-            type=ThemeType.DARK,
+            symbols={
+                SymbolId.PROMPT: "➜ ",
+                SymbolId.POINTER: "▌",
+                SymbolId.MARKER: "█ ",
+                SymbolId.DANGER: "DANGER ",
+            },
         )
 
     @staticmethod
     def ice_light() -> Theme:
-        styles = Theme.ice_dark().styles
-        styles[StyleId.GRAY] = RichStyle(color="white", bold=False)
-        return Theme(styles, type=ThemeType.LIGHT)
+        dark = Theme.ice_dark()
+        return Theme(
+            type=ThemeType.LIGHT,
+            styles=dark.styles | {StyleId.GRAY: RichStyle(color="white", bold=False)},
+            symbols=dark.symbols,
+        )
 
     @staticmethod
     def from_name(name: str) -> Theme:
         name = name.lower().strip()
-        if name == "default_dark":
-            return Theme.default_dark()
-        if name == "default_light":
-            return Theme.default_light()
+        if name == "melody_dark":
+            return Theme.melody_dark()
+        if name == "melody_light":
+            return Theme.melody_light()
         if name == "ice_dark":
             return Theme.ice_dark()
         if name == "ice_light":
@@ -169,7 +195,7 @@ class Theme:
 
 
 def _initialize_theme() -> Theme:
-    return Theme.from_name(os.getenv("EASYBORG_THEME", "default_dark"))
+    return Theme.from_name(os.getenv("EASYBORG_THEME", "melody_dark"))
 
 
 _THEME = _initialize_theme()

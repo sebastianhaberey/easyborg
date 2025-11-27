@@ -18,9 +18,10 @@ from rich.table import Table
 from rich.theme import Theme
 
 from easyborg.model import ProgressEvent
-from easyborg.theme import StyleId, theme
+from easyborg.theme import StyleId, SymbolId, theme
 
 STYLES = theme().styles
+SYMBOLS = theme().symbols
 
 INDENT_SIZE = 2
 
@@ -45,8 +46,8 @@ console = Console(highlight=False, theme=console_theme)
 
 def info(msg: str, danger: bool = False) -> None:
     if danger:
-        console.print("DANGER", style=STYLES[StyleId.DANGER], end="")
-        console.print(" ", str(msg))
+        console.print(SYMBOLS[SymbolId.DANGER], style=STYLES[StyleId.DANGER], end="")
+        console.print(str(msg))
     else:
         console.print(msg)
     logger.info(msg)
@@ -96,11 +97,11 @@ def selected(value: Any, danger: bool = False) -> None:
         value = [value]
     for item in value:
         if danger:
-            console.print("➜", style=STYLES[StyleId.DANGER], end="")
-            console.print(" ", str(item))
+            console.print(SYMBOLS[SymbolId.PROMPT], style=STYLES[StyleId.DANGER], end="")
+            console.print(str(item))
         else:
-            console.print("➜", style=STYLES[StyleId.PRIMARY], end="")
-            console.print(" ", str(item))
+            console.print(SYMBOLS[SymbolId.PROMPT], style=STYLES[StyleId.PRIMARY], end="")
+            console.print(str(item))
 
 
 def abort() -> None:
@@ -118,7 +119,7 @@ def newline(count: int = 1) -> None:
 def display(msg: str, *, indent: int = 0, style: StyleType = None, danger: bool = False) -> None:
     console.print(" " * indent * INDENT_SIZE, end="")
     if danger:
-        console.print("DANGER ", style=STYLES[StyleId.DANGER], end="")
+        console.print(SYMBOLS[SymbolId.DANGER], style=STYLES[StyleId.DANGER], end="")
     console.print(msg, style=style)
 
 

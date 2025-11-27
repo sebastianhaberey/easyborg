@@ -33,4 +33,4 @@ Set a theme via environment variable:
 export EASYBORG_THEME=ice_dark
 ```
 
-Available themes: default_dark, default_light, ice_dark, ice_light
+Available themes: melody_dark (default), melody_light, ice_dark, ice_light

@@ -5,9 +5,10 @@ from pathlib import Path
 from typing import TypeVar
 
 from easyborg.process import ProcessError, assert_executable_valid, run_async
-from easyborg.theme import StyleId, ThemeType, theme
+from easyborg.theme import StyleId, SymbolId, ThemeType, theme
 
 STYLES = theme().styles_fzf
+SYMBOLS = theme().symbols
 
 logger = logging.getLogger(__name__)
 
@@ -94,7 +95,8 @@ class Fzf:
         cmd = [str(self.executable_path)]
         if multi:
             cmd.append("--multi")
-        cmd.append("--prompt=➜ ")
+        cmd.append(f"--prompt={SYMBOLS[SymbolId.PROMPT]}")
+        cmd.append(f"--pointer={SYMBOLS[SymbolId.POINTER]}")
         cmd.append("--height=~90%")  # grow according to content, but max. 90% of terminal height
         cmd.append("--cycle")
         cmd.append(f"--color={_colors(theme().type, danger)}")
@@ -102,12 +104,13 @@ class Fzf:
         cmd.append("--info=right")
         cmd.append("--no-separator")
         cmd.append("--reverse")
+        cmd.append("--no-mouse")
         if show_info:
             cmd.append("--info=inline-right")
         else:
             cmd.append("--no-info")
         if multi:
-            cmd.append("--marker=█ ")
+            cmd.append(f"--marker={SYMBOLS[SymbolId.MARKER]}")
         else:
             cmd.append("--marker=")
 

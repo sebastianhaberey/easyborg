@@ -23,14 +23,14 @@ def main():
             ui.newline()
 
 
-if __name__ == "__main__":
-    main()
-
-
 def render_newlines(args: list[str]) -> bool:
     """Quick and dirty hack to evaluate if the two framing newlines should be rendered"""
-    if "--headless" in sys.argv:
+    if "--headless" in args:
         return False  # don't output anything in headless mode to avoid system mails
-    if "open" in sys.argv and "--help" not in sys.argv:
+    if "open" in args and "--help" not in args:
         return False  # open command doesn't need newlines (except when it's help)
     return True
+
+
+if __name__ == "__main__":
+    main()
