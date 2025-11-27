@@ -1,3 +1,4 @@
+# easyborg/theme.py
 from __future__ import annotations
 
 import os
@@ -53,59 +54,91 @@ _RICH_TO_FZF_COLORS = {
     "bright_white": "bright-white",
 }
 
+VALID_COLORS = set(_RICH_TO_FZF_COLORS.keys())
 
-def rich_to_fzf(style: RichStyle) -> str:
-    """Convert a Rich style to an fzf style string."""
-    parts: list[str] = []
-
-    if style.color:
-        name = style.color.name
-        if name in _RICH_TO_FZF_COLORS:
-            parts.append(_RICH_TO_FZF_COLORS[name])
-
-    if style.bold:
-        parts.append("bold")
-    if style.italic:
-        parts.append("italic")
-    if style.underline:
-        parts.append("underline")
-    if style.strike:
-        parts.append("strikethrough")
-    if style.dim:
-        parts.append("dim")
-    if style.reverse:
-        parts.append("reverse")
-
-    return ":".join(parts)
+VALID_ATTRS = {
+    "bold",
+    "italic",
+    "underline",
+    "reverse",
+    "dim",
+    "strikethrough",
+}
 
 
-def rich_to_cloup(style: RichStyle) -> CloupStyle:
-    """Convert a Rich style to a Cloup (Click-compatible) style."""
+def parse_style_string(s: str):
+    """
+    Parse a style string like "cyan bold underline" into (color_name, attributes_set)
+    """
+    parts = s.lower().split()
+    color = None
+    attrs = set()
+
+    for p in parts:
+        if p in VALID_COLORS:
+            color = p
+        elif p in VALID_ATTRS:
+            attrs.add(p)
+        else:
+            raise ValueError(f"Unknown style token: {p}")
+
+    return color, attrs
+
+
+def string_to_rich(s: str) -> RichStyle:
+    color, attrs = parse_style_string(s)
+    return RichStyle(
+        color=color,
+        bold="bold" in attrs,
+        italic="italic" in attrs,
+        underline="underline" in attrs,
+        dim="dim" in attrs,
+        reverse="reverse" in attrs,
+        strike="strikethrough" in attrs,
+    )
+
+
+def string_to_cloup(s: str) -> CloupStyle:
+    color, attrs = parse_style_string(s)
+
     kwargs = {}
 
-    if style.color:
-        name = style.color.name
-        if name.startswith("bright_"):
-            kwargs["fg"] = "bright-" + name.split("_", 1)[1]
+    if color:
+        if color.startswith("bright_"):
+            kwargs["fg"] = "bright-" + color.split("_", 1)[1]
         else:
-            kwargs["fg"] = name
+            kwargs["fg"] = color
 
-    kwargs["bold"] = bool(style.bold)
-    # kwargs["dim"] = bool(style.dim)
-    kwargs["italic"] = bool(style.italic)
-    kwargs["underline"] = bool(style.underline)
-    kwargs["strikethrough"] = bool(style.strike)
-    kwargs["reverse"] = bool(style.reverse)
+    kwargs["bold"] = "bold" in attrs
+    kwargs["italic"] = "italic" in attrs
+    kwargs["underline"] = "underline" in attrs
+    kwargs["strikethrough"] = "strikethrough" in attrs
+    kwargs["reverse"] = "reverse" in attrs
+    # Click/Cloup does not support "dim"
 
     return CloupStyle(**kwargs)
 
 
+def string_to_fzf(s: str) -> str:
+    color, attrs = parse_style_string(s)
+    parts = []
+
+    if color:
+        parts.append(_RICH_TO_FZF_COLORS[color])
+
+    for a in attrs:
+        if a == "strikethrough":
+            parts.append("strikethrough")
+        else:
+            parts.append(a)
+
+    return ":".join(parts)
+
+
 @dataclass(frozen=True)
 class Theme:
-    """Rich-based theme, with automatic export to cloup and fzf formats."""
-
     type: ThemeType
-    styles: dict[StyleId, RichStyle]
+    styles: dict[StyleId, str]
     symbols: dict[SymbolId, str]
 
     @staticmethod
@@ -113,14 +146,14 @@ class Theme:
         return Theme(
             type=ThemeType.DARK,
             styles={
-                StyleId.PRIMARY: RichStyle(color="cyan", bold=True),
-                StyleId.SECONDARY: RichStyle(color="magenta", bold=True),
-                StyleId.SUCCESS: RichStyle(color="green", bold=True),
-                StyleId.WARNING: RichStyle(color="yellow", bold=True),
-                StyleId.ERROR: RichStyle(color="red", bold=True),
-                StyleId.DANGER: RichStyle(color="red", bold=True),
-                StyleId.HEADER: RichStyle(color="yellow", bold=True),
-                StyleId.GRAY: RichStyle(color="black", bold=True),
+                StyleId.PRIMARY: "cyan bold",
+                StyleId.SECONDARY: "magenta bold",
+                StyleId.SUCCESS: "green bold",
+                StyleId.WARNING: "yellow bold",
+                StyleId.ERROR: "red bold",
+                StyleId.DANGER: "red bold",
+                StyleId.HEADER: "yellow bold",
+                StyleId.GRAY: "black",
             },
             symbols={
                 SymbolId.PROMPT: "➜ ",
@@ -135,7 +168,7 @@ class Theme:
         dark = Theme.melody_dark()
         return Theme(
             type=ThemeType.LIGHT,
-            styles=dark.styles | {StyleId.GRAY: RichStyle(color="white", bold=False)},
+            styles=dark.styles | {StyleId.GRAY: "white"},
             symbols=dark.symbols,
         )
 
@@ -144,14 +177,14 @@ class Theme:
         return Theme(
             type=ThemeType.DARK,
             styles={
-                StyleId.PRIMARY: RichStyle(color="cyan", bold=True),
-                StyleId.SECONDARY: RichStyle(color="cyan", bold=False),
-                StyleId.SUCCESS: RichStyle(color="green", bold=True),
-                StyleId.WARNING: RichStyle(color="yellow", bold=True),
-                StyleId.ERROR: RichStyle(color="red", bold=True),
-                StyleId.DANGER: RichStyle(color="red", bold=True),
-                StyleId.HEADER: RichStyle(color="white", bold=True),
-                StyleId.GRAY: RichStyle(color="black", bold=True),
+                StyleId.PRIMARY: "cyan bold",
+                StyleId.SECONDARY: "cyan",
+                StyleId.SUCCESS: "green bold",
+                StyleId.WARNING: "yellow bold",
+                StyleId.ERROR: "red bold",
+                StyleId.DANGER: "red bold",
+                StyleId.HEADER: "white bold",
+                StyleId.GRAY: "black",
             },
             symbols={
                 SymbolId.PROMPT: "➜ ",
@@ -166,7 +199,7 @@ class Theme:
         dark = Theme.ice_dark()
         return Theme(
             type=ThemeType.LIGHT,
-            styles=dark.styles | {StyleId.GRAY: RichStyle(color="white", bold=False)},
+            styles=dark.styles | {StyleId.GRAY: "white"},
             symbols=dark.symbols,
         )
 
@@ -183,26 +216,32 @@ class Theme:
             return Theme.ice_light()
         raise ValueError(f"Unknown theme: {name}")
 
-    # --- Lazy conversion properties ---------------------------------------------
+    # ------------------------------------------------------------------
+    # Lazy conversions
+    # ------------------------------------------------------------------
+
+    @cached_property
+    def styles_rich(self) -> dict[StyleId, RichStyle]:
+        return {sid: string_to_rich(s) for sid, s in self.styles.items()}
 
     @cached_property
     def styles_cloup(self) -> dict[StyleId, CloupStyle]:
-        return {sid: rich_to_cloup(style) for sid, style in self.styles.items()}
+        return {sid: string_to_cloup(s) for sid, s in self.styles.items()}
 
     @cached_property
     def styles_fzf(self) -> dict[StyleId, str]:
-        return {sid: rich_to_fzf(style) for sid, style in self.styles.items()}
+        return {sid: string_to_fzf(s) for sid, s in self.styles.items()}
 
 
 def _initialize_theme() -> Theme:
-    return Theme.from_name(os.getenv("EASYBORG_THEME", "melody_dark"))
+    name = os.getenv("EASYBORG_THEME", "melody_dark")
+    return Theme.from_name(name)
 
 
 _THEME = _initialize_theme()
 
 
 def theme() -> Theme:
-    """Get the global Theme instance."""
     if _THEME is None:
         raise RuntimeError("Theme not initialized")
     return _THEME
