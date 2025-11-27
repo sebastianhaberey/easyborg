@@ -161,7 +161,11 @@ def backup(obj, dry_run: bool, tenacious: bool):
 
 @cli.command(section=SECTION_MAIN)
 @argument("path", type=cloup.Path(path_type=Path, exists=True), help="Path to backup")
-@option("--comment", help="Add comment to the created snapshot")
+@option(
+    "--comment",
+    "-c",
+    help="Add comment to the created snapshot",
+)
 @option("--dry-run", is_flag=True, help="Do not modify data")
 @help_option(help="Show this message")
 @pass_obj
