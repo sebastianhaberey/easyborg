@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.14.1] - 2025-11-27
+
+## Added
+
+- Added test for replace command
+
+## Changed
+
+- Themes now contain the symbols used in the UI
+- Changed theme names
+
+## Fixed
+
+- Fixed theme "ice_light"
+- Fixed fzf query color in light themes
+
 ## [0.14.0] - 2025-11-26
 
 ## Added
