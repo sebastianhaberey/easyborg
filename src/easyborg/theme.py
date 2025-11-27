@@ -124,8 +124,8 @@ class Theme:
             },
             symbols={
                 SymbolId.PROMPT: "➜ ",
-                SymbolId.POINTER: "▌",
-                SymbolId.MARKER: "█ ",
+                SymbolId.POINTER: "▏",
+                SymbolId.MARKER: "✔ ",
                 SymbolId.DANGER: "DANGER ",
             },
         )
@@ -156,7 +156,7 @@ class Theme:
             symbols={
                 SymbolId.PROMPT: "➜ ",
                 SymbolId.POINTER: "▌",
-                SymbolId.MARKER: "█ ",
+                SymbolId.MARKER: "➜ ",
                 SymbolId.DANGER: "DANGER ",
             },
         )
