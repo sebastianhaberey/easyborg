@@ -7,7 +7,7 @@ from easyborg.util import relativize
 from tests.helpers.fakes import FakeFzf
 
 
-def test_core_restore(tmp_path, borg, repo, testdata_dir):
+def test_restore_command(tmp_path, borg, repo, testdata_dir):
     """
     End-to-end: Core.restore() restores snapshot from repository.
     """

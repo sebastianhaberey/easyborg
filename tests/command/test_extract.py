@@ -7,7 +7,7 @@ from easyborg.util import relativize
 from tests.helpers.fakes import FakeFzf
 
 
-def test_core_extract(tmp_path, borg, repo, testdata_dir):
+def test_extract_command(tmp_path, borg, repo, testdata_dir):
     """
     End-to-end: Core.extract() extracts selected items (not the full snapshot).
     """

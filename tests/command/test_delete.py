@@ -3,7 +3,7 @@ from easyborg.model import Config, Snapshot
 from tests.helpers.fakes import FakeFzf
 
 
-def test_core_backup(tmp_path, borg, repo, testdata_dir):
+def test_delete_command(tmp_path, borg, repo, testdata_dir):
     """
     End-to-end: Core.delete() removes snapshot from repository.
     """

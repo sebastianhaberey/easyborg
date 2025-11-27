@@ -6,7 +6,7 @@ from easyborg.model import Config, Repository, RepositoryType
 from easyborg.util import relativize
 
 
-def test_core_backup(tmp_path, testdata_dir, borg):
+def test_backup_command(tmp_path, testdata_dir, borg):
     """
     End-to-end: Core.backup() creates snapshot in backup repository.
     """
@@ -44,7 +44,7 @@ def test_core_backup(tmp_path, testdata_dir, borg):
     assert relative_testdata_dir / "some folder" in contents
 
 
-def test_core_backup_multiple_repos(tmp_path, testdata_dir, borg):
+def test_backup_command_multiple_repos(tmp_path, testdata_dir, borg):
     """
     End-to-end: Core.backup() creates snapshot in in multiple backup repositories.
     """
@@ -69,7 +69,7 @@ def test_core_backup_multiple_repos(tmp_path, testdata_dir, borg):
     assert len(snapshots) == 1
 
 
-def test_core_backup_tenacious_mode(tmp_path, testdata_dir):
+def test_backup_command_tenacious_mode(tmp_path, testdata_dir):
     """
     Tenacious mode: backup to first repo fails, backup to second repo succeeds.
     """

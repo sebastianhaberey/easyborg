@@ -3,7 +3,7 @@ from easyborg.model import Config, RepositoryType
 from easyborg.util import relativize
 
 
-def test_core_archive(tmp_path, testdata_dir, borg):
+def test_archive_command(tmp_path, testdata_dir, borg):
     """
     End-to-end: Core.archive() creates snapshot in archive repository.
     """
@@ -44,7 +44,7 @@ def test_core_archive(tmp_path, testdata_dir, borg):
     assert relative_testdata_dir / "file 2.txt" not in contents
 
 
-def test_core_archive_multiple_repos(tmp_path, testdata_dir, borg):
+def test_archive_command_multiple_repos(tmp_path, testdata_dir, borg):
     """
     End-to-end: Core.archive() creates snapshot in multiple archive repositories.
     """
