@@ -12,8 +12,8 @@ from easyborg.borg import Borg
 from easyborg.command.archive import ArchiveCommand
 from easyborg.command.backup import BackupCommand
 from easyborg.command.delete import DeleteCommand
+from easyborg.command.doctor import DoctorCommand
 from easyborg.command.extract import ExtractCommand
-from easyborg.command.info import InfoCommand
 from easyborg.command.open import OpenCommand
 from easyborg.command.replace import ReplaceCommand
 from easyborg.command.restore import RestoreCommand
@@ -238,11 +238,11 @@ def replace(obj, dry_run: bool):
 @cli.command(section=SECTION_UTILITY)
 @help_option(help="Show this message")
 @pass_obj
-def info(obj):
+def doctor(obj):
     """
-    Show current configuration
+    Show current configuration, paths etc.
     """
-    command = InfoCommand(config=obj["config"])
+    command = DoctorCommand(config=obj["config"])
     command.run(obj["context"])
 
 

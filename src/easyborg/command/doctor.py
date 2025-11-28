@@ -6,7 +6,7 @@ from easyborg.ui import link_path, render_dict
 STYLES = theme().styles
 
 
-class InfoCommand:
+class DoctorCommand:
     def __init__(self, *, config: Config) -> None:
         super().__init__()
         self.config = config

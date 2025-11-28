@@ -21,19 +21,6 @@ class Borg:
         assert_executable_valid(executable)
         self.executable = executable
 
-    def repository_accessible(self, repo: Repository) -> bool:
-        """
-        Return True if the repository exists and is accessible.
-        """
-        try:
-            cmd = [str(self.executable), "info"]
-            cmd.append(repo.url)
-
-            run_sync(cmd, env=repo.env)
-            return True
-        except RuntimeError:
-            return False
-
     def snapshot_exists(self, snap: Snapshot) -> bool:
         """
         Return True if the snapshot exists.

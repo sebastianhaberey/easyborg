@@ -29,7 +29,7 @@ python -m build
 pip install dist/easyborg-0.9.1rc2-py3-none-any.whl
 
 # Run
-easyborg info
+easyborg doctor
 
 # Uninstall 
 pip uninstall -y easyborg
@@ -45,7 +45,7 @@ twine upload --repository testpypi dist/*
 pip install --index-url https://test.pypi.org/simple --extra-index-url https://pypi.org/simple easyborg==0.9.1rc2
 
 # Run
-easyborg info
+easyborg doctor
 
 # Uninstall
 pip uninstall -y easyborg

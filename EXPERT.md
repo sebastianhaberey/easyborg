@@ -19,10 +19,10 @@ See [Click documentation](click.palletsprojects.com/en/stable/shell-completion/)
 ## Profiles
 
 You can specify a profile under which Easyborg will run. If you don't specify a profile, the profile is "default".
-As usual, running `easyborg info` with a profile will generate a configuration file:
+As usual, running `easyborg doctor` with a profile will show the path to the configuration file:
 
 ```
-easyborg --profile=production info
+easyborg --profile=production doctor
 ```
 
 ## Themes

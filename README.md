@@ -79,26 +79,23 @@ type = "backup"
 url = "/Volumes/HD/backup"
 ```
 
-Call _easyborg info_ to generate a quickstart configuration file with a bunch of other settings for demonstration.
-The path to the new configuration file will be listed in the output:
+Call _easyborg doctor_ to show the path to the configuration file:
 
 ```
-$ easyborg info
+$ easyborg doctor
 
 Configuration:
-
-  Config dir    /Users/user/Library/Application Support/easyborg/default
-  Config file   /Users/user/Library/Application Support/easyborg/default/easyborg.toml
-  Log dir       /Users/user/Library/Logs/easyborg/default
-  Log file      /Users/user/Library/Logs/easyborg/default/easyborg.log
-  Log level     INFO
+  Configuration dir        /Users/example/Library/Application Support/easyborg/profiles/default
+  Configuration file       /Users/example/Library/Application Support/easyborg/profiles/default/easyborg.toml
+  Log dir                  /Users/example/Library/Logs/easyborg/default
+  Log file                 /Users/example/Library/Logs/easyborg/default/easyborg.log
   
 ...
 ```
 
 If you're on a modern terminal, you may be able to click on a path to open it (Ctrl + click on iTerm2).
 Open the configuration file, keep and change the settings you like, delete those that you don't need. Verify your
-settings by calling _easyborg info_ again.
+settings by calling _easyborg doctor_ again.
 
 ## Usage
 

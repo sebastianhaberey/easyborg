@@ -95,4 +95,4 @@ jobs:
           eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
           which easyborg
           easyborg --version
-          easyborg info
+          easyborg doctor
