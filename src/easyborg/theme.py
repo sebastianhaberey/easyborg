@@ -153,7 +153,7 @@ class Theme:
                 StyleId.ERROR: "red bold",
                 StyleId.DANGER: "red bold",
                 StyleId.HEADER: "yellow bold",
-                StyleId.GRAY: "black",
+                StyleId.GRAY: "black bold",
             },
             symbols={
                 SymbolId.PROMPT: "➜ ",
@@ -184,7 +184,7 @@ class Theme:
                 StyleId.ERROR: "red bold",
                 StyleId.DANGER: "red bold",
                 StyleId.HEADER: "white bold",
-                StyleId.GRAY: "black",
+                StyleId.GRAY: "black bold",
             },
             symbols={
                 SymbolId.PROMPT: "➜ ",
