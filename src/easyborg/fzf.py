@@ -97,6 +97,7 @@ class Fzf:
             cmd.append("--multi")
         cmd.append(f"--prompt={SYMBOLS[SymbolId.PROMPT]}")
         cmd.append(f"--pointer={SYMBOLS[SymbolId.POINTER]}")
+        cmd.append(f"--gutter={SYMBOLS[SymbolId.POINTER]}")
         cmd.append("--height=~90%")  # grow according to content, but max. 90% of terminal height
         cmd.append("--cycle")
         cmd.append(f"--color={_colors(theme().type, danger)}")
