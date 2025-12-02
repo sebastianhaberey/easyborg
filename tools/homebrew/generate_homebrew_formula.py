@@ -1,12 +1,21 @@
 import argparse
+import socket
 import subprocess
 import textwrap
 from importlib.metadata import PackageNotFoundError, requires, version
 from pathlib import Path
 
 import requests
+import urllib3
 from packaging.markers import default_environment
 from packaging.requirements import Requirement
+
+
+def allowed_gai_family():
+    return socket.AF_INET  # Force IPv4
+
+
+urllib3.util.connection.allowed_gai_family = allowed_gai_family
 
 
 def run(*cmd):
@@ -17,15 +26,38 @@ def major_minor(python_version: str) -> str:
     return ".".join(python_version.split(".")[:2])
 
 
-def get_sdist_info(name: str, version: str):
-    """Return (url, sha256) from the PyPI sdist for package name and version."""
-    meta = requests.get(f"https://pypi.org/pypi/{name}/{version}/json").json()
+def get_package_info(name: str, version: str):
+    """
+    Return (url, sha256) preferring wheel files, then falling back to sdist.
+    Wheels install much faster inside Homebrew virtualenvs.
+    """
+    print(f"Querying PyPI for {name} version {version}")
 
-    for file in meta["urls"]:
-        if file["packagetype"] == "sdist":
+    meta = requests.get(
+        f"https://pypi.org/pypi/{name}/{version}/json",
+        timeout=10,
+    ).json()
+    files = meta["urls"]
+
+    # 1. Prefer universal wheels (*-py3-none-any.whl)
+    for file in files:
+        if file["packagetype"] == "bdist_wheel" and file["filename"].endswith("py3-none-any.whl"):
+            print(f"Found universal wheel for {file['filename']}")
             return file["url"], file["digests"]["sha256"]
 
-    raise RuntimeError(f"No sdist found on PyPI for {name}=={version}")
+    # 2. Otherwise take ANY wheel
+    for file in files:
+        if file["packagetype"] == "bdist_wheel":
+            print(f"Found wheel for {file['filename']}")
+            return file["url"], file["digests"]["sha256"]
+
+    # 3. Fallback to sdist
+    for file in files:
+        if file["packagetype"] == "sdist":
+            print(f"Fallback to sdist for {file['filename']}")
+            return file["url"], file["digests"]["sha256"]
+
+    raise RuntimeError(f"No bdist_wheel found on PyPI for {name}=={version}")
 
 
 def build_marker_env(target_version: str):
@@ -77,7 +109,7 @@ def get_metadata(dep_map: dict) -> dict:
     enriched = {}
 
     for name, ver in dep_map.items():
-        url, sha = get_sdist_info(name, ver)
+        url, sha = get_package_info(name, ver)
         enriched[name] = {
             "version": ver,
             "url": url,
@@ -135,7 +167,7 @@ def main():
     dependency_map[package] = version
 
     # Enrich with PyPI metadata
-    print("Fetching sdist metadata…")
+    print("Fetching PyPI metadata…")
     all_metadata = get_metadata(dependency_map)
 
     # Apply template

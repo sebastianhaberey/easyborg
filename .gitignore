@@ -32,3 +32,6 @@ Thumbs.db
 # --- Terminalizer ---
 /terminalizer/output.yml
 /terminalizer/render*.gif
+
+# -- Homebrew ---
+/tools/homebrew/easyborg.rb

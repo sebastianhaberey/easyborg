@@ -51,7 +51,7 @@ jobs:
       - name: Generate formula
         run: |
           . venv/bin/activate
-          python tools/generate_homebrew_formula.py \
+          python tools/homebrew/generate_homebrew_formula.py \
             --package easyborg \
             --version "${{ steps.version.outputs.version }}" \
             --python-version "3.14" \
