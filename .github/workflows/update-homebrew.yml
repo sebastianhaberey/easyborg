@@ -55,7 +55,7 @@ jobs:
             --package easyborg \
             --version "${{ steps.version.outputs.version }}" \
             --python-version "3.14" \
-            --template tools/easyborg.rb.template \
+            --template tools/homebrew/easyborg.rb.template \
             --output tap/Formula/easyborg.rb
 
       - name: Commit and push
