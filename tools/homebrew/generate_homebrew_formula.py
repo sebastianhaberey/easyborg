@@ -26,7 +26,7 @@ def major_minor(python_version: str) -> str:
     return ".".join(python_version.split(".")[:2])
 
 
-def get_package_info(name: str, version: str):
+def get_package_info(name: str, version: str, root: bool = False):
     """
     Return (url, sha256) preferring wheel files, then falling back to sdist.
     Wheels install much faster inside Homebrew virtualenvs.
@@ -39,22 +39,20 @@ def get_package_info(name: str, version: str):
     ).json()
     files = meta["urls"]
 
-    # 1. Prefer universal wheels (*-py3-none-any.whl)
-    for file in files:
-        if file["packagetype"] == "bdist_wheel" and file["filename"].endswith("py3-none-any.whl"):
-            print(f"Found universal wheel for {file['filename']}")
-            return file["url"], file["digests"]["sha256"]
+    if not root:
+        for file in files:
+            if file["packagetype"] == "bdist_wheel" and file["filename"].endswith("py3-none-any.whl"):
+                print(f"Using universal wheel for {file['filename']}")
+                return file["url"], file["digests"]["sha256"]
 
-    # 2. Otherwise take ANY wheel
-    for file in files:
-        if file["packagetype"] == "bdist_wheel":
-            print(f"Found wheel for {file['filename']}")
-            return file["url"], file["digests"]["sha256"]
+        for file in files:
+            if file["packagetype"] == "bdist_wheel":
+                print(f"Using wheel for {file['filename']}")
+                return file["url"], file["digests"]["sha256"]
 
-    # 3. Fallback to sdist
     for file in files:
         if file["packagetype"] == "sdist":
-            print(f"Fallback to sdist for {file['filename']}")
+            print(f"Using sdist for {file['filename']}")
             return file["url"], file["digests"]["sha256"]
 
     raise RuntimeError(f"No bdist_wheel found on PyPI for {name}=={version}")
@@ -100,7 +98,7 @@ def resolve_dependencies(root_package: str, python_version: str) -> dict:
     return resolved
 
 
-def get_metadata(dep_map: dict) -> dict:
+def get_metadata(dep_map: dict, root: str) -> dict:
     """
     Convert {pkg: version} → {
         pkg: { "version": ..., "url": ..., "sha256": ... }
@@ -108,9 +106,9 @@ def get_metadata(dep_map: dict) -> dict:
     """
     enriched = {}
 
-    for name, ver in dep_map.items():
-        url, sha = get_package_info(name, ver)
-        enriched[name] = {
+    for package, ver in dep_map.items():
+        url, sha = get_package_info(package, ver, package == root)
+        enriched[package] = {
             "version": ver,
             "url": url,
             "sha256": sha,
@@ -119,7 +117,7 @@ def get_metadata(dep_map: dict) -> dict:
     return enriched
 
 
-def generate_formula(package: str, template: str, all_metadata: dict, python_version: str):
+def generate_formula(package: str, template: str, all_metadata: dict, python_version: str) -> str:
     """Generates the formula for the given package."""
     resource_blocks = []
     for name, metadata in sorted(all_metadata.items()):
@@ -168,7 +166,7 @@ def main():
 
     # Enrich with PyPI metadata
     print("Fetching PyPI metadata…")
-    all_metadata = get_metadata(dependency_map)
+    all_metadata = get_metadata(dependency_map, package)
 
     # Apply template
     print("Generating formula…")
