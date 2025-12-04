@@ -2,8 +2,10 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import socket
 import textwrap
+from dataclasses import dataclass
 from pathlib import Path
 
 import requests
@@ -19,6 +21,35 @@ def allowed_gai_family():
 
 # Force urllib3 to use IPv4
 urllib3.util.connection.allowed_gai_family = allowed_gai_family
+
+
+@dataclass(frozen=True)
+class Bottle:
+    macos_path: Path
+    linux_path: Path
+    root_url: str
+
+
+def sha256_file(path: Path) -> str:
+    h = hashlib.sha256()
+    with path.open("rb") as f:
+        for chunk in iter(lambda: f.read(8192), b""):
+            h.update(chunk)
+    return h.hexdigest()
+
+
+def infer_bottle_platform(path: Path) -> str:
+    name = path.name  # e.g. "easyborg--0.15.2.arm64_sequoia.bottle.1.tar.gz"
+
+    before_bottle, _, _ = name.partition(".bottle")
+    platform = before_bottle.split(".")[-1]
+
+    if not platform:
+        raise RuntimeError(f"Could not infer Homebrew platform from bottle filename: {name}")
+
+    print(f"Inferred Homebrew platform {platform} from bottle filename: {path}")
+
+    return platform
 
 
 def major_minor(pyver: str) -> str:
@@ -111,7 +142,14 @@ def resolve_dependencies_from_pypi(root_package: str, root_version: str, python_
     return resolved
 
 
-def generate_formula(package: str, template: str, metadata: dict, python_version: str) -> str:
+def generate_formula(
+    package: str,
+    template: str,
+    metadata: dict,
+    python_version: str,
+    *,
+    bottle: Bottle = None,
+) -> str:
     """Generate final formula text."""
     resource_blocks = []
 
@@ -120,22 +158,39 @@ def generate_formula(package: str, template: str, metadata: dict, python_version
             continue
 
         block = f"""
-        resource "{name}" do
-          url "{info["url"]}"
-          sha256 "{info["sha256"]}"
-        end
+resource "{name}" do
+  url "{info["url"]}"
+  sha256 "{info["sha256"]}"
+end
         """
         resource_blocks.append(textwrap.indent(block.strip(), "  "))
 
     resources_text = "\n\n".join(resource_blocks)
-
     root = metadata[package]
+
+    if bottle:
+        bottles: dict[str, str] = {}
+
+        platform = infer_bottle_platform(bottle.macos_path)
+        bottles[platform] = sha256_file(bottle.macos_path)
+
+        platform = infer_bottle_platform(bottle.linux_path)
+        bottles[platform] = sha256_file(bottle.linux_path)
+
+        lines = ["  bottle do", f'    root_url "{bottle.root_url}"']
+        for platform, sha in bottles.items():
+            lines.append(f'    sha256 cellar: :any_skip_relocation, {platform}: "{sha}"')
+        lines.append("  end")
+        bottles_block = "\n".join(lines)
+    else:
+        bottles_block = ""
 
     return (
         template.replace("{{URL}}", root["url"])
         .replace("{{SHA256}}", root["sha256"])
         .replace("{{RESOURCES}}", resources_text)
         .replace("{{PYTHON_VERSION}}", major_minor(python_version))
+        .replace("{{BOTTLES_BLOCK}}", bottles_block)
     )
 
 
@@ -146,6 +201,9 @@ def main():
     p.add_argument("--python-version", required=True)
     p.add_argument("--template", required=True)
     p.add_argument("--output", required=True)
+    p.add_argument("--bottle-macos-path", required=False)
+    p.add_argument("--bottle-linux-path", required=False)
+    p.add_argument("--bottle-root-url", required=False)
     args = p.parse_args()
 
     print(f"Resolving dependencies for {args.package}=={args.version}…")
@@ -157,11 +215,25 @@ def main():
 
     print("Fetching distribution metadata from PyPI…")
     template = Path(args.template).read_text()
+
+    if args.bottle_macos_path and args.bottle_linux_path and args.bottle_root_url:
+        bottle = Bottle(
+            macos_path=Path(args.bottle_macos_path),
+            linux_path=Path(args.bottle_linux_path),
+            root_url=args.bottle_root_url,
+        )
+        print(f"Received bottle arguments: {bottle}")
+    elif args.bottle_macos_path or args.bottle_linux_path or args.bottle_root_url:
+        raise ValueError("All bottle-related arguments must be passed, or none.")
+    else:
+        bottle = None
+
     formula = generate_formula(
         args.package,
         template,
         all_meta,
         args.python_version,
+        bottle=bottle,
     )
 
     Path(args.output).write_text(formula)

@@ -1,0 +1,473 @@
+name: Easyborg Release
+
+on:
+  push:
+    tags:
+      - "v*"
+    branches:
+      - ci-test # dedicated branch for CI-testing
+  workflow_dispatch:
+    inputs:
+      sha:
+        description: "Commit SHA to rebuild release for"
+        required: true
+
+permissions:
+  contents: write
+  id-token: write
+
+env:
+  PYTHON_VERSION: "3.14"
+  PACKAGE_NAME: "easyborg"
+  DRY_RUN: ${{ github.ref != 'refs/heads/main' }}
+  GIT_CONFIG_COUNT: 4
+  GIT_CONFIG_KEY_0: "advice.defaultBranchName"
+  GIT_CONFIG_VALUE_0: "false"
+  GIT_CONFIG_KEY_1: "user.name"
+  GIT_CONFIG_VALUE_1: "github-actions"
+  GIT_CONFIG_KEY_2: "user.email"
+  GIT_CONFIG_VALUE_2: "actions@github.com"
+  GIT_CONFIG_KEY_3: "advice.detachedHead"
+  GIT_CONFIG_VALUE_3: "false"
+
+jobs:
+
+  discover:
+    name: Discover
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.discover.outputs.tag }}
+      version: ${{ steps.discover.outputs.version }}
+      sha: ${{ steps.discover.outputs.sha }}
+      ref: ${{ steps.discover.outputs.ref }}
+      dry_run: ${{ steps.discover.outputs.dry_run }}
+      already_on_pypi: ${{ steps.check_pypi.outputs.already }}
+
+    steps:
+      - name: Checkout tooling (HEAD)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          path: tooling
+
+      - name: Checkout source code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          path: source
+
+      - name: Discover prerequisites
+        id: discover
+        working-directory: source
+        run: |
+          
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" && -n "${{ github.event.inputs.sha }}" ]]; then
+            echo "Detected manual workflow trigger, using user-supplied SHA"
+            SHA="${{ github.event.inputs.sha }}"
+            git fetch --depth=1 origin "$SHA"
+          elif [[ "${GITHUB_REF}" == refs/tags/* ]]; then
+            echo "Detected tag, using GITHUB_SHA"
+            SHA="${GITHUB_SHA}"
+          else
+            echo "No tag detected, using GITHUB_SHA"
+            SHA="${GITHUB_SHA}"
+          fi
+
+          git checkout "$SHA"
+
+          # Now extract version from source, using tooling
+          VERSION=$(python ../tooling/tools/get_project_version.py)
+          TAG="v$VERSION"
+
+          echo "dry_run=$DRY_RUN" >> "$GITHUB_OUTPUT"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "sha=$SHA" >> "$GITHUB_OUTPUT"
+          echo "ref=$GITHUB_REF" >> "$GITHUB_OUTPUT"
+
+          echo "Dry run: $DRY_RUN"
+          echo "Version: $VERSION"
+          echo "Tag: $TAG"
+          echo "SHA: $SHA"
+          echo "Branch: $GITHUB_REF"
+
+      - name: Check if version already exists on PyPI
+        id: check_pypi
+        run: |
+          VERSION="${{ steps.discover.outputs.version }}"
+          PKG="${{ env.PACKAGE_NAME }}"
+
+          echo "Checking PyPI for $PKG==$VERSION"
+
+          JSON=$(curl -s "https://pypi.org/pypi/$PKG/json")
+          
+          if echo "$JSON" | jq -e --arg V "$VERSION" '.releases[$V] | length > 0' > /dev/null; then
+            echo "Version $VERSION already on PyPI"
+            echo "already=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "Version $VERSION not on PyPI"
+            echo "already=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  publish_pypi:
+    name: Publish to PyPI
+    runs-on: ubuntu-latest
+    needs: discover
+    if: ${{ needs.discover.outputs.already_on_pypi == 'false' }}
+
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.discover.outputs.sha }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install build backend
+        run: pip install build
+
+      - name: Build sdist & wheel
+        run: python -m build
+
+      - name: Publish to PyPI
+        if: ${{ env.DRY_RUN == 'false' }}
+        uses: pypa/gh-action-pypi-publish@release/v1
+
+
+  macos-bottle:
+    name: Create macOS bottle
+    # wait for these jobs to complete, also only the jobs in here are available for reference with needs.xyz
+    needs: [ discover, publish_pypi ]
+    # job isn't triggered if publish_pypi skips, so we need this extra condition
+    if: ${{ always() && needs.discover.result == 'success' && (needs.publish_pypi.result == 'success' || needs.publish_pypi.result == 'skipped') }}
+    runs-on: macos-15
+    outputs:
+      file: ${{ steps.build-bottle.outputs.file }}
+      platform: ${{ steps.build-bottle.outputs.platform }}
+
+    steps:
+      - name: Checkout tooling (HEAD)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python for Formula generator
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install generator dependencies
+        run: |
+          pip install --upgrade pip
+          pip install requests packaging urllib3
+
+      - name: Generate Homebrew Formula
+        run: |
+          mkdir -p tap/Formula
+          python tools/homebrew/generate_homebrew_formula.py \
+            --package "${{ env.PACKAGE_NAME }}" \
+            --version "${{ needs.discover.outputs.version }}" \
+            --python-version "${{ env.PYTHON_VERSION }}" \
+            --template tools/homebrew/easyborg.rb.template \
+            --output tap/Formula/easyborg.rb
+
+          echo "Created local Formula:"
+          cat tap/Formula/easyborg.rb
+
+      - name: Create local tap
+        working-directory: tap
+        run: |
+          git init .
+          git add Formula/easyborg.rb
+          git commit -m "Add formula"
+
+      - name: Build bottle
+        id: build-bottle
+        run: |
+          brew tap local/easyborg ./tap
+          brew install --build-bottle easyborg
+          brew bottle easyborg
+          
+          # rename file to conform with brew standard
+          SOURCE_FILE="$(ls *.bottle*.tar.gz)"
+          PLATFORM=$(echo "$SOURCE_FILE" | sed -E 's/.*\.(.*)\.bottle.*/\1/')
+          VERSION="${{ needs.discover.outputs.version }}"
+          TARGET_FILE="easyborg-${VERSION}.${PLATFORM}.bottle.tar.gz"
+          mv "$SOURCE_FILE" "$TARGET_FILE"
+
+          echo "file=$TARGET_FILE" >> "$GITHUB_OUTPUT"
+          echo "platform=$PLATFORM" >> "$GITHUB_OUTPUT"
+
+      - name: Upload macOS bottle
+        uses: actions/upload-artifact@v4
+        with:
+          name: bottle-macos
+          path: ${{ steps.build-bottle.outputs.file }}
+          if-no-files-found: error
+
+
+  linux-bottle:
+    name: Create Linux bottle
+    needs: [ discover, publish_pypi ]
+    runs-on: ubuntu-latest
+    if: ${{ always() && needs.discover.result == 'success' && (needs.publish_pypi.result == 'success' || needs.publish_pypi.result == 'skipped') }}
+    outputs:
+      file: ${{ steps.build-bottle.outputs.file }}
+      platform: ${{ steps.build-bottle.outputs.platform }}
+
+    steps:
+      - name: Checkout tooling (HEAD)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install Linuxbrew
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential curl file git
+          /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+
+      - name: Add Linuxbrew to PATH
+        run: |
+          echo "/home/linuxbrew/.linuxbrew/bin" >> "$GITHUB_PATH"
+          echo "/home/linuxbrew/.linuxbrew/sbin" >> "$GITHUB_PATH"
+          echo "HOMEBREW_PREFIX=/home/linuxbrew/.linuxbrew" >> "$GITHUB_ENV"
+          echo "HOMEBREW_CELLAR=/home/linuxbrew/.linuxbrew/Cellar" >> "$GITHUB_ENV"
+          echo "HOMEBREW_REPOSITORY=/home/linuxbrew/.linuxbrew/Homebrew" >> "$GITHUB_ENV"
+
+      - name: Set up Python for Formula generator
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install generator dependencies
+        run: |
+          pip install --upgrade pip
+          pip install requests packaging urllib3
+
+      - name: Generate Homebrew formula
+        run: |
+          mkdir -p tap/Formula
+          python tools/homebrew/generate_homebrew_formula.py \
+            --package "${{ env.PACKAGE_NAME }}" \
+            --version "${{ needs.discover.outputs.version }}" \
+            --python-version "${{ env.PYTHON_VERSION }}" \
+            --template tools/homebrew/easyborg.rb.template \
+            --output tap/Formula/easyborg.rb
+
+          echo "Created local Formula:"
+          cat tap/Formula/easyborg.rb
+
+      - name: Create local tap
+        working-directory: tap
+        run: |
+          git init .
+          git add Formula/easyborg.rb
+          git commit -m "Add formula"
+
+      - name: Build bottle
+        id: build-bottle
+        run: |
+          brew tap local/easyborg ./tap
+          brew install --build-bottle easyborg
+          brew bottle easyborg
+          
+          # rename file to conform with brew standard
+          SOURCE_FILE="$(ls *.bottle*.tar.gz)"
+          PLATFORM=$(echo "$SOURCE_FILE" | sed -E 's/.*\.(.*)\.bottle.*/\1/')
+          VERSION="${{ needs.discover.outputs.version }}"
+          TARGET_FILE="easyborg-${VERSION}.${PLATFORM}.bottle.tar.gz"
+          mv "$SOURCE_FILE" "$TARGET_FILE"
+
+          echo "file=$TARGET_FILE" >> "$GITHUB_OUTPUT"
+          echo "platform=$PLATFORM" >> "$GITHUB_OUTPUT"
+
+      - name: Upload Linux bottle
+        uses: actions/upload-artifact@v4
+        with:
+          name: bottle-linux
+          path: ${{ steps.build-bottle.outputs.file }}
+          if-no-files-found: error
+
+
+  update-homebrew:
+    name: Update Homebrew
+    needs: [ discover, macos-bottle, linux-bottle ]
+    runs-on: ubuntu-latest
+    if: ${{ always() && needs.macos-bottle.result == 'success' && needs.linux-bottle.result == 'success' }}
+
+    steps:
+      - name: Checkout tooling (HEAD)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Download macOS bottle
+        uses: actions/download-artifact@v4
+        with:
+          name: bottle-macos
+          path: bottles
+
+      - name: Download Linux bottle
+        uses: actions/download-artifact@v4
+        with:
+          name: bottle-linux
+          path: bottles
+
+      - name: Set up Python for Formula generator
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install generator dependencies
+        run: |
+          pip install --upgrade pip
+          pip install requests packaging urllib3
+
+      - name: Checkout Homebrew tap
+        uses: actions/checkout@v4
+        with:
+          repository: sebastianhaberey/homebrew-easyborg
+          path: tap
+          token: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+
+      - name: Generate updated formula with bottles
+        run: |
+          TAG="v${{ needs.discover.outputs.version }}"
+          
+          if [[ "${{ env.DRY_RUN }}" == "true" ]]; then
+            ROOT_DIR=$(realpath "bottles")
+            BOTTLE_ROOT_URL="file://$ROOT_DIR"
+          else
+            BOTTLE_ROOT_URL="https://github.com/${{ github.repository }}/releases/download/$TAG"
+          fi
+          
+          echo "Bottle root URL: $BOTTLE_ROOT_URL"
+
+          python tools/homebrew/generate_homebrew_formula.py \
+            --package "${{ env.PACKAGE_NAME }}" \
+            --version "${{ needs.discover.outputs.version }}" \
+            --python-version "${{ env.PYTHON_VERSION }}" \
+            --template tools/homebrew/easyborg.rb.template \
+            --output tap/Formula/easyborg.rb \
+            --bottle-macos-path "bottles/${{ needs.macos-bottle.outputs.file }}" \
+            --bottle-linux-path "bottles/${{ needs.linux-bottle.outputs.file }}" \
+            --bottle-root-url "$BOTTLE_ROOT_URL"
+          
+          echo "Created final Formula:"
+          cat tap/Formula/easyborg.rb
+
+      - name: Commit and push tap update
+        if: ${{ env.DRY_RUN == 'false' }}
+        working-directory: tap
+        run: |
+          git add Formula/easyborg.rb
+          git commit -m "Update Formula for easyborg ${{ needs.discover.outputs.version }}" || echo "No changes"
+          git push
+
+      - name: Upload Formula for verify step
+        if: ${{ env.DRY_RUN == 'true' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: formula
+          path: tap/Formula/easyborg.rb
+
+      - name: Upload bottles to GitHub Release
+        if: ${{ env.DRY_RUN == 'false' }}
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            bottles/*.bottle*.tar.gz
+          tag_name: "${{ needs.discover.outputs.tag }}"
+
+  verify-dry-run:
+    name: Verify (dry run)
+    needs: [ discover, update-homebrew ]
+    runs-on: ubuntu-latest
+    if: ${{ always() && needs.update-homebrew.result == 'success' && needs.discover.outputs.dry_run == 'true' }}
+
+    steps:
+      - name: Install Linuxbrew
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential curl file git
+          /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+
+      - name: Add Linuxbrew to PATH
+        run: |
+          echo "/home/linuxbrew/.linuxbrew/bin" >> "$GITHUB_PATH"
+          echo "/home/linuxbrew/.linuxbrew/sbin" >> "$GITHUB_PATH"
+          echo "HOMEBREW_PREFIX=/home/linuxbrew/.linuxbrew" >> "$GITHUB_ENV"
+          echo "HOMEBREW_CELLAR=/home/linuxbrew/.linuxbrew/Cellar" >> "$GITHUB_ENV"
+          echo "HOMEBREW_REPOSITORY=/home/linuxbrew/.linuxbrew/Homebrew" >> "$GITHUB_ENV"
+
+      - name: Download macOS bottle
+        uses: actions/download-artifact@v4
+        with:
+          name: bottle-macos
+          path: bottles
+
+      - name: Download Linux bottle
+        uses: actions/download-artifact@v4
+        with:
+          name: bottle-linux
+          path: bottles
+
+      - name: Download Formula
+        uses: actions/download-artifact@v4
+        with:
+          name: formula
+          path: tap/Formula
+
+      - name: Init tap
+        working-directory: tap
+        run: |
+          git init .
+          git add .
+          git commit -m "Add formula"
+
+      - name: Install tap
+        run: |
+          brew tap local/easyborg ./tap
+          brew install easyborg
+
+      - name: Verify tap
+        run: |
+          which easyborg
+          easyborg --version
+          easyborg doctor
+
+  verify:
+    name: Verify
+    needs: [ discover,update-homebrew ]
+    runs-on: ubuntu-latest
+    if: ${{ always() && needs.update-homebrew.result == 'success' && needs.discover.outputs.dry_run == 'false' }}
+
+    steps:
+      - name: Install Linuxbrew
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential curl file git
+          /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+
+      - name: Add Linuxbrew to PATH
+        run: |
+          echo "/home/linuxbrew/.linuxbrew/bin" >> "$GITHUB_PATH"
+          echo "/home/linuxbrew/.linuxbrew/sbin" >> "$GITHUB_PATH"
+          echo "HOMEBREW_PREFIX=/home/linuxbrew/.linuxbrew" >> "$GITHUB_ENV"
+          echo "HOMEBREW_CELLAR=/home/linuxbrew/.linuxbrew/Cellar" >> "$GITHUB_ENV"
+          echo "HOMEBREW_REPOSITORY=/home/linuxbrew/.linuxbrew/Homebrew" >> "$GITHUB_ENV"
+
+      - name: Download tap
+        run: |
+          brew tap sebastianhaberey/easyborg
+          brew install easyborg
+
+      - name: Verify tap
+        run: |
+          which easyborg
+          easyborg --version
+          easyborg doctor
