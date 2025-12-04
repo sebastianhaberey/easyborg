@@ -1,176 +1,168 @@
+#!/usr/bin/env python3
+from __future__ import annotations
+
 import argparse
 import socket
-import subprocess
 import textwrap
-from importlib.metadata import PackageNotFoundError, requires, version
 from pathlib import Path
 
 import requests
 import urllib3
-from packaging.markers import default_environment
+from packaging.markers import Environment, default_environment
 from packaging.requirements import Requirement
+from packaging.version import Version
 
 
 def allowed_gai_family():
     return socket.AF_INET  # Force IPv4
 
 
+# Force urllib3 to use IPv4
 urllib3.util.connection.allowed_gai_family = allowed_gai_family
 
 
-def run(*cmd):
-    return subprocess.check_output(cmd, text=True).strip()
+def major_minor(pyver: str) -> str:
+    return ".".join(pyver.split(".")[:2])
 
 
-def major_minor(python_version: str) -> str:
-    return ".".join(python_version.split(".")[:2])
+def fetch_pypi_metadata(package: str, version: str | None = None) -> dict:
+    """Fetch PyPI JSON for package, optionally pinned to version."""
+    if version:
+        url = f"https://pypi.org/pypi/{package}/{version}/json"
+    else:
+        url = f"https://pypi.org/pypi/{package}/json"
+
+    resp = requests.get(url, timeout=10)
+    if resp.status_code != 200:
+        raise RuntimeError(f"Could not fetch PyPI metadata for {package} (version={version})")
+
+    return resp.json()
 
 
-def get_package_info(name: str, version: str, root: bool = False):
+def get_url(meta: dict, packagetype: str) -> dict:
     """
-    Return (url, sha256) preferring wheel files, then falling back to sdist.
-    Wheels install much faster inside Homebrew virtualenvs.
+    Choose best download url from metadata: prefers py3-none-any wheels, then other wheels, then sdist.
     """
-    print(f"Querying PyPI for {name} version {version}")
+    for url in meta["urls"]:
+        if url["packagetype"] == packagetype:
+            return url
 
-    meta = requests.get(
-        f"https://pypi.org/pypi/{name}/{version}/json",
-        timeout=10,
-    ).json()
-    files = meta["urls"]
-
-    if not root:
-        for file in files:
-            if file["packagetype"] == "bdist_wheel" and file["filename"].endswith("py3-none-any.whl"):
-                print(f"Using universal wheel for {file['filename']}")
-                return file["url"], file["digests"]["sha256"]
-
-        for file in files:
-            if file["packagetype"] == "bdist_wheel":
-                print(f"Using wheel for {file['filename']}")
-                return file["url"], file["digests"]["sha256"]
-
-    for file in files:
-        if file["packagetype"] == "sdist":
-            print(f"Using sdist for {file['filename']}")
-            return file["url"], file["digests"]["sha256"]
-
-    raise RuntimeError(f"No bdist_wheel found on PyPI for {name}=={version}")
+    raise RuntimeError(f"No usable distribution for root package {meta['info']['name']}.")
 
 
-def build_marker_env(target_version: str):
-    """Builds an environment to filter out dependencies based on markers"""
+def build_marker_env(target_python_version: str) -> Environment:
+    """Environment for PEP 508 marker evaluation."""
     env = default_environment()
+    env["python_version"] = major_minor(target_python_version)
+    env["python_full_version"] = target_python_version
     env["extra"] = None
-    env["python_version"] = major_minor(target_version)
-    env["python_full_version"] = target_version
     return env
 
 
-def resolve_dependencies(root_package: str, python_version: str) -> dict:
-    """Return {package: version} for root_package and all transitive runtime deps."""
-    resolved = {}
-    stack = [root_package]
+def get_matching_version(metadata: dict, requirement: Requirement) -> str | None:
+    if not requirement.specifier:  # no pinned version, return current version
+        return metadata["info"]["version"]
+
+    versions = sorted((Version(v) for v in metadata["releases"] if v), reverse=True)
+    for version in versions:
+        if version in requirement.specifier:
+            return str(version)
+
+    raise RuntimeError(f"Could not find version satisfying {requirement} for {requirement.name}")
+
+
+def resolve_dependencies_from_pypi(root_package: str, root_version: str, python_version: str) -> dict[str, dict]:
+    """
+    Returns mapping: package -> { "version": ..., "url": ..., "sha256": ... }
+    """
 
     env = build_marker_env(python_version)
+    todo = [(root_package, root_version)]
+    resolved: dict[str, dict] = {}
 
-    while stack:
-        package = stack.pop()
-
-        try:
-            ver = version(package)
-        except PackageNotFoundError:
-            raise RuntimeError(f"Dependency '{package}' is not installed in the current environment.")
+    while todo:
+        package, version = todo.pop()
 
         if package in resolved:
             continue
 
-        resolved[package] = ver
+        metadata = fetch_pypi_metadata(package, version)
+        info = metadata["info"]
+        name = info["name"]
 
-        requirements = requires(package) or []
-        for r in requirements:
-            requirement = Requirement(r)
-            if requirement.marker is not None and not requirement.marker.evaluate(env):
+        if name == root_package:
+            url = get_url(metadata, "sdist")  # use sdist for root package (required for brew)
+        else:
+            url = get_url(metadata, "bdist_wheel")  # use wheel for dependencies
+
+        resolved[name] = {"version": version, "url": url["url"], "sha256": url["digests"]["sha256"]}
+
+        requires_dist = info.get("requires_dist") or []
+        for requirement_str in requires_dist:
+            requirement = Requirement(requirement_str)
+
+            if requirement.marker and not requirement.marker.evaluate(env):
                 continue
-            dep_name = requirement.name
-            stack.append(dep_name)
+
+            metadata = fetch_pypi_metadata(requirement.name)
+            version = get_matching_version(metadata, requirement)
+            todo.append((requirement.name, version))
 
     return resolved
 
 
-def get_metadata(dep_map: dict, root: str) -> dict:
-    """
-    Convert {pkg: version} → {
-        pkg: { "version": ..., "url": ..., "sha256": ... }
-    }
-    """
-    enriched = {}
-
-    for package, ver in dep_map.items():
-        url, sha = get_package_info(package, ver, package == root)
-        enriched[package] = {
-            "version": ver,
-            "url": url,
-            "sha256": sha,
-        }
-
-    return enriched
-
-
-def generate_formula(package: str, template: str, all_metadata: dict, python_version: str) -> str:
-    """Generates the formula for the given package."""
+def generate_formula(package: str, template: str, metadata: dict, python_version: str) -> str:
+    """Generate final formula text."""
     resource_blocks = []
-    for name, metadata in sorted(all_metadata.items()):
+
+    for name, info in sorted(metadata.items()):
         if name.lower() == package.lower():
             continue
 
-        block = textwrap.dedent(f"""
+        block = f"""
         resource "{name}" do
-          url "{metadata["url"]}"
-          sha256 "{metadata["sha256"]}"
+          url "{info["url"]}"
+          sha256 "{info["sha256"]}"
         end
-        """).strip()
-        block = textwrap.indent(block, "  ")
-        resource_blocks.append(block)
+        """
+        resource_blocks.append(textwrap.indent(block.strip(), "  "))
 
     resources_text = "\n\n".join(resource_blocks)
 
-    metadata = all_metadata[package]
+    root = metadata[package]
+
     return (
-        template.replace("{{URL}}", metadata["url"])
-        .replace("{{SHA256}}", metadata["sha256"])
+        template.replace("{{URL}}", root["url"])
+        .replace("{{SHA256}}", root["sha256"])
         .replace("{{RESOURCES}}", resources_text)
         .replace("{{PYTHON_VERSION}}", major_minor(python_version))
     )
 
 
 def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--package", required=True)
-    parser.add_argument("--version", required=True)
-    parser.add_argument("--python-version", required=True)
-    parser.add_argument("--template", required=True)
-    parser.add_argument("--output", required=True)
-    args = parser.parse_args()
+    p = argparse.ArgumentParser()
+    p.add_argument("--package", required=True)
+    p.add_argument("--version", required=True)
+    p.add_argument("--python-version", required=True)
+    p.add_argument("--template", required=True)
+    p.add_argument("--output", required=True)
+    args = p.parse_args()
 
-    package = args.package
-    version = args.version
+    print(f"Resolving dependencies for {args.package}=={args.version}…")
+    all_meta = resolve_dependencies_from_pypi(
+        args.package,
+        args.version,
+        args.python_version,
+    )
 
-    # Resolve dependencies based on installed packages in current venv
-    print("Resolving dependencies…")
-    dependency_map = resolve_dependencies(package, args.python_version)
-
-    # Replace root package local version with the release version
-    # (the installed version might not match the release tag)
-    dependency_map[package] = version
-
-    # Enrich with PyPI metadata
-    print("Fetching PyPI metadata…")
-    all_metadata = get_metadata(dependency_map, package)
-
-    # Apply template
-    print("Generating formula…")
-    formula = generate_formula(package, Path(args.template).read_text(), all_metadata, args.python_version)
+    print("Fetching distribution metadata from PyPI…")
+    template = Path(args.template).read_text()
+    formula = generate_formula(
+        args.package,
+        template,
+        all_meta,
+        args.python_version,
+    )
 
     Path(args.output).write_text(formula)
     print(f"Formula written to {args.output}")
