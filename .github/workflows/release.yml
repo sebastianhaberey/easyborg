@@ -11,10 +11,10 @@ on:
       sha:
         description: "Commit SHA to rebuild release for"
         required: true
-      dry_run:
-        description: "Run in dry-run mode (no uploads, commits etc.)"
+      live:
+        description: "Live mode: real uploads, commits, etc"
         type: boolean
-        default: true
+        default: false
 
 permissions:
   contents: write
@@ -23,7 +23,7 @@ permissions:
 env:
   PYTHON_VERSION: "3.14"
   PACKAGE_NAME: "easyborg"
-  DRY_RUN: ${{ (startsWith(github.ref, 'refs/heads/') && github.ref != 'refs/heads/main') || github.event.inputs.dry_run == 'true' }}
+  LIVE: ${{ startsWith(github.ref, 'refs/tags/') || github.event.inputs.live == 'true' }}
   GIT_CONFIG_COUNT: 4
   GIT_CONFIG_KEY_0: "advice.defaultBranchName"
   GIT_CONFIG_VALUE_0: "false"
@@ -43,8 +43,7 @@ jobs:
       tag: ${{ steps.discover.outputs.tag }}
       version: ${{ steps.discover.outputs.version }}
       sha: ${{ steps.discover.outputs.sha }}
-      ref: ${{ steps.discover.outputs.ref }}
-      dry_run: ${{ steps.discover.outputs.dry_run }}
+      live: ${{ steps.discover.outputs.live }}
       already_on_pypi: ${{ steps.check_pypi.outputs.already }}
 
     steps:
@@ -64,21 +63,14 @@ jobs:
         id: discover
         working-directory: source
         run: |
-          
-          if [[ "${{ github.event_name }}" == "workflow_dispatch" && -n "${{ github.event.inputs.sha }}" ]]; then
-            echo "Detected manual workflow trigger, using user-supplied SHA"
+          if [[ -n "${{ github.event.inputs.sha }}" ]]; then
+            echo "Using user-supplied SHA"
             SHA="${{ github.event.inputs.sha }}"
             git fetch --depth=1 origin "$SHA"
-          elif [[ "${GITHUB_REF}" == refs/tags/* ]]; then
-            echo "Detected tag, using GITHUB_SHA"
-            SHA="${GITHUB_SHA}"
           else
-            echo "No tag detected, using GITHUB_SHA"
+            echo "Using GITHUB_SHA"
             SHA="${GITHUB_SHA}"
           fi
-
-          git rev-parse --verify "$SHA"^{commit}
-          echo "SHA $SHA is valid"
 
           git checkout "$SHA"
 
@@ -86,13 +78,13 @@ jobs:
           VERSION=$(python ../tooling/tools/get_project_version.py)
           TAG="v$VERSION"
 
-          echo "dry_run=$DRY_RUN" >> "$GITHUB_OUTPUT"
+          echo "live=$LIVE" >> "$GITHUB_OUTPUT"
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
           echo "tag=$TAG" >> "$GITHUB_OUTPUT"
           echo "sha=$SHA" >> "$GITHUB_OUTPUT"
           echo "ref=$GITHUB_REF" >> "$GITHUB_OUTPUT"
 
-          echo "Dry Run:       $DRY_RUN"
+          echo "Live:          $LIVE"
           echo "Version:       $VERSION"
           echo "Tag:           $TAG"
           echo "SHA:           $SHA"
@@ -143,7 +135,7 @@ jobs:
         run: python -m build
 
       - name: Publish to PyPI
-        if: ${{ env.DRY_RUN == 'false' }}
+        if: ${{ env.LIVE == 'true' }}
         uses: pypa/gh-action-pypi-publish@release/v1
 
 
@@ -348,11 +340,11 @@ jobs:
         run: |
           TAG="v${{ needs.discover.outputs.version }}"
           
-          if [[ "${{ env.DRY_RUN }}" == "true" ]]; then
+          if [[ "${{ env.LIVE }}" == "true" ]]; then
+            BOTTLE_ROOT_URL="https://github.com/${{ github.repository }}/releases/download/$TAG"
+          else
             ROOT_DIR=$(realpath "bottles")
             BOTTLE_ROOT_URL="file://$ROOT_DIR"
-          else
-            BOTTLE_ROOT_URL="https://github.com/${{ github.repository }}/releases/download/$TAG"
           fi
           
           echo "Bottle root URL: $BOTTLE_ROOT_URL"
@@ -370,23 +362,23 @@ jobs:
           echo "Created final Formula:"
           cat tap/Formula/easyborg.rb
 
+      - name: Upload Formula for verify step
+        if: ${{ env.LIVE == 'false' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: formula
+          path: tap/Formula/easyborg.rb
+
       - name: Commit and push tap update
-        if: ${{ env.DRY_RUN == 'false' }}
+        if: ${{ env.LIVE == 'true' }}
         working-directory: tap
         run: |
           git add Formula/easyborg.rb
           git commit -m "Update Formula for easyborg ${{ needs.discover.outputs.version }}" || echo "No changes"
           git push
 
-      - name: Upload Formula for verify step
-        if: ${{ env.DRY_RUN == 'true' }}
-        uses: actions/upload-artifact@v4
-        with:
-          name: formula
-          path: tap/Formula/easyborg.rb
-
       - name: Upload bottles to GitHub Release
-        if: ${{ env.DRY_RUN == 'false' }}
+        if: ${{ env.LIVE == 'true' }}
         uses: softprops/action-gh-release@v2
         with:
           files: |
@@ -397,7 +389,7 @@ jobs:
     name: Verify (dry run)
     needs: [ discover, update-homebrew ]
     runs-on: ubuntu-latest
-    if: ${{ always() && needs.update-homebrew.result == 'success' && needs.discover.outputs.dry_run == 'true' }}
+    if: ${{ always() && needs.update-homebrew.result == 'success' && needs.discover.outputs.live == 'false' }}
 
     steps:
       - name: Install Linuxbrew
@@ -450,11 +442,11 @@ jobs:
           easyborg --version
           easyborg doctor
 
-  verify:
-    name: Verify
+  verify-live:
+    name: Verify (live)
     needs: [ discover,update-homebrew ]
     runs-on: ubuntu-latest
-    if: ${{ always() && needs.update-homebrew.result == 'success' && needs.discover.outputs.dry_run == 'false' }}
+    if: ${{ always() && needs.update-homebrew.result == 'success' && needs.discover.outputs.live == 'true' }}
 
     steps:
       - name: Install Linuxbrew
