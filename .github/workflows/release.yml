@@ -156,7 +156,7 @@ jobs:
       - name: Build sdist & wheel
         run: python -m build
 
-      - name: Publish to PyPI
+      - name: Publish to PyPI (live mode)
         if: ${{ needs.discover.outputs.live == 'true' }}
         uses: pypa/gh-action-pypi-publish@release/v1
 
@@ -384,14 +384,14 @@ jobs:
           echo "Created final Formula:"
           cat tap/Formula/easyborg.rb
 
-      - name: Upload Formula for verify step
+      - name: Upload Formula for verify step (dry run)
         if: ${{ needs.discover.outputs.live == 'false' }}
         uses: actions/upload-artifact@v4
         with:
           name: formula
           path: tap/Formula/easyborg.rb
 
-      - name: Commit and push tap update
+      - name: Commit and push tap update (live mode)
         if: ${{ needs.discover.outputs.live == 'true' }}
         working-directory: tap
         run: |
@@ -399,7 +399,7 @@ jobs:
           git commit -m "Update Formula for easyborg ${{ needs.discover.outputs.version }}" || echo "No changes"
           git push
 
-      - name: Upload bottles to GitHub Release
+      - name: Upload bottles to GitHub Release (live mode)
         if: ${{ needs.discover.outputs.live == 'true' }}
         uses: softprops/action-gh-release@v2
         with:
@@ -465,7 +465,7 @@ jobs:
           easyborg doctor
 
   verify-live:
-    name: Verify (live)
+    name: Verify (live mode)
     needs: [ discover,update-homebrew ]
     runs-on: ubuntu-latest
     if: ${{ always() && needs.update-homebrew.result == 'success' && needs.discover.outputs.live == 'true' }}
