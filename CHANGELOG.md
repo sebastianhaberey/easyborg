@@ -7,48 +7,48 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.16.1] - 2025-12-05
 
-## Added
+### Added
 
 - Added option --strip (-s) to extract command; removes parent directories
 
 ## [0.16.0] - 2025-12-05
 
-## Added
+### Added
 
 - Homebrew bottles - faster and smaller install 
 
-## Changed
+### Changed
 
 - Running enable command will now update the existing schedule
 
 ## [0.15.2] - 2025-12-02
 
-## Changed
+### Changed
 
 - Updated fzf pointer
 
-## Fixed
+### Fixed
 
 - Fixed slow installing process on homebrew
 
 ## [0.15.1] - 2025-12-01
 
-## Changed 
+### Changed 
 
 - Removed fzf gutter symbol
 
-## Fixed
+### Fixed
 
 - Fixed open command choices
 - Fixed progress bar color in dark theme
 
 ## [0.15.0] - 2025-11-28
 
-## Added
+### Added
 
 - Added backup short option -c for --comment
 
-## Changed
+### Changed
 
 - BREAKING: easyborg info is now easyborg doctor ("info" clashes with Borg info command)
 - Streamlined UI symbols
@@ -56,41 +56,41 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.14.1] - 2025-11-27
 
-## Added
+### Added
 
 - Added test for replace command
 
-## Changed
+### Changed
 
 - Themes now contain the symbols used in the UI
 - Changed theme names
 
-## Fixed
+### Fixed
 
 - Fixed theme "ice_light"
 - Fixed fzf query color in light themes
 
 ## [0.14.0] - 2025-11-26
 
-## Added
+### Added
 
 - Introduced themes
 
-## Fixed
+### Fixed
 
 - now checking backup paths are configured before backup, replace
 
-## Removed
+### Removed
 
 - BREAKING: removed option "--light-mode" (replaced by light themes)
 
 ## [0.13.0] - 2025-11-25
 
-## Added
+### Added
 
 - Introduced short option "-p" for "--profiles"
 
-## Changed
+### Changed
 
 - BREAKING: Profiles are now in folder "profiles"
 - BREAKING: Configuration option "backup_folders" is now "backup_paths" (can be either: file or folder)
@@ -99,13 +99,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.12.0] - 2025-11-25
 
-## Added
+### Added
 
 - Profiles are now a regular feature
 - Open command: opens easyborg-related files (e.g. config) using system default application
 - Added instructions for easyborg shell completion
 
-## Fixed
+### Fixed
 
 - Fixed help width
 - Fixed prompt color in light mode

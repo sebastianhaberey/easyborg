@@ -7,7 +7,9 @@
 If it fails:
 
 * Major CI changes: 
-  * Work in branch _ci-test_ (starts dry-run automatically on push)
+  * Work in branch
+  * Commit with [skip ci]
+  * Test with manual trigger
   * No code changes allowed (only CI and tooling)
   * Merge back into main
 * Minor CI changes:
