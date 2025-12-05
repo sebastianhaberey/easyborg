@@ -92,13 +92,14 @@ jobs:
           echo "sha=$SHA" >> "$GITHUB_OUTPUT"
           echo "ref=$GITHUB_REF" >> "$GITHUB_OUTPUT"
 
-          echo "Dry Run:    $DRY_RUN"
-          echo "Version:    $VERSION"
-          echo "Tag:        $TAG"
-          echo "SHA:        $SHA"
-          echo "Ref:        $GITHUB_REF"
-          echo "Repository: $GITHUB_REPOSITORY"
-          echo "Workflow:   $GITHUB_WORKFLOW"
+          echo "Dry Run:       $DRY_RUN"
+          echo "Version:       $VERSION"
+          echo "Tag:           $TAG"
+          echo "SHA:           $SHA"
+          echo "Ref:           $GITHUB_REF"
+          echo "Repository:    $GITHUB_REPOSITORY"
+          echo "Workflow name: $GITHUB_WORKFLOW"
+          echo "Workflow file: $GITHUB_WORKFLOW_REF"
 
       - name: Check if version already exists on PyPI
         id: check_pypi
