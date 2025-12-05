@@ -27,13 +27,9 @@ class Cron:
         """
         Add a cron entry with the given schedule (e.g. '@daily', '0 3 * * *').
 
-        Idempotent: if there's already an entry for this profile, no changes will be made.
+        Idempotent: if there's already an entry for this profile, it will be replaced.
         """
-        existing = _get_crontab()
-
-        if self.marker in existing:
-            ui.warn("Easyborg cron entry already exists")
-            return
+        lines = _get_crontab()
 
         entry = (
             f"{schedule} "
@@ -46,8 +42,12 @@ class Cron:
             f"--tenacious "
             f"{self.marker}"
         )
-        updated = _add_entry(existing, entry, self.marker)
-        _write_crontab(updated)
+
+        if any(self.marker in line for line in lines):
+            lines = [line for line in lines if self.marker not in line]
+
+        lines.append(entry)
+        _write_crontab(lines)
         ui.success("Added easyborg cron entry", f'"{entry}"')
 
     def disable(self):
@@ -80,12 +80,3 @@ def _get_crontab() -> list[str]:
 
 def _write_crontab(lines: list[str]):
     run_sync(["crontab", "-"], cwd=None, input_lines=lines)
-
-
-def _add_entry(existing: list[str], entry: str, marker: str) -> list[str]:
-    """Append the entry if not already present."""
-    if any(marker in line for line in existing):
-        # Replace existing easyborg lines for safety
-        existing = [line for line in existing if marker not in line]
-    existing.append(entry)
-    return existing
