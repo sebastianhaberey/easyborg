@@ -11,6 +11,10 @@ on:
       sha:
         description: "Commit SHA to rebuild release for"
         required: true
+      dry_run:
+        description: "Run in dry-run mode (no uploads, commits etc.)"
+        type: boolean
+        default: true
 
 permissions:
   contents: write
@@ -19,7 +23,7 @@ permissions:
 env:
   PYTHON_VERSION: "3.14"
   PACKAGE_NAME: "easyborg"
-  DRY_RUN: ${{ github.ref != 'refs/heads/main' }}
+  DRY_RUN: ${{ github.ref != 'refs/heads/main' || github.event.inputs.dry_run == 'true' }}
   GIT_CONFIG_COUNT: 4
   GIT_CONFIG_KEY_0: "advice.defaultBranchName"
   GIT_CONFIG_VALUE_0: "false"
