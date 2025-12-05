@@ -14,7 +14,7 @@ class ExtractCommand:
         self.borg = borg
         self.fzf = fzf
 
-    def run(self, *, dry_run: bool = False) -> None:
+    def run(self, *, dry_run: bool = False, strip: bool = False) -> None:
         repo = select_repo(self.fzf, self.config)
         if not repo:
             ui.abort()
@@ -25,7 +25,9 @@ class ExtractCommand:
             ui.abort()
             return
 
-        selected_paths = select_items(self.borg, self.fzf, snapshot)
+        multi = not strip  # multi selection not supported with strip option
+
+        selected_paths = select_items(self.borg, self.fzf, snapshot, multi=multi)
         if not selected_paths:
             ui.abort()
             return
@@ -33,6 +35,7 @@ class ExtractCommand:
         ui.newline()
 
         target_dir = Path.cwd()
+        strip_components = len(selected_paths[0].parents) - 1 if strip else None
 
         ui.info(f"Extracting {len(selected_paths)} item(s) from snapshot {snapshot.name} in repository {repo.name}")
         ui.progress(
@@ -42,6 +45,7 @@ class ExtractCommand:
                 paths=selected_paths,
                 dry_run=dry_run,
                 progress=True,
+                strip_components=strip_components,
             ),
             message="Extracting",
         )

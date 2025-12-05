@@ -57,12 +57,12 @@ def select_snapshot(borg: Borg, fzf: Fzf, repo: Repository) -> Snapshot | None:
     return snapshot
 
 
-def select_items(borg: Borg, fzf: Fzf, snapshot: Snapshot) -> list[Path] | None:
+def select_items(borg: Borg, fzf: Fzf, snapshot: Snapshot, *, multi: bool = True) -> list[Path] | None:
     ui.info("Select items")
 
     selected = fzf.select_strings(
         map(str, borg.list_contents(snapshot)),
-        multi=True,
+        multi=multi,
         show_info=True,
     )
 

@@ -126,6 +126,7 @@ class Borg:
         *,
         dry_run: bool = False,
         progress: bool = False,
+        strip_components: int = None,
     ) -> Iterator[ProgressEvent] | None:
         """
         Restore paths (or the entire snapshot if paths=None) into target_dir.
@@ -144,6 +145,8 @@ class Borg:
             cmd.extend(["--progress", "--log-json"])
         if dry_run:
             cmd.append("--dry-run")
+        if strip_components:
+            cmd.extend(["--strip-components", str(strip_components)])
         cmd.extend(["--noflags", "--noacls", "--noxattrs"])  # strip OS-specific flags
         cmd.extend([snap.location(), *map(str, paths)])
 

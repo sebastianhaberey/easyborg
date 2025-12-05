@@ -194,16 +194,22 @@ def restore(obj, dry_run: bool):
 
 @cli.command(section=SECTION_MAIN)
 @option("--dry-run", is_flag=True, help="Do not modify data")
+@option(
+    "--strip",
+    "-s",
+    is_flag=True,
+    help="Strip leading directories (single file only)",
+)
 @help_option(help="Show this message")
 @pass_obj
-def extract(obj, dry_run: bool):
+def extract(obj, dry_run: bool, strip: bool):
     """
     Extract items (interactive)
 
     Extract items of your choice to the current working directory.
     """
     command = ExtractCommand(config=obj["config"], borg=obj["borg"], fzf=obj["fzf"])
-    command.run(dry_run=dry_run)
+    command.run(dry_run=dry_run, strip=strip)
 
 
 @cli.command(section=SECTION_MAIN)
