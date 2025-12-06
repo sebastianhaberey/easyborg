@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
     inputs:
       live:
-        description: "Live mode (main branch only)"
+        description: "Live mode"
         type: boolean
         default: false
 
@@ -63,6 +63,9 @@ jobs:
               REASON="not requested"
             fi
           else
+            if [[ "$INPUT_LIVE" == "true" ]]; then
+              echo "::warning::Live mode request ignored (main branch only)"
+            fi
             LIVE=false
             REASON="not on main branch"
           fi
