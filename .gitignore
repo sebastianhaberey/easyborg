@@ -29,9 +29,8 @@ Thumbs.db
 /run/
 /config/
 
-# --- Terminalizer ---
-/terminalizer/output.yml
-/terminalizer/render*.gif
+# --- Recording ---
+/recording/*.cast
 
 # -- Homebrew ---
 /tools/homebrew/easyborg.rb
