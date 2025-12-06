@@ -320,7 +320,7 @@ jobs:
         working-directory: tag
         run: |
           python ../head/tools/changelog/extract_changelog.py CHANGELOG.md "${{ needs.discover.outputs.version }}" > ../changelog.txt
-          echo "changelog_path=../changelog.txt" >> "$GITHUB_OUTPUT"
+          echo "changelog_path=changelog.txt" >> "$GITHUB_OUTPUT"
           
           echo "Extracted changelog:"
           cat ../changelog.txt
