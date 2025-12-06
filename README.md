@@ -22,7 +22,7 @@ This project is currently in beta phase.
 
 ### Installation
 
-You have the choice between Homebrew / Linuxbrew or Python pipx.
+You can choose between Homebrew / Linuxbrew or Python pipx.
 
 #### Homebrew / Linuxbrew (recommended)
 
