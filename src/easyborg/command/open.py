@@ -8,13 +8,13 @@ class OpenCommand:
         self.context = context
 
     def run(self, target: str) -> None:
-        if target == "log_file":
+        if target == "logfile":
             path = self.context.log_file
-        elif target == "log_dir":
+        elif target == "logdir":
             path = self.context.log_dir
-        elif target == "config_file":
+        elif target == "configfile":
             path = self.context.config_file
-        elif target == "config_dir":
+        elif target == "configdir":
             path = self.context.config_dir
         else:
             ui.warn("Invalid target", target)

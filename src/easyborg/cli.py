@@ -284,7 +284,7 @@ def disable(obj):
 @help_option(help="Show this message")
 @argument(
     "target",
-    type=Choice(["log_file", "log_dir", "config_file", "config_dir"], case_sensitive=False),
+    type=Choice(["logfile", "logdir", "configfile", "configdir"], case_sensitive=False),
 )
 @pass_obj
 def open(obj, target: str):
