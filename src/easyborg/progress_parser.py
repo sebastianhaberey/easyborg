@@ -27,10 +27,13 @@ def parse_progress(lines: Iterator[str]) -> Generator[ProgressEvent, None, None]
         current = event.get("current")
         message = event.get("message")
 
+        if not message:
+            message = event.get("path")  # use path messages as a fallback
+
         if message:
             message = message.strip()
 
-        if total is None and current is None and message is None or message == "":
+        if not total and not current and not message:
             continue
 
         yield ProgressEvent(total=total, current=current, message=message)
