@@ -12,11 +12,11 @@ This project is currently in beta phase.
 
 ### Extract
 
-<img src="https://raw.githubusercontent.com/sebastianhaberey/easyborg/main/terminalizer/extract.gif" width="1024"  alt="Demonstration of extract command"/>
+[![asciicast](https://asciinema.org/a/9jxikvvUgcDTnqaAtsKKovdJ5.svg)](https://asciinema.org/a/9jxikvvUgcDTnqaAtsKKovdJ5)
 
 ### Delete
 
-<img src="https://raw.githubusercontent.com/sebastianhaberey/easyborg/main/terminalizer/delete.gif" width="1024"  alt="Demonstration of delete command"/>
+[![asciicast](https://asciinema.org/a/BpnV3BoZv9FkUPlfACN3P0XPS.svg)](https://asciinema.org/a/BpnV3BoZv9FkUPlfACN3P0XPS)
 
 ## Setup
 
