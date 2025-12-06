@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.18.0] - 2025-12-06
+
+### Added
+
+- Added expert advice on macOS security
+
+### Changed
+
+- Replaced easyborg enable / disable command with easyborg autobackup enable / disable (clarity)
+- Clarified enable command output (add vs update)
+- Promoted autobackup to main command
+
+### Fixed
+
+- Fixed text wrap issues on enable command output
+
 ## [0.17.0] - 2025-12-06
 
 ### Changed
@@ -21,7 +37,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Homebrew bottles - faster and smaller install 
+- Homebrew bottles - faster and smaller install
 
 ### Changed
 
@@ -39,7 +55,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.15.1] - 2025-12-01
 
-### Changed 
+### Changed
 
 - Removed fzf gutter symbol
 
@@ -101,7 +117,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - BREAKING: Profiles are now in folder "profiles"
 - BREAKING: Configuration option "backup_folders" is now "backup_paths" (can be either: file or folder)
 - Updated documentation and help texts
-
 
 ## [0.12.0] - 2025-11-25
 
