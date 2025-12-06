@@ -8,7 +8,7 @@ This project is currently in beta phase.
 [![Tests (Linux)](https://github.com/sebastianhaberey/easyborg/actions/workflows/tests-linux.yml/badge.svg)](https://github.com/sebastianhaberey/easyborg/actions/workflows/tests-linux.yml)
 [![Tests (macOS)](https://github.com/sebastianhaberey/easyborg/actions/workflows/tests-macos.yml/badge.svg)](https://github.com/sebastianhaberey/easyborg/actions/workflows/tests-macos.yml)
 
-## Screenshots
+## Screen Recordings
 
 ### Extract
 
