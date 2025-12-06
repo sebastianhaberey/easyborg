@@ -1,4 +1,4 @@
-name: Easyborg Release
+name: Release
 
 on:
   push:
