@@ -2,17 +2,26 @@
 
 ## CI
 
-* Push tag to release
+### Release build
+
+| Ref                | Live allowed | Live automatic |
+|--------------------|--------------|----------------|
+| refs/tags/v0.15.2  | yes          | yes            |
+| refs/heads/main    | yes          | no             |
+| refs/heads/feature | no           | no             |
+| refs/pull/2/merge  | no           | no             |
+
+
 
 If it fails:
 
-* Major CI changes: 
-  * Work in branch
-  * Commit with [skip ci]
-  * Test with manual trigger
-  * No code changes allowed (only CI and tooling)
-  * Merge back into main
+* Major CI changes:
+    * Work in branch
+    * Commit with [skip ci]
+    * Test with manual trigger
+    * No code changes allowed (only CI and tooling)
+    * Merge back into main
 * Minor CI changes:
-  * Fix in main
-  * Trigger rebuild with SHA of release commit and "dry run" flag
+    * Fix in main
+    * Trigger rebuild with SHA of release commit and "dry run" flag
 * Once everything works, trigger rebuild with SHA of relese commit

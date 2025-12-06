@@ -6,11 +6,8 @@ on:
       - "v*"
   workflow_dispatch:
     inputs:
-      sha:
-        description: "Release commit SHA"
-        required: true
       live:
-        description: "Live mode"
+        description: "Live mode (main branch only)"
         type: boolean
         default: false
 
@@ -37,79 +34,54 @@ jobs:
     name: Discover
     runs-on: ubuntu-latest
     outputs:
-      live: ${{ steps.live-check.outputs.live }}
-      tag: ${{ steps.discover.outputs.tag }}
-      version: ${{ steps.discover.outputs.version }}
-      sha: ${{ steps.discover.outputs.sha }}
+      live: ${{ steps.detect-live.outputs.live }}
+      sha: ${{ steps.detect-tag.outputs.sha }}
+      tag: ${{ steps.detect-tag.outputs.tag }}
+      version: ${{ steps.detect-tag.outputs.version }}
       already_on_pypi: ${{ steps.check_pypi.outputs.already }}
 
     steps:
-      - name: Checkout tooling (HEAD)
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          path: tooling
-
       - name: Checkout source code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          path: source
 
-      - name: Live check
-        id: live-check
+      - name: Detect live mode
+        id: detect-live
         run: |
-          INPUT_LIVE="${{ github.event.inputs.live }}"
-          LIVE=false
+          INPUT_LIVE="${{ github.event.inputs.live || false }}"
 
-          if [[ "$REF" =~ ^refs/tags/ ]]; then
+          if [[ "$GITHUB_REF" =~ ^refs/tags/ ]]; then
             LIVE=true
-            REASON="tagged release"
-          elif [[ "$REF" == "refs/heads/main" ]]; then
+            REASON="tag"
+          elif [[ "$GITHUB_REF" == "refs/heads/main" ]]; then
             if [[ "$INPUT_LIVE" == "true" ]]; then
               LIVE=true
-              REASON="on main branch, live requested"
+              REASON="requested"
             else
               LIVE=false
-              REASON "on main branch, live not requested"
+              REASON="not requested"
             fi
           else
-            if [[ "$INPUT_LIVE" == "true" ]]; then
-              echo "::error::Live mode is only allowed on tags or main branch."
-              exit 1
-            fi
             LIVE=false
             REASON="not on main branch"
           fi
           
           echo "live=$LIVE" >> $GITHUB_OUTPUT
-          echo "::notice::Live mode: $LIVE ($REASON)"
+          echo "::notice::Trigger ref: $GITHUB_REF, live mode: $LIVE ($REASON)"
 
-      - name: Discover
-        id: discover
-        working-directory: source
+      - name: Detect target tag & SHA
+        id: detect-tag
         run: |
-          if [[ -n "${{ github.event.inputs.sha }}" ]]; then
-            echo "Using user-supplied SHA"
-            SHA="${{ github.event.inputs.sha }}"
-            git fetch --depth=1 origin "$SHA"
-          else
-            echo "Using GITHUB_SHA"
-            SHA="${GITHUB_SHA}"
-          fi
+          TAG=$(git describe --tags --abbrev=0) # find latest tag
+          SHA=$(git rev-list -n 1 "$TAG")
+          VERSION="${TAG#v}"
 
-          git checkout "$SHA"
-
-          # Now extract version from source, using tooling
-          VERSION=$(python ../tooling/tools/get_project_version.py)
-          TAG="v$VERSION"
-
-          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
           echo "tag=$TAG" >> "$GITHUB_OUTPUT"
           echo "sha=$SHA" >> "$GITHUB_OUTPUT"
-          echo "ref=$GITHUB_REF" >> "$GITHUB_OUTPUT"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
 
-          echo "::notice::Version: $VERSION, Tag: $TAG, Ref: $GITHUB_REF, SHA: $SHA"
+          echo "::notice::Target tag: $TAG (version $VERSION), target SHA: $SHA"
 
           echo "Repository:    $GITHUB_REPOSITORY"
           echo "Workflow name: $GITHUB_WORKFLOW"
@@ -118,7 +90,7 @@ jobs:
       - name: Check if version already exists on PyPI
         id: check_pypi
         run: |
-          VERSION="${{ steps.discover.outputs.version }}"
+          VERSION="${{ steps.detect-tag.outputs.version }}"
           PKG="${{ env.PACKAGE_NAME }}"
 
           echo "Checking PyPI for $PKG==$VERSION"
@@ -134,10 +106,10 @@ jobs:
           fi
 
   publish_pypi:
-    name: Publish to PyPI
+    name: Publish to PyPI (live mode)
     runs-on: ubuntu-latest
     needs: discover
-    if: ${{ needs.discover.outputs.already_on_pypi == 'false' }}
+    if: ${{ needs.discover.outputs.already_on_pypi == 'false' && needs.discover.outputs.live == 'true' }}
 
     steps:
       - name: Checkout source code
@@ -157,7 +129,6 @@ jobs:
         run: python -m build
 
       - name: Publish to PyPI (live mode)
-        if: ${{ needs.discover.outputs.live == 'true' }}
         uses: pypa/gh-action-pypi-publish@release/v1
 
 
