@@ -2,20 +2,24 @@
 
 ## Soon
 
-- add characters (arrow, marker) to theme
+- progress message on backup / archive is misleading ("Initializing cache transaction: Reading files")
 - error on repository password request / ssh password request
 - notifications
 
 ## Later
 
-- expert mode: prune options (--keep-xxx)
-- expert mode: cron options
+- expert mode: configure prune options (hourly / daily / weekly / monthly / yearly)
+- expert mode: configure cron expression
 
 # DONE
 
+- changelog
+- Github releases
+- find better naming for easyborg enable / disable
+- add characters (arrow, marker) to theme
 - move profiles to dedicated folder
 - auto-completion (CLI)
-- open command 
+- open command
 - replace command
 - move commands to their own classes
 - more tests (especially for "delete")

@@ -2,7 +2,16 @@
 
 ## CI
 
-### Release build
+### Release workflow
+
+The release workflow can be started from everywhere and will dry-run the whole release process as close to the real
+thing as possible. Nothing of consequence will happen, unless "live mode" is active.
+
+#### Live mode
+
+Live mode means actual PyPI deploy, release artifact upload, homebrew tap update etc. It's activated either
+automatically when a tag is pushed or manually, when the user triggers the release workflow with "live mode" selected.
+Live mode is only allowed on tags or main branch.
 
 | Ref                | Live allowed | Live automatic |
 |--------------------|--------------|----------------|
@@ -11,17 +20,10 @@
 | refs/heads/feature | no           | no             |
 | refs/pull/2/merge  | no           | no             |
 
+#### Miscellaneous
 
-
-If it fails:
-
-* Major CI changes:
-    * Work in branch
-    * Commit with [skip ci]
-    * Test with manual trigger
-    * No code changes allowed (only CI and tooling)
-    * Merge back into main
-* Minor CI changes:
-    * Fix in main
-    * Trigger rebuild with SHA of release commit and "dry run" flag
-* Once everything works, trigger rebuild with SHA of relese commit
+- Release workflow deploys most recent tag
+- Tooling in release workflow is HEAD of current branch
+- Use [skip ci] for CI (workflow / tooling only) commits
+- Use branch for CI commits and squash before merge
+- No source code changes in CI commits
