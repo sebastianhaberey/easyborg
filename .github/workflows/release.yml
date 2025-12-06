@@ -135,6 +135,33 @@ jobs:
         if: ${{ needs.discover.outputs.live == 'true' }}
         uses: pypa/gh-action-pypi-publish@release/v1
 
+      - name: Wait for package to appear on PyPI
+        id: wait-pypi
+        run: |
+          PKG="${{ env.PACKAGE_NAME }}"
+          VERSION="${{ needs.discover.outputs.version }}"
+          MAX_ATTEMPTS=30
+          SLEEP=5
+          
+          echo "Waiting for $PKG==$VERSION to become available on PyPI…"
+          
+          for attempt in $(seq 1 $MAX_ATTEMPTS); do
+            echo "Attempt $attempt/$MAX_ATTEMPTS…"
+          
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+              "https://pypi.org/pypi/$PKG/$VERSION/json")
+          
+            if [[ "$STATUS" == "200" ]]; then
+              echo "PyPI now serves version $VERSION ✔"
+              exit 0
+            fi
+          
+            sleep $SLEEP
+          done
+          
+          echo "::error::Timed out waiting for $PKG==$VERSION on PyPI"
+          exit 1
+
 
   macos-bottle:
     name: Create macOS bottle
