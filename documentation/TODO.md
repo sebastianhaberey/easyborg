@@ -2,7 +2,6 @@
 
 ## Soon
 
-- progress message on backup / archive is misleading ("Initializing cache transaction: Reading files")
 - error on repository password request / ssh password request
 - notifications
 
@@ -13,6 +12,7 @@
 
 # DONE
 
+- progress message on backup / archive is misleading ("Initializing cache transaction: Reading files")
 - changelog
 - Github releases
 - find better naming for easyborg enable / disable
