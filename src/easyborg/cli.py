@@ -198,7 +198,7 @@ def restore(obj, dry_run: bool):
     "--strip",
     "-s",
     is_flag=True,
-    help="Strip leading directories (single file only)",
+    help="Strip leading directories (single item only)",
 )
 @help_option(help="Show this message")
 @pass_obj
