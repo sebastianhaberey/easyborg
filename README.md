@@ -99,13 +99,13 @@ settings by calling _easyborg doctor_ again.
 
 ## Usage
 
-Easyborg currently supports six main commands: _backup_, _archive_, _restore_, _extract_, _delete_ and _replace_. Use
+Easyborg currently supports _backup_, _archive_, _restore_, _extract_, _delete_, _replace_ and _autobackup_. Use
 
 ```
 easyborg --help
 ```
 
-for details on these and some utility commands.
+for details on these commands and a few utility commands.
 
 ## Concept
 
@@ -194,4 +194,4 @@ repositories to avoid data loss.
 
 ## Expert topics
 
-If you're still here, have a look at the [expert topics](EXPERT.md)
+If you're still here, have a look at the [expert topics](documentation/EXPERT.md)

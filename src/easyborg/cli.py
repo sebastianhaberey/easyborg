@@ -34,8 +34,8 @@ CONTEXT_SETTINGS = cloup.Context.settings(
             heading=STYLES[StyleId.HEADER],
             col1=STYLES[StyleId.PRIMARY],
         ),
-        width=None,
-        max_width=100,  # default is too low (80), but too high will yield really long help text lines
+        width=120,
+        max_width=120,  # default is too low (80), but too high will yield really long help text lines
     ),
 )
 
@@ -241,6 +241,33 @@ def replace(obj, dry_run: bool):
     command.run(dry_run=dry_run)
 
 
+@cli.command(section=SECTION_MAIN)
+@help_option(help="Show this message")
+@argument(
+    "action",
+    type=Choice(["enable", "disable"], case_sensitive=False),
+)
+@pass_obj
+def autobackup(obj, action):
+    """
+    Enable or disable automatic backups
+
+    Schedules or unschedules a background job (i.e. cron) that performs backups regularly.
+    """
+    context: Context = obj["context"]
+
+    if action == "enable":
+        Cron(context.profile).enable(
+            "backup",
+            context.easyborg_executable,
+            context.borg_executable,
+            context.fzf_executable,
+            schedule="@hourly",
+        )
+    else:
+        Cron(context.profile).disable()
+
+
 @cli.command(section=SECTION_UTILITY)
 @help_option(help="Show this message")
 @pass_obj
@@ -250,34 +277,6 @@ def doctor(obj):
     """
     command = DoctorCommand(config=obj["config"])
     command.run(obj["context"])
-
-
-@cli.command(section=SECTION_UTILITY)
-@help_option(help="Show this message")
-@pass_obj
-def enable(obj):
-    """
-    Enable scheduled backups
-    """
-    context: Context = obj["context"]
-    Cron(context.profile).enable(
-        "backup",
-        context.easyborg_executable,
-        context.borg_executable,
-        context.fzf_executable,
-        schedule="@hourly",
-    )
-
-
-@cli.command(section=SECTION_UTILITY)
-@help_option(help="Show this message")
-@pass_obj
-def disable(obj):
-    """
-    Disable scheduled backups
-    """
-    context: Context = obj["context"]
-    Cron(context.profile).disable()
 
 
 @cli.command(section=SECTION_UTILITY)

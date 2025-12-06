@@ -39,7 +39,7 @@ console_theme = Theme(
     }
 )
 
-console = Console(highlight=False, theme=console_theme)
+console = Console(highlight=False, theme=console_theme, soft_wrap=True)
 
 # CONSOLE PLUS LOGGING
 

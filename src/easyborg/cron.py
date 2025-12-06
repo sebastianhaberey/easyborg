@@ -43,12 +43,18 @@ class Cron:
             f"{self.marker}"
         )
 
+        found = False
         if any(self.marker in line for line in lines):
+            found = True
             lines = [line for line in lines if self.marker not in line]
 
         lines.append(entry)
         _write_crontab(lines)
-        ui.success("Added easyborg cron entry", f'"{entry}"')
+
+        if found:
+            ui.success("Updated easyborg cron entry", f'"{entry}"')
+        else:
+            ui.success("Added easyborg cron entry", f'"{entry}"')
 
     def disable(self):
         """
