@@ -7,8 +7,8 @@ This project is currently in beta phase.
 
 [![Tests (Linux)](https://github.com/sebastianhaberey/easyborg/actions/workflows/tests-linux.yml/badge.svg)](https://github.com/sebastianhaberey/easyborg/actions/workflows/tests-linux.yml)
 [![Tests (macOS)](https://github.com/sebastianhaberey/easyborg/actions/workflows/tests-macos.yml/badge.svg)](https://github.com/sebastianhaberey/easyborg/actions/workflows/tests-macos.yml)
-[![PyPI - Python Version](https://img.shields.io/pypi/pyversions/easyborg)](https://pypi.org/project/easyborg/)
-[![GitHub Release](https://img.shields.io/github/v/release/sebastianhaberey/easyborg)](https://github.com/sebastianhaberey/easyborg/releases/)
+[![PyPI - Python Version](https://img.shields.io/pypi/pyversions/easyborg?label=Python)](https://pypi.org/project/easyborg/)
+[![GitHub Release](https://img.shields.io/github/v/release/sebastianhaberey/easyborg?label=Release)](https://github.com/sebastianhaberey/easyborg/releases/)
 
 
 ## Screen Recordings
