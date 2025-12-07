@@ -19,6 +19,8 @@ class OpenCommand:
             ui.abort()
             return
 
+        ui.newline()
+
         if target == "LOG FILE":
             path = context.log_file
         elif target == "LOG DIR":
@@ -38,3 +40,5 @@ class OpenCommand:
             ui.warn("Could not open file")
         except RuntimeError:
             ui.warn("Not supported on your system")
+
+        ui.success("Open completed")
