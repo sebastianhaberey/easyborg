@@ -90,6 +90,19 @@ def confirm(fzf: Fzf, message: str, *, danger: bool = False) -> bool | None:
     return response[0] == "YES"
 
 
+def select_string(fzf: Fzf, message: str, strings: list[str], *, danger: bool = False) -> str | None:
+    ui.display(message, danger=danger)
+
+    response = fzf.select_strings(strings, danger=danger)
+
+    if len(response) == 0:
+        ui.selected(None)
+        return None
+
+    ui.selected(response[0], danger=danger)
+    return response[0]
+
+
 def select_paths(fzf: Fzf, paths: list[Path]) -> list[Path] | None:
     ui.info("Select paths")
     selected_paths = fzf.select_items(

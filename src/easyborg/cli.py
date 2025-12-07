@@ -281,16 +281,12 @@ def doctor(obj):
 
 @cli.command(section=SECTION_UTILITY)
 @help_option(help="Show this message")
-@argument(
-    "target",
-    type=Choice(["logfile", "logdir", "configfile", "configdir"], case_sensitive=False),
-)
 @pass_obj
-def open(obj, target: str):
+def open(obj):
     """
-    Open easyborg file or folder
+    Open easyborg-related file or folder (interactive)
 
-    Open easyborg file or folder using your system's default application.
+    Open easyborg-related file or folder using your system's default application.
     """
-    command = OpenCommand(context=obj["context"])
-    command.run(target)
+    command = OpenCommand(fzf=obj["fzf"])
+    command.run(context=obj["context"])

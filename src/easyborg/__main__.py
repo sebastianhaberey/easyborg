@@ -27,8 +27,6 @@ def render_newlines(args: list[str]) -> bool:
     """Quick and dirty hack to evaluate if the two framing newlines should be rendered"""
     if "--headless" in args:
         return False  # don't output anything in headless mode to avoid system mails
-    if "open" in args and "--help" not in args:
-        return False  # open command doesn't need newlines (except when it's help)
     return True
 
 
