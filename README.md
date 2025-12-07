@@ -12,7 +12,7 @@ This project is currently in beta phase.
 
 ## Features
 
-* Fuzzy-search your snapshots extremely fast and extract the files you need
+* Fuzzy-search your snapshots lightning fast and extract the files you need
 * Schedule hourly backups to run automatically in the background
 * Backup / archive items to all configured repositories in one go
 * Restore whole snapshots and replace the existing items on your local disk
