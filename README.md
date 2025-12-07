@@ -10,8 +10,7 @@ This project is currently in beta phase.
 [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/easyborg?label=Python)](https://pypi.org/project/easyborg/)
 [![GitHub Release](https://img.shields.io/github/v/release/sebastianhaberey/easyborg?label=Release)](https://github.com/sebastianhaberey/easyborg/releases/)
 
-
-## Screen Recordings
+## Demonstration
 
 ### Extract
 
@@ -61,7 +60,7 @@ $ borg list /Volumes/HD/backup
 - If you're asked for a Borg repository
   password, [set up BORG_PASSCOMMAND](https://borgbackup.readthedocs.io/en/stable/usage/general.html#environment-variables).
 
-> **NOTE** Be sure to _chmod 600_ your passcommand file to prevent others from accessing it.
+> **NOTE** Be sure to _chmod 600_ your passphrase file to prevent others from accessing it.
 
 Once that works, you can add the environment variable to Easyborg's configuration file (see below).
 
@@ -122,8 +121,9 @@ Easyborg makes a distinction between _backup_ and _archive_.
 ### Backup
 
 If you enable automatic backups, Easyborg will create a snapshot of all configured paths in each configured
-**backup repository** every full hour. Meaning at 12:00, 13:00 and so on. Then, snapshots are pruned to save space.
-So after the 13:00 snapshot is written, the 12:00 snapshot will be deleted. A selection of snapshots will be retained:
+**backup repository** every full hour, i.e. at 12:00, 13:00 and so on. Then, snapshots are pruned to save space.
+So after the 13:00 snapshot is written, the 12:00 snapshot will be deleted. A selection of snapshots will be
+retained:
 
 - the last snapshot of the day for the past seven days
 - one snapshot per week for the past three months
