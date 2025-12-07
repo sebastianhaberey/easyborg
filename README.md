@@ -1,6 +1,6 @@
 # Easyborg
 
-Easyborg is a simple frontend for the awesome [BorgBackup](https://www.borgbackup.org/) (aka Borg)
+Easyborg is a simple frontend for [BorgBackup](https://www.borgbackup.org/) (aka Borg)
 with [fzf](https://github.com/junegunn/fzf) for user input.
 
 This project is currently in beta phase.
@@ -9,6 +9,14 @@ This project is currently in beta phase.
 [![Tests (macOS)](https://github.com/sebastianhaberey/easyborg/actions/workflows/tests-macos.yml/badge.svg)](https://github.com/sebastianhaberey/easyborg/actions/workflows/tests-macos.yml)
 [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/easyborg?label=Python)](https://pypi.org/project/easyborg/)
 [![GitHub Release](https://img.shields.io/github/v/release/sebastianhaberey/easyborg?label=Release)](https://github.com/sebastianhaberey/easyborg/releases/)
+
+## Features
+
+* Fuzzy-search your snapshots extremely fast and extract the files you need
+* Schedule hourly backups to run automatically in the background
+* Backup / archive items to all configured repositories in one go
+* Restore whole snapshots and replace the existing items on your local disk
+* Easy-to-use UI
 
 ## Demonstration
 
@@ -125,8 +133,8 @@ If you enable automatic backups, Easyborg will create a snapshot of all configur
 So after the 13:00 snapshot is written, the 12:00 snapshot will be deleted. A selection of snapshots will be
 retained:
 
-- the last snapshot of the day for seven days
-- the last snapshot of the week for thirteen weeks
+- Last snapshot of the day for seven days
+- Last snapshot of the week for thirteen weeks
 
 All other snapshots will be deleted.
 
