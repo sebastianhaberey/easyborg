@@ -1,7 +1,7 @@
 from datetime import datetime
 from pathlib import Path
 
-from easyborg.util import create_snapshot_name, relativize
+from easyborg.util import create_snapshot_name, is_blank, relativize
 
 
 def test_relativize_strips_leading_slash():
@@ -27,3 +27,9 @@ def test_create_snapshot_name_format():
 
     assert len(suffix) == 8
     assert all(c in "0123456789ABCDEF" for c in suffix)
+
+
+def test_is_blank():
+    assert is_blank("")
+    assert is_blank(" ")
+    assert not is_blank("foo")

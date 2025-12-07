@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import logging
 import sys
-from collections.abc import Callable, Iterable, Iterator, Sequence
+from collections.abc import Callable, Iterable, Iterator, Mapping, Sequence
 from pathlib import Path
 from typing import Any, TypeVar
 
@@ -74,6 +74,7 @@ def warn(msg: str, secondary: str = None) -> None:
 
 
 def error(msg: str, secondary: str = None) -> None:
+    newline()
     if secondary:
         console.print(msg, style=STYLES[StyleId.ERROR], end="")
         console.print(": ", secondary)
@@ -180,7 +181,7 @@ def is_tty() -> bool:
 
 
 def table(
-    rows: Iterable[Sequence[str | object]] = (),
+    rows: Iterable[Sequence[str | object]],
     *,
     headers: Sequence[str] | None = None,
     column_colors: Sequence[str | None] = (),
@@ -226,7 +227,7 @@ def link_path(path: Path) -> str:
     return f"{path}"
 
 
-def render_dict(value: dict[str, str], *, separator=", ") -> str:
+def render_mapping(value: Mapping[str, str], *, separator=", ") -> str:
     return separator.join(f"{k}: {v}" for k, v in value.items())
 
 

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections.abc import Mapping
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
@@ -32,14 +33,14 @@ class Repository:
     url: str
     type: RepositoryType
     compact_probability: float = 0.1  # TODO SH find a better place for defaults
-    env: dict[str, str] = ()
+    env: Mapping[str, str] | None = None
 
 
 @dataclass(frozen=True, slots=True)
 class Config:
     backup_paths: list[Path]
-    repos: dict[str, Repository]
-    env: dict[str, str] = ()
+    repos: Mapping[str, Repository]
+    env: Mapping[str, str] | None = None
 
 
 @dataclass(slots=True)

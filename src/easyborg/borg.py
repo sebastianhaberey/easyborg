@@ -1,10 +1,12 @@
 import logging
-from collections.abc import Iterator
+import os
+from collections.abc import Iterator, Mapping
 from pathlib import Path
 
 from easyborg.model import ProgressEvent, Repository, RepositoryType, Snapshot
 from easyborg.process import Output, assert_executable_valid, run_async, run_sync
 from easyborg.progress_parser import parse_progress
+from easyborg.util import is_blank
 
 logger = logging.getLogger(__name__)
 
@@ -32,6 +34,7 @@ class Borg:
         List all snapshots in the given repository.
         """
         logger.debug("Listing snapshots in repository '%s'", repo.url)
+        assert_passphrase(repo.env)
 
         cmd = [str(self.executable), "list"]
         cmd.extend(["--format", "{archive}{TAB}{comment}\n"])
@@ -52,6 +55,7 @@ class Borg:
         Paths are always relative (no leading slash).
         """
         logger.debug("Listing contents of %s", snap.location())
+        assert_passphrase(snap.repository.env)
 
         cmd = [str(self.executable), "list"]
         cmd.extend(["--format", "{path}\n"])
@@ -62,12 +66,20 @@ class Borg:
                 yield Path(line)
 
     def create_repository(
-        self, parent: Path, name: str, type: RepositoryType, *, encryption="none", dry_run: bool = False
+        self,
+        parent: Path,
+        name: str,
+        type: RepositoryType,
+        *,
+        encryption="none",
+        dry_run: bool = False,
+        env: Mapping[str, str] | None = None,
     ) -> Repository:
         """
         Create a Borg repository.
         """
         logger.debug("Creating repository '%s' in '%s'", name, parent)
+        assert_passphrase(env)
 
         if not parent.is_dir():
             raise RuntimeError(f"Parent directory does not exist: {parent}")
@@ -83,7 +95,7 @@ class Borg:
 
         run_sync(cmd)
 
-        return Repository(name=name, url=str(directory), type=type, compact_probability=0.1, env={})
+        return Repository(name=name, url=str(directory), type=type, compact_probability=0.1, env=env)
 
     def create_snapshot(
         self,
@@ -97,6 +109,7 @@ class Borg:
         Create a new snapshot.
         """
         logger.debug("Creating snapshot %s", snap.location())
+        assert_passphrase(snap.repository.env)
 
         for path in paths:
             if not path.exists():
@@ -122,8 +135,8 @@ class Borg:
         self,
         snap: Snapshot,
         target_dir: Path,
-        paths: list[Path] | None = None,
         *,
+        paths: list[Path] | None = None,
         dry_run: bool = False,
         progress: bool = False,
         strip_components: int = None,
@@ -136,6 +149,7 @@ class Borg:
             paths = []
 
         logger.debug("Restoring %s into %s", snap.location(), target_dir)
+        assert_passphrase(snap.repository.env)
 
         if not target_dir.is_dir():
             raise RuntimeError(f"Target directory does not exist: {target_dir}")
@@ -167,6 +181,7 @@ class Borg:
         Prune old snapshots in the repository according to retention policy.
         """
         logger.debug("Pruning repository '%s'", repo.url)
+        assert_passphrase(repo.env)
 
         cmd = [str(self.executable), "prune"]
         if progress:
@@ -193,6 +208,7 @@ class Borg:
         Run `borg compact` to reclaim space.
         """
         logger.debug("Compacting repository '%s'", repo.url)
+        assert_passphrase(repo.env)
 
         cmd = [str(self.executable), "compact"]
         if progress:
@@ -218,6 +234,7 @@ class Borg:
         Delete snapshot from repository.
         """
         logger.debug("Deleting snapshot '%s' from repository '%s' ", snap.name, snap.repository.url)
+        assert_passphrase(snap.repository.env)
 
         cmd = [str(self.executable), "delete"]
         if progress:
@@ -231,3 +248,17 @@ class Borg:
 
         run_sync(cmd, env=snap.repository.env)
         return None
+
+
+def assert_passphrase(env: dict[str, str] | None) -> None:
+    if not env:
+        env = {}
+    merged_env = os.environ.copy() | env
+    if (
+        is_blank(merged_env.get("BORG_PASSPHRASE"))
+        and is_blank(merged_env.get("BORG_PASSCOMMAND"))
+        and is_blank(merged_env.get("BORG_PASSPHRASE_FD"))
+    ):
+        raise RuntimeError(
+            "Passphrase not available - configure BORG_PASSPHRASE, BORG_PASSCOMMAND or BORG_PASSPHRASE_FD"
+        )

@@ -1,7 +1,7 @@
 from easyborg import ui
 from easyborg.model import Config, Context
 from easyborg.theme import StyleId, theme
-from easyborg.ui import link_path, render_dict
+from easyborg.ui import link_path, render_mapping
 
 STYLES = theme().styles
 
@@ -72,7 +72,7 @@ class DoctorCommand:
 
         if repos and context.expert:
             ui.header("Repository Environments")
-            rows = [(repo.name, render_dict(repo.env, separator="\n")) for repo in repos.values()]
+            rows = [(repo.name, render_mapping(repo.env, separator="\n")) for repo in repos.values()]
             ui.table(
                 rows,
                 column_colors=(STYLES[StyleId.PRIMARY], None),

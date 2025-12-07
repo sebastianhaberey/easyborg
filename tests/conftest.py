@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 
 import pytest
@@ -5,6 +6,10 @@ import pytest
 from easyborg.borg import Borg
 from easyborg.model import Repository, RepositoryType
 from easyborg.process import get_full_executable_path
+
+
+def pytest_configure():
+    os.environ["BORG_PASSPHRASE"] = "foo"
 
 
 @pytest.fixture

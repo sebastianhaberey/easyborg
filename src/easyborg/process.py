@@ -47,7 +47,7 @@ def run_sync(
     *,
     cwd: str | None = None,
     input_lines: Iterable[str] | str | None = None,
-    env: Mapping[str, str] | None = (),
+    env: Mapping[str, str] | None = None,
 ) -> list[str]:
     """
     Run the subprocess and return all output lines as a list.
@@ -62,14 +62,16 @@ def run_async(
     input_lines: Iterable[str] | None = None,
     cwd: str | None = None,
     output: Output = Output.STDOUT,
-    env: Mapping[str, str] | None = (),
+    env: Mapping[str, str] | None = None,
 ) -> Iterator[str]:
     """
     Run a subprocess and yield lines from either stdout or stderr.
     """
     logger.debug("Running %s with env %s", cmd, env)
 
-    env = os.environ.copy().update(env)
+    if env is None:
+        env = {}
+    merged_env = os.environ.copy() | env
 
     process = subprocess.Popen(
         cmd,
@@ -79,7 +81,7 @@ def run_async(
         stderr=subprocess.PIPE,
         text=True,
         bufsize=1,
-        env=env,
+        env=merged_env,
     )
 
     if input_lines is not None:

@@ -99,3 +99,7 @@ def open_path(target: str | Path) -> None:
         subprocess.run(cmd, check=True)
     except subprocess.CalledProcessError as e:
         raise FileNotFoundError(f"Failed to open {target_str!r}: {e}") from e
+
+
+def is_blank(value: str | None) -> bool:
+    return not (value and value.strip())
