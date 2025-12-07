@@ -1,17 +1,12 @@
 # TODO
 
-## Soon
-
-- error on repository password request / ssh password request
 - notifications
-
-## Later
-
-- expert mode: configure prune options (hourly / daily / weekly / monthly / yearly)
-- expert mode: configure cron expression
+- configure prune options (hourly / daily / weekly / monthly / yearly)
+- configure cron expression
 
 # DONE
 
+- error on repository password request / ssh password request
 - progress message on backup / archive is misleading ("Initializing cache transaction: Reading files")
 - changelog
 - Github releases

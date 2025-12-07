@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "easyborg"
-version = "0.18.2"
+version = "0.19.0"
 description = "Borg for Dummies"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -19,7 +19,7 @@ dependencies = [
     "click>=8.3.1",
     "cloup>=3.0.8",
     "rich>=14.2.0",
-    "platformdirs>=4.5.0"
+    "platformdirs>=4.5.1"
 ]
 
 classifiers = [
