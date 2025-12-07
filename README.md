@@ -125,10 +125,10 @@ If you enable automatic backups, Easyborg will create a snapshot of all configur
 So after the 13:00 snapshot is written, the 12:00 snapshot will be deleted. A selection of snapshots will be
 retained:
 
-- the last snapshot of the day for the past seven days
-- one snapshot per week for the past three months
+- the last snapshot of the day for seven days
+- the last snapshot of the week for thirteen weeks
 
-Any snapshot older than three months will be deleted.
+All other snapshots will be deleted.
 
 > **NOTE** Pruning only occurs when _easyborg backup_ is called, manually or automatically.
 > If you don't call it, your existing snapshots won't be touched.
