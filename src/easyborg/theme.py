@@ -177,8 +177,8 @@ class Theme:
         return Theme(
             type=ThemeType.DARK,
             styles={
-                StyleId.PRIMARY: "cyan bold",
-                StyleId.SECONDARY: "cyan",
+                StyleId.PRIMARY: "blue bold",
+                StyleId.SECONDARY: "cyan bold",
                 StyleId.SUCCESS: "green bold",
                 StyleId.WARNING: "yellow bold",
                 StyleId.ERROR: "red bold",
