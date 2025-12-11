@@ -3,8 +3,6 @@
 Easyborg is a simple frontend for [BorgBackup](https://www.borgbackup.org/) (aka Borg)
 with [fzf](https://github.com/junegunn/fzf) for user input.
 
-This project is currently in beta phase.
-
 [![Tests (Linux)](https://github.com/sebastianhaberey/easyborg/actions/workflows/tests-linux.yml/badge.svg)](https://github.com/sebastianhaberey/easyborg/actions/workflows/tests-linux.yml)
 [![Tests (macOS)](https://github.com/sebastianhaberey/easyborg/actions/workflows/tests-macos.yml/badge.svg)](https://github.com/sebastianhaberey/easyborg/actions/workflows/tests-macos.yml)
 [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/easyborg?label=Python)](https://pypi.org/project/easyborg/)
