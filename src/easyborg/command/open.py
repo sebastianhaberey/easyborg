@@ -38,7 +38,9 @@ class OpenCommand:
             open_path(path)
         except FileNotFoundError:
             ui.warn("Could not open file")
+            return
         except RuntimeError:
             ui.warn("Not supported on your system")
+            return
 
         ui.success("Open completed")

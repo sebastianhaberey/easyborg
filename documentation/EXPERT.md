@@ -39,10 +39,10 @@ Available themes: melody_dark (default), melody_light, ice_dark, ice_light
 
 If you enable automatic backups on macOS, you may get this popup message:
 
-TODO: screenshot
+> "python3.14" would like to access files in your Documents folder.
 
-This happens if you backup protected folders like "Documents" or "Applications". If you need that, find out which
-Python you run by running _easyborg doctor_. Open macoOS -> System Settings -> Privacy and Security -> Full Disk Access
+This happens if you want to back up protected folders like "Documents" or "Applications". If you need that, find out which
+Python you run by running _easyborg doctor_. Open macOS -> System Settings -> Privacy and Security -> Full Disk Access
 and drag one of the following onto it:
 
 - The Python binary OR

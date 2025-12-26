@@ -32,5 +32,8 @@ Thumbs.db
 # --- Recording ---
 /recording/*.cast
 
-# -- Homebrew ---
+# --- Homebrew ---
 /tools/homebrew/easyborg.rb
+
+# --- pyenv ---
+.python-version

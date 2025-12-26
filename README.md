@@ -157,7 +157,7 @@ delete_.
 
 ## Restore / Replace
 
-If you _backup_ or _archive_ an item, e.g.:
+If you _back up_ or _archive_ an item, e.g.:
 
 ```
 /Users/user/Documents
