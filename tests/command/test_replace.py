@@ -8,41 +8,94 @@ from easyborg.util import relativize
 from tests.helpers.fakes import FakeFzf
 
 
-def test_replace_command(tmp_path, monkeypatch):
-    try:
-        os.chdir(tmp_path)
+def test_replace_command(tmp_path, testdata_dir, monkeypatch):
+    """
+    /tmp/pytest-16/
+        source/
+            tmp/pytest-16/target
+                file 1.txt
+                file 2.txt
+                some folder/
+        target/
+            file 1.txt
+            file 2.txt
+            some folder/
+    """
+    source_dir = tmp_path / "source"
+    target_dir = tmp_path / "target"
 
-        existing_file = tmp_path / "test.txt"  # /temporary/dir/test.txt
-        existing_file.write_text("EXISTING")
+    target_dir_relative = relativize(target_dir)
 
-        restore_dir = relativize(tmp_path)  # temporary/dir (inside /temporary/dir)
-        restore_dir.mkdir(parents=True)
-        restore_file = restore_dir / "test.txt"  # temporary/dir/test.txt
-        restore_file.write_text("RESTORED")
+    shutil.copytree(testdata_dir, source_dir / target_dir_relative)
+    shutil.copytree(testdata_dir, target_dir)
 
-        # Configure the existing file as backup path
-        config = Config(backup_paths=[existing_file], repos={})
+    os.chdir(source_dir)
 
-        # 1) select the backup path
-        # 2) confirm "Replace?"
-        fzf = FakeFzf(responses=[[existing_file], ["YES"]])
+    # Configure the target dir as backup path
+    config = Config(backup_paths=[target_dir], repos={})
 
-        # Mock the two dangerous operations
-        calls: dict[str, Any] = {"rmtree": None, "move": None}
+    # 1) select the backup path
+    # 2) confirm "Replace?"
+    fzf = FakeFzf(responses=[[target_dir], ["YES"]])
 
-        def fake_rmtree(path):
-            calls["rmtree"] = path
+    # Mock the two dangerous operations
+    calls: dict[str, Any] = {"rmtree": None, "move": None}
 
-        def fake_move(src, dst):
-            calls["move"] = (src, dst)
+    def fake_rmtree(path):
+        calls["rmtree"] = path
 
-        monkeypatch.setattr(shutil, "rmtree", fake_rmtree)
-        monkeypatch.setattr(shutil, "move", fake_move)
+    def fake_move(src, dst):
+        calls["move"] = (src, dst)
 
-        cmd = ReplaceCommand(config=config, fzf=fzf)
-        cmd.run()
-    finally:
-        os.chdir(tmp_path)
+    monkeypatch.setattr(shutil, "rmtree", fake_rmtree)
+    monkeypatch.setattr(shutil, "move", fake_move)
 
-    assert calls["rmtree"] == existing_file
-    assert calls["move"] == (restore_file, existing_file)
+    cmd = ReplaceCommand(config=config, fzf=fzf)
+    cmd.run()
+
+    assert calls["rmtree"] == target_dir
+    assert calls["move"] == (target_dir_relative, target_dir)
+
+
+def test_replace_command_non_existing_target(tmp_path, testdata_dir, monkeypatch):
+    """
+    /tmp/pytest-16/
+        source/
+            tmp/pytest-16/target
+                file 1.txt
+                file 2.txt
+                some folder/
+    """
+    source_dir = tmp_path / "source"
+    target_dir = tmp_path / "target"
+
+    target_dir_relative = relativize(target_dir)
+
+    shutil.copytree(testdata_dir, source_dir / target_dir_relative)
+
+    os.chdir(source_dir)
+
+    # Configure the target dir as backup path
+    config = Config(backup_paths=[target_dir], repos={})
+
+    # 1) select the backup path
+    # 2) confirm "Replace?"
+    fzf = FakeFzf(responses=[[target_dir], ["YES"]])
+
+    # Mock the two dangerous operations
+    calls: dict[str, Any] = {"rmtree": None, "move": None}
+
+    def fake_rmtree(path):
+        calls["rmtree"] = path
+
+    def fake_move(src, dst):
+        calls["move"] = (src, dst)
+
+    monkeypatch.setattr(shutil, "rmtree", fake_rmtree)
+    monkeypatch.setattr(shutil, "move", fake_move)
+
+    cmd = ReplaceCommand(config=config, fzf=fzf)
+    cmd.run()
+
+    assert calls["rmtree"] is None
+    assert calls["move"] == (target_dir_relative, target_dir)

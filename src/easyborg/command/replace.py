@@ -50,7 +50,8 @@ class ReplaceCommand:
             ui.info(f"Replacing {dst}")
 
             if not dry_run:
-                shutil.rmtree(dst)
+                if dst.exists():
+                    shutil.rmtree(dst)
                 shutil.move(src, dst)
 
         ui.success("Replace complete")
