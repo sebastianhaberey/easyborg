@@ -42,7 +42,7 @@ jobs:
 
     steps:
       - name: Checkout HEAD (for discovery)
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
@@ -116,12 +116,12 @@ jobs:
 
     steps:
       - name: Checkout tag (for build)
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           ref: ${{ needs.discover.outputs.sha }}
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: ${{ env.PYTHON_VERSION }}
 
@@ -176,10 +176,10 @@ jobs:
 
     steps:
       - name: Checkout HEAD (for tooling)
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Set up Python for Formula generator
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: ${{ env.PYTHON_VERSION }}
 
@@ -226,7 +226,7 @@ jobs:
           echo "platform=$PLATFORM" >> "$GITHUB_OUTPUT"
 
       - name: Upload macOS bottle
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: bottle-macos
           path: ${{ steps.build-bottle.outputs.file }}
@@ -244,7 +244,7 @@ jobs:
 
     steps:
       - name: Checkout HEAD (for tooling)
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Install Linuxbrew
         run: |
@@ -261,7 +261,7 @@ jobs:
           echo "HOMEBREW_REPOSITORY=/home/linuxbrew/.linuxbrew/Homebrew" >> "$GITHUB_ENV"
 
       - name: Set up Python for Formula generator
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: ${{ env.PYTHON_VERSION }}
 
@@ -308,7 +308,7 @@ jobs:
           echo "platform=$PLATFORM" >> "$GITHUB_OUTPUT"
 
       - name: Upload Linux bottle
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: bottle-linux
           path: ${{ steps.build-bottle.outputs.file }}
@@ -323,24 +323,24 @@ jobs:
 
     steps:
       - name: Checkout HEAD (for tooling)
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           path: head
 
       - name: Checkout tag (for changelog)
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           ref: ${{ needs.discover.outputs.sha }}
           path: tag
 
       - name: Download macOS bottle
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: bottle-macos
           path: bottles
 
       - name: Download Linux bottle
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: bottle-linux
           path: bottles
@@ -373,22 +373,22 @@ jobs:
 
     steps:
       - name: Checkout tooling (HEAD)
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Download macOS bottle
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: bottle-macos
           path: bottles
 
       - name: Download Linux bottle
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: bottle-linux
           path: bottles
 
       - name: Set up Python for Formula generator
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: ${{ env.PYTHON_VERSION }}
 
@@ -398,7 +398,7 @@ jobs:
           pip install requests packaging urllib3
 
       - name: Checkout Homebrew tap
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           repository: sebastianhaberey/homebrew-easyborg
           path: tap
@@ -432,7 +432,7 @@ jobs:
 
       - name: Upload Formula for verify step (dry run)
         if: ${{ needs.discover.outputs.live == 'false' }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: formula
           path: tap/Formula/easyborg.rb
@@ -468,19 +468,19 @@ jobs:
           echo "HOMEBREW_REPOSITORY=/home/linuxbrew/.linuxbrew/Homebrew" >> "$GITHUB_ENV"
 
       - name: Download macOS bottle
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: bottle-macos
           path: bottles
 
       - name: Download Linux bottle
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: bottle-linux
           path: bottles
 
       - name: Download Formula
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: formula
           path: tap/Formula
