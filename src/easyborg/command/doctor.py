@@ -13,6 +13,7 @@ class DoctorCommand:
 
     def run(self, context: Context) -> None:
         rows = [
+            ("Profile", context.profile),
             ("Configuration dir", link_path(context.config_dir)),
             ("Configuration file", link_path(context.config_file)),
             ("Log dir", link_path(context.log_dir) if context.log_dir else "not configured"),
@@ -29,7 +30,6 @@ class DoctorCommand:
                 [
                     ("Expert mode", context.expert),
                     ("Debug mode", context.debug),
-                    ("Profile", context.profile),
                 ]
             )
         ui.header("Configuration", first=True)
