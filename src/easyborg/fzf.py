@@ -34,7 +34,7 @@ DANGER_COLORS = {
 }
 
 
-class SortOrder(str, Enum):
+class SortOrder(str, Enum):  # noqa: UP042 TODO: change to StrEnum after Python 3.10 EOL (10/2026)
     ASCENDING = "ascending"
     DESCENDING = "descending"
 
@@ -49,14 +49,14 @@ class Fzf:
         self.executable_path = executable
 
     def select_items(
-        self,
-        items: Iterable[T],
-        key: Callable[[T], str],
-        *,
-        multi: bool = False,
-        sort_order: SortOrder | None = None,
-        show_info: bool = False,
-        danger: bool = False,
+            self,
+            items: Iterable[T],
+            key: Callable[[T], str],
+            *,
+            multi: bool = False,
+            sort_order: SortOrder | None = None,
+            show_info: bool = False,
+            danger: bool = False,
     ) -> list[T]:
         """
         Select objects using fzf based on a string key function.
@@ -78,12 +78,12 @@ class Fzf:
         return [lookup[k] for k in selected_keys]
 
     def select_strings(
-        self,
-        items: Iterable[str],
-        *,
-        multi: bool = False,
-        show_info: bool = False,
-        danger: bool = False,
+            self,
+            items: Iterable[str],
+            *,
+            multi: bool = False,
+            show_info: bool = False,
+            danger: bool = False,
     ) -> list[str]:
         """
         Run fzf on a stream of items and return the selected items.

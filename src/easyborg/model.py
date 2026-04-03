@@ -6,7 +6,7 @@ from enum import Enum
 from pathlib import Path
 
 
-class RepositoryType(str, Enum):
+class RepositoryType(str, Enum):  # noqa: UP042 TODO: change to StrEnum after Python 3.10 EOL (10/2026)
     BACKUP = "backup"
     ARCHIVE = "archive"
 
