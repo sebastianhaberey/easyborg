@@ -1,7 +1,7 @@
 class Easyborg < Formula
   include Language::Python::Virtualenv
 
-  desc "Easyborg - A comfort frontend for Borg Backup"
+  desc "Easyborg - A comfort frontend for BorgBackup"
   homepage "https://github.com/sebastianhaberey/easyborg"
   url "{{URL}}"
   sha256 "{{SHA256}}"

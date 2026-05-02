@@ -49,7 +49,7 @@ EXPERT_MODE: bool = easyborg.context._is_expert_mode()
 DEBUG_MODE: bool = False
 
 
-@group(help="Easyborg – A comfort frontend for Borg Backup", context_settings=CONTEXT_SETTINGS)
+@group(help="Easyborg – A comfort frontend for BorgBackup", context_settings=CONTEXT_SETTINGS)
 @help_option(help="Show this page")
 @version_option(prog_name="Easyborg", help="Show version information", message="%(prog)s version %(version)s")
 @option(
