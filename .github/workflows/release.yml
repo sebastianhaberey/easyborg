@@ -357,7 +357,7 @@ jobs:
 
       - name: Upload bottles to GitHub Release (live mode)
         if: ${{ needs.discover.outputs.live == 'true' }}
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           files: |
             bottles/*.bottle*.tar.gz
