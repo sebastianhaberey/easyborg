@@ -26,7 +26,6 @@ logger = logging.getLogger(__name__)
 
 STYLES = theme().styles_cloup
 
-
 CONTEXT_SETTINGS = cloup.Context.settings(
     formatter_settings=HelpFormatter.settings(
         theme=HelpTheme(
@@ -50,7 +49,7 @@ EXPERT_MODE: bool = easyborg.context._is_expert_mode()
 DEBUG_MODE: bool = False
 
 
-@group(help="Easyborg – Borg for Dummies", context_settings=CONTEXT_SETTINGS)
+@group(help="Easyborg – A comfort frontend for Borg Backup", context_settings=CONTEXT_SETTINGS)
 @help_option(help="Show this page")
 @version_option(prog_name="Easyborg", help="Show version information", message="%(prog)s version %(version)s")
 @option(
@@ -88,12 +87,12 @@ DEBUG_MODE: bool = False
 )
 @pass_context
 def cli(
-    ctx: cloup.Context,
-    profile: str,
-    debug: bool,
-    headless: bool,
-    borg_executable: Path | None,
-    fzf_executable: Path | None,
+        ctx: cloup.Context,
+        profile: str,
+        debug: bool,
+        headless: bool,
+        borg_executable: Path | None,
+        fzf_executable: Path | None,
 ) -> None:
     # first, set DEBUG_MODE flag to enable stacktraces
     global DEBUG_MODE

@@ -1,6 +1,6 @@
 # Easyborg
 
-Easyborg is a simple frontend for [BorgBackup](https://www.borgbackup.org/) (aka Borg)
+Easyborg is a comfort frontend for [BorgBackup](https://www.borgbackup.org/) (aka Borg)
 with [fzf](https://github.com/junegunn/fzf) for user input.
 
 [![Tests (Linux)](https://github.com/sebastianhaberey/easyborg/actions/workflows/tests-linux.yml/badge.svg)](https://github.com/sebastianhaberey/easyborg/actions/workflows/tests-linux.yml)
