@@ -16,10 +16,10 @@ authors = [
 ]
 
 dependencies = [
-    "click~=8.3.1",
-    "cloup~=3.0.8",
-    "rich~=14.3.3",
-    "platformdirs~=4.9.4"
+    "click==8.3.3",
+    "cloup==3.0.9",
+    "rich==15.0.0",
+    "platformdirs==4.9.6"
 ]
 
 classifiers = [
@@ -48,8 +48,8 @@ easyborg = "easyborg.__main__:main"
 
 [project.optional-dependencies]
 dev = [
-    "pytest~=9.0.1",
-    "ruff~=0.15.9",
+    "pytest==9.0.3",
+    "ruff==0.15.12",
 ]
 
 [tool.setuptools]
