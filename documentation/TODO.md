@@ -1,5 +1,6 @@
 # TODO
 
+- handle empty repositories in restore / extract
 - notifications
 - configure prune options (hourly / daily / weekly / monthly / yearly)
 - configure cron expression
