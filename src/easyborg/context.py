@@ -11,15 +11,15 @@ platform_dirs = PlatformDirs("easyborg")
 
 
 def create(
-    *,
-    profile: str,
-    log_dir: Path,
-    log_file: Path,
-    debug: bool,
-    headless: bool,
-    easyborg_executable: Path,
-    borg_executable: Path | None = None,
-    fzf_executable: Path | None = None,
+        *,
+        profile: str,
+        log_dir: Path,
+        log_file: Path,
+        debug: bool,
+        headless: bool,
+        easyborg_executable: Path,
+        borg_executable: Path | None = None,
+        fzf_executable: Path | None = None,
 ) -> Context:
     # macOS: ~/Library/Application Support/easyborg
     # Linux: $XDG_CONFIG_HOME/easyborg or ~/.config/easyborg

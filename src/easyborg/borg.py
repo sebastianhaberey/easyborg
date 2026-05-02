@@ -10,6 +10,7 @@ from easyborg.util import is_blank
 
 logger = logging.getLogger(__name__)
 
+
 # Options and arguments are written in the order recommended by Borg: borg <command> [options] [arguments].
 # (see https://borgbackup.readthedocs.io/en/stable/usage/general.html#positional-arguments-and-options-order-matters)
 
@@ -66,14 +67,14 @@ class Borg:
                 yield Path(line)
 
     def create_repository(
-        self,
-        parent: Path,
-        name: str,
-        type: RepositoryType,
-        *,
-        encryption="none",
-        dry_run: bool = False,
-        env: Mapping[str, str] | None = None,
+            self,
+            parent: Path,
+            name: str,
+            type: RepositoryType,
+            *,
+            encryption="none",
+            dry_run: bool = False,
+            env: Mapping[str, str] | None = None,
     ) -> Repository:
         """
         Create a Borg repository.
@@ -98,12 +99,12 @@ class Borg:
         return Repository(name=name, url=str(directory), type=type, compact_probability=0.1, env=env)
 
     def create_snapshot(
-        self,
-        snap: Snapshot,
-        paths: list[Path],
-        *,
-        dry_run: bool = False,
-        progress: bool = False,
+            self,
+            snap: Snapshot,
+            paths: list[Path],
+            *,
+            dry_run: bool = False,
+            progress: bool = False,
     ):
         """
         Create a new snapshot.
@@ -132,14 +133,14 @@ class Borg:
         return None
 
     def restore(
-        self,
-        snap: Snapshot,
-        target_dir: Path,
-        *,
-        paths: list[Path] | None = None,
-        dry_run: bool = False,
-        progress: bool = False,
-        strip_components: int = None,
+            self,
+            snap: Snapshot,
+            target_dir: Path,
+            *,
+            paths: list[Path] | None = None,
+            dry_run: bool = False,
+            progress: bool = False,
+            strip_components: int = None,
     ) -> Iterator[ProgressEvent] | None:
         """
         Restore paths (or the entire snapshot if paths=None) into target_dir.
@@ -171,11 +172,11 @@ class Borg:
         return None
 
     def prune(
-        self,
-        repo: Repository,
-        *,
-        dry_run: bool = False,
-        progress: bool = False,
+            self,
+            repo: Repository,
+            *,
+            dry_run: bool = False,
+            progress: bool = False,
     ) -> Iterator[ProgressEvent] | None:
         """
         Prune old snapshots in the repository according to retention policy.
@@ -198,11 +199,11 @@ class Borg:
         return None
 
     def compact(
-        self,
-        repo: Repository,
-        *,
-        dry_run: bool = False,
-        progress: bool = False,
+            self,
+            repo: Repository,
+            *,
+            dry_run: bool = False,
+            progress: bool = False,
     ) -> Iterator[ProgressEvent] | None:
         """
         Run `borg compact` to reclaim space.
@@ -224,11 +225,11 @@ class Borg:
         return None
 
     def delete(
-        self,
-        snap: Snapshot,
-        *,
-        dry_run: bool = False,
-        progress: bool = False,
+            self,
+            snap: Snapshot,
+            *,
+            dry_run: bool = False,
+            progress: bool = False,
     ) -> Iterator[ProgressEvent] | None:
         """
         Delete snapshot from repository.
@@ -255,9 +256,9 @@ def assert_passphrase(env: dict[str, str] | None) -> None:
         env = {}
     merged_env = os.environ.copy() | env
     if (
-        is_blank(merged_env.get("BORG_PASSPHRASE"))
-        and is_blank(merged_env.get("BORG_PASSCOMMAND"))
-        and is_blank(merged_env.get("BORG_PASSPHRASE_FD"))
+            is_blank(merged_env.get("BORG_PASSPHRASE"))
+            and is_blank(merged_env.get("BORG_PASSCOMMAND"))
+            and is_blank(merged_env.get("BORG_PASSPHRASE_FD"))
     ):
         raise RuntimeError(
             "Passphrase not available - configure BORG_PASSPHRASE, BORG_PASSCOMMAND or BORG_PASSPHRASE_FD"

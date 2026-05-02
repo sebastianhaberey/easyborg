@@ -16,13 +16,13 @@ class Cron:
         self.marker = f"# easyborg:{profile}"
 
     def enable(
-        self,
-        command: str,
-        easyborg_executable: Path,
-        borg_executable: Path,
-        fzf_executable: Path,
-        *,
-        schedule: str = "@hourly",
+            self,
+            command: str,
+            easyborg_executable: Path,
+            borg_executable: Path,
+            fzf_executable: Path,
+            *,
+            schedule: str = "@hourly",
     ):
         """
         Add a cron entry with the given schedule (e.g. '@daily', '0 3 * * *').

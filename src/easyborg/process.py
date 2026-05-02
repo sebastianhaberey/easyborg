@@ -43,11 +43,11 @@ def assert_executable_valid(executable_path: Path):
 
 
 def run_sync(
-    cmd: list[str],
-    *,
-    cwd: str | None = None,
-    input_lines: Iterable[str] | str | None = None,
-    env: Mapping[str, str] | None = None,
+        cmd: list[str],
+        *,
+        cwd: str | None = None,
+        input_lines: Iterable[str] | str | None = None,
+        env: Mapping[str, str] | None = None,
 ) -> list[str]:
     """
     Run the subprocess and return all output lines as a list.
@@ -57,12 +57,12 @@ def run_sync(
 
 
 def run_async(
-    cmd: list[str],
-    *,
-    input_lines: Iterable[str] | None = None,
-    cwd: str | None = None,
-    output: Output = Output.STDOUT,
-    env: Mapping[str, str] | None = None,
+        cmd: list[str],
+        *,
+        input_lines: Iterable[str] | None = None,
+        cwd: str | None = None,
+        output: Output = Output.STDOUT,
+        env: Mapping[str, str] | None = None,
 ) -> Iterator[str]:
     """
     Run a subprocess and yield lines from either stdout or stderr.
